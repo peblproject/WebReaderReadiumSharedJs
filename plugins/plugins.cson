@@ -1,6 +1,6 @@
 # You may add the plugins that should be included here.
 plugins: [
- #  'highlights'
+   'highlights'
  #  'example' 
  
 #    'hypothesis' # Loader for the Hypothesis annotator - http://hypothes.is 
