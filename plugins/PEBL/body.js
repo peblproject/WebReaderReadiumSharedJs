@@ -1109,7 +1109,7 @@ window.SocketConnectionHandler = function() {
 
     this.idProvider = "keycloak-fluent";
     
-    var host = "tla-core.adlnet.gov:8081";
+    var host = "adltla.usalearning.net:8081";
     
     this.address = host + "/application-launcher/connect/";
 
@@ -1203,273 +1203,24 @@ window.ReadiumInterop = {
     },
 
     "getEmbeddedBookName" : function () {
-    	return embeddedBookName;
+    	if (typeof embeddedBookName !== 'undefined')
+    		return embeddedBookName;
+    	else {
+    		for (var i = 0; i < window.frames.length; i++) {
+    			if (window.frames[i].embeddedBookName != null)
+    				return window.frames[i].embeddedBookName;
+    		}
+    		for (var i = 0; i < window.top.frames.length; i++) {
+    			if (window.top.frames[i].embeddedBookName != null)
+    				return window.top.frames[i].embeddedBookName;
+    		}
+    	}
+    },
+
+    "getFirstVisibleCfi" : function () {
+	return window.ReadiumSDK.reader.getFirstVisibleCfi();
     }
 };
-/*
-  function openDiscussionLightbox(question, chatButton) {
-  var question,
-  questionBox,
-  questionBoxText,
-  element,
-  lightBoxContent;
-
-  createLightBox('discussion');
-  
-  question = question;
-
-  questionBox = document.createElement('div');
-  questionBox.classList.add('discussionQuestionBox');
-  questionBoxText = document.createElement('p');
-  questionBoxText.classList.add('discussionQuestionBoxText');
-  questionBoxText.innerHTML = question;
-  questionBox.appendChild(questionBoxText);
-
-  lightBoxContent = document.getElementById('lightBoxContent');
-  lightBoxContent.appendChild(questionBox);
-
-  //createDiscussionBox wants a jquery object
-  element = $('.lightBoxContent');
-
-  createDiscussionBox(element, chatButton);
-  }
-
-
-  function openImageLightBox(img) {
-  var lightBoxContent,
-  lightBox,
-  imageElement,
-  imageUrl;
-
-  createLightBox('image');
-
-  lightBoxContent = document.getElementById('lightBoxContent');
-  lightBox = document.getElementById('lightBox');
-  imageUrl = img;
-
-  imageElement = document.createElement('img');
-  imageElement.onload = function() {
-  lightBox.style.width = this.width + 'px';
-  lightBox.style.height = this.height + 'px';
-  };
-  imageElement.src = imageUrl;
-  imageElement.id = 'imageInLightBox';
-  imageElement.classList.add('imageInLightBox');
-
-
-
-  lightBoxContent.appendChild(imageElement);
-
-  }
-*/
-window.Lightbox = {
-    close : function() {
-	var lightBox = document.getElementById('lightBox');
-	var dimOverlay = document.getElementById('dimOverlay');
-	lightBox.parentNode.removeChild(lightBox);
-	dimOverlay.parentNode.removeChild(dimOverlay);
-    },
-
-    addElement : function (element) {
-	var lightBoxContent = document.getElementById('lightBoxContent');
-	if (lightBoxContent != null)
-	    lightBoxContent.appendChild(element);
-    },
-
-    clear : function () {
-	var lightBoxContent = document.getElementById('lightBoxContent');
-	if (lightBoxContent != null)
-	    lightBoxContent.innerHTML = "";
-    },
-
-    displayLRSSettings : function() {
-    	document.getElementById('lightBoxContent').style.display = 'none';
-    	document.getElementById('lightBoxContentSecondary').style.display = 'block';
-    	var settingsObject = window.Lightbox.getLRSSettings();
-    	$('#lrsURLInput').val(settingsObject.lrsURL);
-    	$('#lrsPasswordInput').val(settingsObject.lrsPassword);
-    	$('#lrsTokenInput').val(settingsObject.lrsToken);
-      $('#lrsUsernameInput').val(settingsObject.lrsUsername);
-    },
-
-    closeLRSSettings : function() {
-    	document.getElementById('lightBoxContentSecondary').style.display = 'none';
-    	document.getElementById('lightBoxContent').style.display = 'block';
-    },
-
-    saveLRSSettings : function() {
-    	var lrsURL = $('#lrsURLInput').val();
-    	var lrsPassword = $('#lrsPasswordInput').val();
-    	var lrsToken = $('#lrsTokenInput').val();
-      var lrsUsername = $('#lrsUsernameInput').val();
-
-    	var settingsObject = {
-    		"lrsURL": lrsURL,
-    		"lrsPassword": lrsPassword,
-    		"lrsToken": lrsToken,
-        "lrsUsername": lrsUsername
-    	};
-    	localStorage.setItem("LRSAuth", JSON.stringify(settingsObject));
-    },
-
-    initDefaultLRSSettings : function(reset) {
-    	var lrsURL = "https://lrs.peblproject.com/data/xAPI/";
-    	var lrsPassword = null;
-    	var lrsToken = "NTYwNGUyMjk5NTU5NzQ2ZmE4NjMxN2RiMzAwYTU5NTIyNTBkZWM2OTo5YzI5ZjU0MTgyMDhiZmZiNmJkZjczZjcwNzNiNTdlNzA5OTQ2YTU1";
-      var lrsUsername = null;
-    	var currentSettings = window.Lightbox.getLRSSettings();
-
-    	var settingsObject = {
-    		"lrsURL": lrsURL,
-    		"lrsPassword": lrsPassword,
-    		"lrsToken": lrsToken,
-        "lrsUsername": lrsUsername
-    	};
-    	if (reset || currentSettings == null)
-    		localStorage.setItem("LRSAuth", JSON.stringify(settingsObject));
-    },
-
-    getLRSSettings : function() {
-    	var settingsObject = localStorage.getItem("LRSAuth");
-    	return JSON.parse(settingsObject);
-    },
-
-    getLRSURL : function(callback) {
-    	var settingsObject = window.Lightbox.getLRSSettings();
-    	callback(settingsObject.lrsURL);
-    },
-
-    getLRSPassword : function(callback) {
-    	var settingsObject = window.Lightbox.getLRSSettings();
-    	var lrsPassword;
-    	if (settingsObject.lrsPassword != null && settingsObject.lrsPassword.length > 0)
-    		lrsPassword = settingsObject.lrsPassword;
-    	else
-    		lrsPassword = null;
-    	callback(lrsPassword);
-    },
-
-    getLRSToken : function(callback) {
-    	var settingsObject = window.Lightbox.getLRSSettings();
-    	var lrsToken;
-    	if (settingsObject.lrsToken != null && settingsObject.lrsToken.length > 0)
-    		lrsToken = settingsObject.lrsToken;
-    	else
-    		lrsToken = null;
-    	callback(lrsToken);
-    },
-
-    getLRSUsername : function(callback) {
-      var settingsObject = window.Lightbox.getLRSSettings();
-      var lrsUsername;
-      if (settingsObject.lrsUsername != null && settingsObject.lrsUsername.length > 0)
-        lrsUsername = settingsObject.lrsUsername;
-      else
-        lrsUsername = null;
-      callback(lrsUsername);
-    },
-
-    createLoginForm : function () {
-	window.Lightbox.create("login", false);
-
-	var lightBoxContent = document.getElementById('lightBoxContent');
-	var lightBoxContentSecondary = document.getElementById('lightBoxContentSecondary');
-	
-	var selects = $('<br/>Select your username:<br/><br/><select id="loginUserNameSelector"><option>Learner</option><option>Learner1</option><option>Learner2</option><option>Learner3</option><option>Learner5</option><option>Learner7</option></select>');
-	lightBoxContent.appendChild(selects[0]);
-	lightBoxContent.appendChild(selects[1]);
-	lightBoxContent.appendChild(selects[2]);
-	lightBoxContent.appendChild(selects[3]);
-	lightBoxContent.appendChild(selects[4]);
-
-	var login = $('<br/><br/><input type="button" value="Login" id="loginUserNameSubmit" />');
-	lightBoxContent.appendChild(login[0]);
-	lightBoxContent.appendChild(login[1]);
-	lightBoxContent.appendChild(login[2]);
-
-	var lrsSettingsButton = $('<button id="lrsSettingsButton" onclick="window.Lightbox.displayLRSSettings();">LRS Settings</button>');
-	lightBoxContent.appendChild(lrsSettingsButton[0]);
-
-  var lrsSettingsHeader = $('<h4>Enter either a username and password, or a token.</h4>');
-	var lrsURLInput = $('<p>LRS URL: <input type="text" id="lrsURLInput" /></p>');
-  var lrsUsernameInput = $('<p>LRS Username: <input type="text" id="lrsUsernameInput" /></p>');
-	var lrsPasswordInput = $('<p>LRS Password: <input type="text" id="lrsPasswordInput" /></p><p>OR</p>');
-	var lrsTokenInput = $('<p>LRS Token: <input type="text" id="lrsTokenInput" /></p>');
-	var lrsCancelButton = $('<button id="lrsCancelButton" onclick="window.Lightbox.closeLRSSettings();">Cancel</button>');
-	var lrsSaveButton = $('<button id="lrsSaveButton" onclick="window.Lightbox.saveLRSSettings();window.Lightbox.closeLRSSettings();">Save</button>');
-	var lrsDefaultButton = $('<button id="lrsDefaultButton" onclick="window.Lightbox.initDefaultLRSSettings(true);window.Lightbox.displayLRSSettings();">Load Defaults</button>');
-
-  lightBoxContentSecondary.appendChild(lrsSettingsHeader[0]);
-	lightBoxContentSecondary.appendChild(lrsURLInput[0]);
-  lightBoxContentSecondary.appendChild(lrsUsernameInput[0]);
-	lightBoxContentSecondary.appendChild(lrsPasswordInput[0]);
-	lightBoxContentSecondary.appendChild(lrsPasswordInput[1]);
-	lightBoxContentSecondary.appendChild(lrsTokenInput[0]);
-	lightBoxContentSecondary.appendChild(lrsCancelButton[0]);
-	lightBoxContentSecondary.appendChild(lrsSaveButton[0]);
-	lightBoxContentSecondary.appendChild(lrsDefaultButton[0]);
-    },
-
-    createLoginFormWithFields : function () {
-	window.Lightbox.create("login", false);
-
-	var lightBoxContent = $(document.getElementById('lightBoxContent'));
-	
-	var username = $('<br/><span>Moodle Login Form</span><br/><input type="text" id="loginUserName" placeholder="Username" />');
-	lightBoxContent.append(username);
-	var password = $('<br/><input type="password" id="loginPassword" placeholder="Password" />');
-	lightBoxContent.append(password);
-	var error = $('<br/><span id="loginError" style="color:red;display:none;">Invalid username or password.</span>');
-	lightBoxContent.append(error);
-	
-	var login = $('<br/><br/><input type="button" value="Login" id="loginUserNameSubmit" /><br/>');
-	lightBoxContent.append(login);
-    },
-    
-    create : function (lightBoxType, allowClickOut) {
-	var lightBox,
-        lightBoxContent,
-        lightBoxContentSecondary,
-        dimOverlay;
-
-	lightBox = document.createElement('div');
-	lightBox.id = 'lightBox';
-	if (lightBoxType === 'discussion') {
-            lightBox.classList.add('lightBox');
-	} else if (lightBoxType ==='image') {
-            lightBox.classList.add('lightBoxImage');
-	} else if (lightBoxType ==='login') {
-	    lightBox.classList.add('lightBox');
-	    lightBox.classList.add('lightBoxLoginForm');
-	}
-	
-	lightBoxContent = document.createElement('div');
-	lightBoxContent.classList.add('lightBoxContent');
-	lightBoxContentSecondary = document.createElement('div');
-	lightBoxContentSecondary.id = 'lightBoxContentSecondary';
-	lightBoxContentSecondary.style.display = 'none';
-	if (lightBoxType === 'image') {
-            lightBoxContent.classList.add('lightBoxContentImage');
-	}
-	lightBoxContent.id = 'lightBoxContent';
-	lightBox.appendChild(lightBoxContent);
-	lightBox.appendChild(lightBoxContentSecondary);
-
-	dimOverlay = document.createElement('div');
-	dimOverlay.id = 'dimOverlay';
-	dimOverlay.classList.add('dimOverlay');
-
-	document.body.appendChild(dimOverlay);
-	document.body.appendChild(lightBox);
-
-	$('.dimOverlay').on('click', function() {
-            if ($('#lightBox').is(':visible')) {
-		if (allowClickOut)
-		    window.Lightbox.close();
-            }
-	});
-    }
-}
 window.FakeCompetency = {
     "getCompetencies" : function (user) {
 	return window.FakeCompetency[user];
@@ -23378,27 +23129,27 @@ window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.ms
 
 window.IndexedDBStorageAdapterExists = window.indexedDB != null;
 
-function iOS() {
+// function iOS() {
 
-  var iDevices = [
-    'iPad Simulator',
-    'iPhone Simulator',
-    'iPod Simulator',
-    'iPad',
-    'iPhone',
-    'iPod'
-  ];
+//   var iDevices = [
+//     'iPad Simulator',
+//     'iPhone Simulator',
+//     'iPod Simulator',
+//     'iPad',
+//     'iPhone',
+//     'iPod'
+//   ];
 
-  if (!!navigator.platform) {
-    while (iDevices.length) {
-      if (navigator.platform === iDevices.pop()){ return true; }
-    }
-  }
+//   if (!!navigator.platform) {
+//     while (iDevices.length) {
+//       if (navigator.platform === iDevices.pop()){ return true; }
+//     }
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
-var isIOS = iOS();
+// var isIOS = iOS();
 
 /* constants */
 var MASTER_INDEX = "master";
@@ -23488,11 +23239,11 @@ window.IndexedDBInterop = function (readyCallback) {
 
 	eventStore.createIndex(MASTER_INDEX, ["identity", "containerPath"]);
 	annotationStore.createIndex(MASTER_INDEX, ["identity", "containerPath"]);
-	competencyStore.createIndex(MASTER_INDEX, ["identity"]);
-	generalAnnotationStore.createIndex(MASTER_INDEX, ["containerPath"]);
-	outgoingStore.createIndex(MASTER_INDEX, ["identity"]);
+	competencyStore.createIndex(MASTER_INDEX, "identity");
+	generalAnnotationStore.createIndex(MASTER_INDEX, "containerPath");
+	outgoingStore.createIndex(MASTER_INDEX, "identity");
 	messageStore.createIndex(MASTER_INDEX, ["identity", "thread"]);
-	notificationStore.createIndex(MASTER_INDEX, ["identity"]);
+	notificationStore.createIndex(MASTER_INDEX, "identity");
 	tocStore.createIndex(MASTER_INDEX, ["identity", "containerPath"]);
     };
 
@@ -23608,10 +23359,17 @@ window.IndexedDBInterop.prototype.getEvents = function(user, containerPath, call
 window.IndexedDBInterop.prototype.getCompetencies = function(user, callback) {
     var os = this.db.transaction(["competencies"], "readonly").objectStore("competencies");
     var index = os.index(MASTER_INDEX);
-    var param = isIOS ? user.identity : [user.identity];
+    var param = user.identity;
     getAll(index,
 	   window.IDBKeyRange.only(param),
-	   callback);
+	   function (arr) {
+	       if (arr.length == 0)
+		   getAll(index,
+			  window.IDBKeyRange.only([param]),
+			  callback);
+	       else
+		   callback(arr);
+	   });
 };
 
 window.IndexedDBInterop.prototype.setCompetencies = function(user, competenciesMap) {
@@ -23688,10 +23446,17 @@ window.IndexedDBInterop.prototype.addNotification = function(user, notification)
 window.IndexedDBInterop.prototype.getNotifications = function(user, callback) {
     var os = this.db.transaction(["notifications"], "readonly").objectStore("notifications");
     var index = os.index(MASTER_INDEX);
-    var param = isIOS ? user.identity : [user.identity];
+    var param = user.identity;
     getAll(index,
 	   window.IDBKeyRange.only(param),
-	   callback);
+	   function (arr) {
+	       if (arr.length == 0)
+		   getAll(index,
+			  window.IDBKeyRange.only([param]),
+			  callback);
+	       else
+		   callback(arr);
+	   });    
 };
 
 window.IndexedDBInterop.prototype.removeNotification = function(user, id) {
@@ -23727,6 +23492,9 @@ window.IndexedDBInterop.prototype.addToc = function(user, containerPath, data) {
 };
 
 window.IndexedDBInterop.prototype.getToc = function(user, containerPath, callback) {
+    if (containerPath == null)
+	return [];
+    
     var os = this.db.transaction(["tocs"], "readonly").objectStore("tocs");
     var index = os.index(MASTER_INDEX);
     getAll(index,
@@ -23785,10 +23553,17 @@ window.IndexedDBInterop.prototype.removeSharedAnnotation = function(user, id) {
 window.IndexedDBInterop.prototype.getGeneralAnnotations = function(user, containerPath, callback) {
     var index = this.db.transaction(["generalAnnotations"], "readonly").objectStore("generalAnnotations").index(MASTER_INDEX);
     console.log("index: " + index);
-    var param = isIOS ? containerPath : [containerPath];
+    var param = containerPath;
     getAll(index,
 	   window.IDBKeyRange.only(param),
-	   callback);
+	   function (arr) {
+	       if (arr.length == 0)
+		   getAll(index,
+			  window.IDBKeyRange.only([param]),
+			  callback);
+	       else
+		   callback(arr);
+	   });
 };
 
 window.IndexedDBInterop.prototype.getUserProfile = function(id, callback) {
@@ -23805,10 +23580,17 @@ window.IndexedDBInterop.prototype.getUserProfile = function(id, callback) {
 window.IndexedDBInterop.prototype.getOutgoing = function(user, callback) {
     var os = this.db.transaction(["outgoing"], "readonly").objectStore("outgoing");
     var index = os.index(MASTER_INDEX);
-    var param = isIOS ? user.identity : [user.identity];
+    var param = user.identity;
     getAll(index,
 	   window.IDBKeyRange.only(param),
-	   callback);
+	   function (arr) {
+	       if (arr.length == 0)
+		   getAll(index,
+			  window.IDBKeyRange.only([param]),
+			  callback);
+	       else
+		   callback(arr);
+	   });
 };
 
 
@@ -23936,17 +23718,27 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
             interval: 5
         };
 
+        var scripts = document.getElementsByTagName('script');
+        for (var i = 0; i < scripts.length; i++) {
+            if ((scripts[i].src.indexOf('keycloak.js') !== -1 || scripts[i].src.indexOf('keycloak.min.js') !== -1) && scripts[i].src.indexOf('version=') !== -1) {
+                kc.iframeVersion = scripts[i].src.substring(scripts[i].src.indexOf('version=') + 8).split('&')[0];
+            }
+        }
+
+        var useNonce = true;
+        
         kc.init = function (initOptions) {
             kc.authenticated = false;
 
             callbackStorage = createCallbackStorage();
+            var adapters = ['default', 'cordova', 'cordova-native'];
 
-            if (initOptions && initOptions.adapter === 'cordova') {
-                adapter = loadAdapter('cordova');
-            } else if (initOptions && initOptions.adapter === 'default') {
-                adapter = loadAdapter();
+            if (initOptions && adapters.indexOf(initOptions.adapter) > -1) {
+                adapter = loadAdapter(initOptions.adapter);
+            } else if (initOptions && typeof initOptions.adapter === "object") {
+                adapter = initOptions.adapter;
             } else {
-                if (window.Cordova) {
+                if (window.Cordova || window.cordova) {
                     adapter = loadAdapter('cordova');
                 } else {
                     adapter = loadAdapter();
@@ -23954,6 +23746,10 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
             }
 
             if (initOptions) {
+                if (typeof initOptions.useNonce !== 'undefined') {
+                    useNonce = initOptions.useNonce;
+                }
+
                 if (typeof initOptions.checkLoginIframe !== 'undefined') {
                     loginIframe.enable = initOptions.checkLoginIframe;
                 }
@@ -23976,19 +23772,27 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                 if (initOptions.flow) {
                     switch (initOptions.flow) {
-                    case 'standard':
-                        kc.responseType = 'code';
-                        break;
-                    case 'implicit':
-                        kc.responseType = 'id_token token';
-                        break;
-                    case 'hybrid':
-                        kc.responseType = 'code id_token token';
-                        break;
-                    default:
-                        throw 'Invalid value for flow';
+                        case 'standard':
+                            kc.responseType = 'code';
+                            break;
+                        case 'implicit':
+                            kc.responseType = 'id_token token';
+                            break;
+                        case 'hybrid':
+                            kc.responseType = 'code id_token token';
+                            break;
+                        default:
+                            throw 'Invalid value for flow';
                     }
                     kc.flow = initOptions.flow;
+                }
+
+                if (initOptions.timeSkew != null) {
+                    kc.timeSkew = initOptions.timeSkew;
+                }
+
+                if(initOptions.redirectUri) {
+                    kc.redirectUri = initOptions.redirectUri;
                 }
             }
 
@@ -24026,24 +23830,24 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                 var options = {};
                 switch (initOptions.onLoad) {
-                case 'check-sso':
-                    if (loginIframe.enable) {
-                        setupCheckLoginIframe().success(function() {
-                            checkLoginIframe().success(function () {
-                                doLogin(false);
-                            }).error(function () {
-                                initPromise.setSuccess();
+                    case 'check-sso':
+                        if (loginIframe.enable) {
+                            setupCheckLoginIframe().success(function() {
+                                checkLoginIframe().success(function () {
+                                    doLogin(false);
+                                }).error(function () {
+                                    initPromise.setSuccess();
+                                });
                             });
-                        });
-                    } else {
-                        doLogin(false);
-                    }
-                    break;
-                case 'login-required':
-                    doLogin(true);
-                    break;
-                default:
-                    throw 'Invalid value for onLoad';
+                        } else {
+                            doLogin(false);
+                        }
+                        break;
+                    case 'login-required':
+                        doLogin(true);
+                        break;
+                    default:
+                        throw 'Invalid value for onLoad';
                 }
             }
 
@@ -24051,12 +23855,17 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                 var callback = parseCallback(window.location.href);
 
                 if (callback) {
-                    setupCheckLoginIframe();
                     window.history.replaceState({}, null, callback.newUrl);
-                    processCallback(callback, initPromise);
-                    return;
+                }
+
+                if (callback && callback.valid) {
+                    return setupCheckLoginIframe().success(function() {
+                        processCallback(callback, initPromise);
+                    }).error(function (e) {
+                        initPromise.setError();
+                    });
                 } else if (initOptions) {
-                    if (initOptions.token || initOptions.refreshToken) {
+                    if (initOptions.token && initOptions.refreshToken) {
                         setToken(initOptions.token, initOptions.refreshToken, initOptions.idToken);
 
                         if (loginIframe.enable) {
@@ -24065,12 +23874,8 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                                     kc.onAuthSuccess && kc.onAuthSuccess();
                                     initPromise.setSuccess();
                                 }).error(function () {
-                                    kc.onAuthError && kc.onAuthError();
-                                    if (initOptions.onLoad) {
-                                        onLoad();
-                                    } else {
-                                        initPromise.setError();
-                                    }
+                                    setToken(null, null, null);
+                                    initPromise.setSuccess();
                                 });
                             });
                         } else {
@@ -24113,28 +23918,47 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
             var nonce = createUUID();
 
             var redirectUri = adapter.redirectUri(options);
+
+            var callbackState = {
+                state: state,
+                nonce: nonce,
+                redirectUri: encodeURIComponent(redirectUri)
+            }
+
             if (options && options.prompt) {
-                redirectUri += (redirectUri.indexOf('?') == -1 ? '?' : '&') + 'prompt=' + options.prompt;
+                callbackState.prompt = options.prompt;
             }
 
-            callbackStorage.add({ state: state, nonce: nonce, redirectUri: encodeURIComponent(redirectUri) });
+            callbackStorage.add(callbackState);
 
-            var action = 'auth';
+            var baseUrl;
             if (options && options.action == 'register') {
-                action = 'registrations';
+                baseUrl = kc.endpoints.register();
+            } else {
+                baseUrl = kc.endpoints.authorize();
             }
 
-            var scope = (options && options.scope) ? "openid " + options.scope : "openid";
+            var scope;
+            if (options && options.scope) {
+                if (options.scope.indexOf("openid") != -1) {
+                    scope = options.scope;
+                } else {
+                    scope = "openid " + options.scope;
+                }
+            } else {
+                scope = "openid";
+            }
 
-            var url = getRealmUrl()
-                + '/protocol/openid-connect/' + action
+            var url = baseUrl
                 + '?client_id=' + encodeURIComponent(kc.clientId)
                 + '&redirect_uri=' + encodeURIComponent(redirectUri)
                 + '&state=' + encodeURIComponent(state)
-                + '&nonce=' + encodeURIComponent(nonce)
                 + '&response_mode=' + encodeURIComponent(kc.responseMode)
                 + '&response_type=' + encodeURIComponent(kc.responseType)
                 + '&scope=' + encodeURIComponent(scope);
+                if (useNonce) {
+                    url = url + '&nonce=' + encodeURIComponent(nonce);
+                }
 
             if (options && options.prompt) {
                 url += '&prompt=' + encodeURIComponent(options.prompt);
@@ -24155,6 +23979,10 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
             if (options && options.locale) {
                 url += '&ui_locales=' + encodeURIComponent(options.locale);
             }
+            
+            if (options && options.kcLocale) {
+                url += '&kc_locale=' + encodeURIComponent(options.kcLocale);
+            }
 
             return url;
         }
@@ -24164,8 +23992,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         }
 
         kc.createLogoutUrl = function(options) {
-            var url = getRealmUrl()
-                + '/protocol/openid-connect/logout'
+            var url = kc.endpoints.logout()
                 + '?redirect_uri=' + encodeURIComponent(adapter.redirectUri(options, false));
 
             return url;
@@ -24184,11 +24011,14 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         }
 
         kc.createAccountUrl = function(options) {
-            var url = getRealmUrl()
+            var realm = getRealmUrl();
+            var url = undefined;
+            if (typeof realm !== 'undefined') {
+                url = realm
                 + '/account'
                 + '?referrer=' + encodeURIComponent(kc.clientId)
                 + '&referrer_uri=' + encodeURIComponent(adapter.redirectUri(options));
-
+            }
             return url;
         }
 
@@ -24236,7 +24066,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         }
 
         kc.loadUserInfo = function() {
-            var url = getRealmUrl() + '/protocol/openid-connect/userinfo';
+            var url = kc.endpoints.userinfo();
             var req = new XMLHttpRequest();
             req.open('GET', url, true);
             req.setRequestHeader('Accept', 'application/json');
@@ -24265,6 +24095,11 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                 throw 'Not authenticated';
             }
 
+            if (kc.timeSkew == null) {
+                console.info('[KEYCLOAK] Unable to determine if token is expired as timeskew is not set');
+                return true;
+            }
+
             var expiresIn = kc.tokenParsed['exp'] - Math.ceil(new Date().getTime() / 1000) + kc.timeSkew;
             if (minValidity) {
                 expiresIn -= minValidity;
@@ -24275,7 +24110,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         kc.updateToken = function(minValidity) {
             var promise = createPromise();
 
-            if (!kc.tokenParsed || !kc.refreshToken) {
+            if (!kc.refreshToken) {
                 promise.setError();
                 return promise.promise;
             }
@@ -24284,14 +24119,10 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
             var exec = function() {
                 var refreshToken = false;
-                if (kc.timeSkew == -1) {
-                    console.info('Skew ' + kc.timeSkew);
-                    refreshToken = true;
-                    console.info('[KEYCLOAK] Refreshing token: time skew not set');
-                } else if (minValidity == -1) {
+                if (minValidity == -1) {
                     refreshToken = true;
                     console.info('[KEYCLOAK] Refreshing token: forced refresh');
-                } else if (kc.isTokenExpired(minValidity)) {
+                } else if (!kc.tokenParsed || kc.isTokenExpired(minValidity)) {
                     refreshToken = true;
                     console.info('[KEYCLOAK] Refreshing token: token expired');
                 }
@@ -24300,7 +24131,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                     promise.setSuccess(false);
                 } else {
                     var params = 'grant_type=refresh_token&' + 'refresh_token=' + kc.refreshToken;
-                    var url = getRealmUrl() + '/protocol/openid-connect/token';
+                    var url = kc.endpoints.token();
 
                     refreshQueue.push(promise);
 
@@ -24335,6 +24166,10 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                                     }
                                 } else {
                                     console.warn('[KEYCLOAK] Failed to refresh token');
+
+                                    if (req.status == 400) {
+                                        kc.clearToken();
+                                    }
 
                                     kc.onAuthRefreshError && kc.onAuthRefreshError();
                                     for (var p = refreshQueue.pop(); p != null; p = refreshQueue.pop()) {
@@ -24374,10 +24209,14 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         }
 
         function getRealmUrl() {
-            if (kc.authServerUrl.charAt(kc.authServerUrl.length - 1) == '/') {
-                return kc.authServerUrl + 'realms/' + encodeURIComponent(kc.realm);
+            if (typeof kc.authServerUrl !== 'undefined') {
+                if (kc.authServerUrl.charAt(kc.authServerUrl.length - 1) == '/') {
+                    return kc.authServerUrl + 'realms/' + encodeURIComponent(kc.realm);
+                } else {
+                    return kc.authServerUrl + '/realms/' + encodeURIComponent(kc.realm);
+                }
             } else {
-                return kc.authServerUrl + '/realms/' + encodeURIComponent(kc.realm);
+            	return undefined;
             }
         }
 
@@ -24411,7 +24250,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
             if ((kc.flow != 'implicit') && code) {
                 var params = 'code=' + code + '&grant_type=authorization_code';
-                var url = getRealmUrl() + '/protocol/openid-connect/token';
+                var url = kc.endpoints.token();
 
                 var req = new XMLHttpRequest();
                 req.open('POST', url, true);
@@ -24448,9 +24287,9 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                 setToken(accessToken, refreshToken, idToken, timeLocal);
 
-                if ((kc.tokenParsed && kc.tokenParsed.nonce != oauth.storedNonce) ||
+                if (useNonce && ((kc.tokenParsed && kc.tokenParsed.nonce != oauth.storedNonce) ||
                     (kc.refreshTokenParsed && kc.refreshTokenParsed.nonce != oauth.storedNonce) ||
-                    (kc.idTokenParsed && kc.idTokenParsed.nonce != oauth.storedNonce)) {
+                    (kc.idTokenParsed && kc.idTokenParsed.nonce != oauth.storedNonce))) {
 
                     console.info('[KEYCLOAK] Invalid nonce, clearing token');
                     kc.clearToken();
@@ -24475,6 +24314,65 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                 configUrl = config;
             }
 
+            function setupOidcEndoints(oidcConfiguration) {
+                if (! oidcConfiguration) {
+                    kc.endpoints = {
+                        authorize: function() {
+                            return getRealmUrl() + '/protocol/openid-connect/auth';
+                        },
+                        token: function() {
+                            return getRealmUrl() + '/protocol/openid-connect/token';
+                        },
+                        logout: function() {
+                            return getRealmUrl() + '/protocol/openid-connect/logout';
+                        },
+                        checkSessionIframe: function() {
+                            var src = getRealmUrl() + '/protocol/openid-connect/login-status-iframe.html';
+                            if (kc.iframeVersion) {
+                              src = src + '?version=' + kc.iframeVersion;
+                            }
+                            return src;
+                        },
+                        register: function() {
+                            return getRealmUrl() + '/protocol/openid-connect/registrations';
+                        },
+                        userinfo: function() {
+                            return getRealmUrl() + '/protocol/openid-connect/userinfo';
+                        }
+                    };
+                } else {
+                    kc.endpoints = {
+                        authorize: function() {
+                            return oidcConfiguration.authorization_endpoint;
+                        },
+                        token: function() {
+                            return oidcConfiguration.token_endpoint;
+                        },
+                        logout: function() {
+                            if (!oidcConfiguration.end_session_endpoint) {
+                                throw "Not supported by the OIDC server";
+                            }
+                            return oidcConfiguration.end_session_endpoint;
+                        },
+                        checkSessionIframe: function() {
+                            if (!oidcConfiguration.check_session_iframe) {
+                                throw "Not supported by the OIDC server";
+                            }
+                            return oidcConfiguration.check_session_iframe;
+                        },
+                        register: function() {
+                            throw 'Redirection to "Register user" page not supported in standard OIDC mode';
+                        },
+                        userinfo: function() {
+                            if (!oidcConfiguration.userinfo_endpoint) {
+                                throw "Not supported by the OIDC server";
+                            }
+                            return oidcConfiguration.userinfo_endpoint;
+                        }
+                    }
+                }
+            }
+
             if (configUrl) {
                 var req = new XMLHttpRequest();
                 req.open('GET', configUrl, true);
@@ -24482,14 +24380,14 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                 req.onreadystatechange = function () {
                     if (req.readyState == 4) {
-                        if (req.status == 200) {
+                        if (req.status == 200 || fileLoaded(req)) {
                             var config = JSON.parse(req.responseText);
 
                             kc.authServerUrl = config['auth-server-url'];
                             kc.realm = config['realm'];
                             kc.clientId = config['resource'];
                             kc.clientSecret = (config['credentials'] || {})['secret'];
-
+                            setupOidcEndoints(null);
                             promise.setSuccess();
                         } else {
                             promise.setError();
@@ -24499,82 +24397,75 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                 req.send();
             } else {
-                if (!config['url']) {
-                    var scripts = document.getElementsByTagName('script');
-                    for (var i = 0; i < scripts.length; i++) {
-                        if (scripts[i].src.match(/.*keycloak\.js/)) {
-                            config.url = scripts[i].src.substr(0, scripts[i].src.indexOf('/js/keycloak.js'));
-                            break;
-                        }
-                    }
-                }
-
-                if (!config.realm) {
-                    throw 'realm missing';
-                }
-
                 if (!config.clientId) {
                     throw 'clientId missing';
                 }
 
-                kc.authServerUrl = config.url;
-                kc.realm = config.realm;
                 kc.clientId = config.clientId;
                 kc.clientSecret = (config.credentials || {}).secret;
 
-                promise.setSuccess();
+                var oidcProvider = config['oidcProvider'];
+                if (!oidcProvider) {
+                    if (!config['url']) {
+                        var scripts = document.getElementsByTagName('script');
+                        for (var i = 0; i < scripts.length; i++) {
+                            if (scripts[i].src.match(/.*keycloak\.js/)) {
+                                config.url = scripts[i].src.substr(0, scripts[i].src.indexOf('/js/keycloak.js'));
+                                break;
+                            }
+                        }
+                    }
+                    if (!config.realm) {
+                        throw 'realm missing';
+                    }
+
+                    kc.authServerUrl = config.url;
+                    kc.realm = config.realm;
+                    setupOidcEndoints(null);
+                    promise.setSuccess();
+                } else {
+                    if (typeof oidcProvider === 'string') {
+                        var oidcProviderConfigUrl;
+                        if (oidcProvider.charAt(oidcProvider.length - 1) == '/') {
+                            oidcProviderConfigUrl = oidcProvider + '.well-known/openid-configuration';
+                        } else {
+                            oidcProviderConfigUrl = oidcProvider + '/.well-known/openid-configuration';
+                        }
+                        var req = new XMLHttpRequest();
+                        req.open('GET', oidcProviderConfigUrl, true);
+                        req.setRequestHeader('Accept', 'application/json');
+
+                        req.onreadystatechange = function () {
+                            if (req.readyState == 4) {
+                                if (req.status == 200 || fileLoaded(req)) {
+                                    var oidcProviderConfig = JSON.parse(req.responseText);
+                                    setupOidcEndoints(oidcProviderConfig);
+                                    promise.setSuccess();
+                                } else {
+                                    promise.setError();
+                                }
+                            }
+                        };
+
+                        req.send();
+                    } else {
+                        setupOidcEndoints(oidcProvider);
+                        promise.setSuccess();
+                    }
+                }
             }
 
             return promise.promise;
+        }
+
+        function fileLoaded(xhr) {
+            return xhr.status == 0 && xhr.responseText && xhr.responseURL.startsWith('file:');
         }
 
         function setToken(token, refreshToken, idToken, timeLocal) {
             if (kc.tokenTimeoutHandle) {
                 clearTimeout(kc.tokenTimeoutHandle);
                 kc.tokenTimeoutHandle = null;
-            }
-
-            if (token) {
-                kc.token = token;
-                kc.tokenParsed = decodeToken(token);
-                var sessionId = kc.realm + '/' + kc.tokenParsed.sub;
-                if (kc.tokenParsed.session_state) {
-                    sessionId = sessionId + '/' + kc.tokenParsed.session_state;
-                }
-                kc.sessionId = sessionId;
-                kc.authenticated = true;
-                kc.subject = kc.tokenParsed.sub;
-                kc.realmAccess = kc.tokenParsed.realm_access;
-                kc.resourceAccess = kc.tokenParsed.resource_access;
-
-                if (timeLocal) {
-                    kc.timeSkew = Math.floor(timeLocal / 1000) - kc.tokenParsed.iat;
-                    console.info('[KEYCLOAK] Estimated time difference between browser and server is ' + kc.timeSkew + ' seconds');
-                } else {
-                    kc.timeSkew = -1;
-                }
-
-                if (kc.onTokenExpired) {
-                    if (kc.timeSkew == -1) {
-                        kc.onTokenExpired();
-                    } else {
-                        var expiresIn = (kc.tokenParsed['exp'] - (new Date().getTime() / 1000) + kc.timeSkew) * 1000;
-                        if (expiresIn <= 0) {
-                            kc.onTokenExpired();
-                        } else {
-                            kc.tokenTimeoutHandle = setTimeout(kc.onTokenExpired, expiresIn);
-                        }
-                    }
-                }
-
-            } else {
-                delete kc.token;
-                delete kc.tokenParsed;
-                delete kc.subject;
-                delete kc.realmAccess;
-                delete kc.resourceAccess;
-
-                kc.authenticated = false;
             }
 
             if (refreshToken) {
@@ -24592,6 +24483,42 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                 delete kc.idToken;
                 delete kc.idTokenParsed;
             }
+
+            if (token) {
+                kc.token = token;
+                kc.tokenParsed = decodeToken(token);
+                kc.sessionId = kc.tokenParsed.session_state;
+                kc.authenticated = true;
+                kc.subject = kc.tokenParsed.sub;
+                kc.realmAccess = kc.tokenParsed.realm_access;
+                kc.resourceAccess = kc.tokenParsed.resource_access;
+
+                if (timeLocal) {
+                    kc.timeSkew = Math.floor(timeLocal / 1000) - kc.tokenParsed.iat;
+                }
+
+                if (kc.timeSkew != null) {
+                    console.info('[KEYCLOAK] Estimated time difference between browser and server is ' + kc.timeSkew + ' seconds');
+
+                    if (kc.onTokenExpired) {
+                        var expiresIn = (kc.tokenParsed['exp'] - (new Date().getTime() / 1000) + kc.timeSkew) * 1000;
+                        console.info('[KEYCLOAK] Token expires in ' + Math.round(expiresIn / 1000) + ' s');
+                        if (expiresIn <= 0) {
+                            kc.onTokenExpired();
+                        } else {
+                            kc.tokenTimeoutHandle = setTimeout(kc.onTokenExpired, expiresIn);
+                        }
+                    }
+                }
+            } else {
+                delete kc.token;
+                delete kc.tokenParsed;
+                delete kc.subject;
+                delete kc.realmAccess;
+                delete kc.resourceAccess;
+
+                kc.authenticated = false;
+            }
         }
 
         function decodeToken(str) {
@@ -24602,15 +24529,15 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
             switch (str.length % 4)
             {
                 case 0:
-                break;
+                    break;
                 case 2:
-                str += '==';
-                break;
+                    str += '==';
+                    break;
                 case 3:
-                str += '=';
-                break;
+                    str += '=';
+                    break;
                 default:
-                throw 'Invalid token';
+                    throw 'Invalid token';
             }
 
             str = (str + '===').slice(0, str.length + (str.length % 4));
@@ -24644,22 +24571,137 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         }
 
         function parseCallback(url) {
-            var oauth = new CallbackParser(url, kc.responseMode).parseUri();
+            var oauth = parseCallbackUrl(url);
+            if (!oauth) {
+                return;
+            }
+
             var oauthState = callbackStorage.get(oauth.state);
 
-            if (oauthState && (oauth.code || oauth.error || oauth.access_token || oauth.id_token)) {
+            if (oauthState) {
+                oauth.valid = true;
                 oauth.redirectUri = oauthState.redirectUri;
                 oauth.storedNonce = oauthState.nonce;
+                oauth.prompt = oauthState.prompt;
+            }
 
-                if (oauth.fragment) {
-                    oauth.newUrl += '#' + oauth.fragment;
+            return oauth;
+        }
+
+        function parseCallbackUrl(url) {
+            var supportedParams;
+            switch (kc.flow) {
+                case 'standard':
+                    supportedParams = ['code', 'state', 'session_state'];
+                    break;
+                case 'implicit':
+                    supportedParams = ['access_token', 'id_token', 'state', 'session_state'];
+                    break;
+                case 'hybrid':
+                    supportedParams = ['access_token', 'id_token', 'code', 'state', 'session_state'];
+                    break;
+            }
+
+            supportedParams.push('error');
+            supportedParams.push('error_description');
+            supportedParams.push('error_uri');
+
+            var queryIndex = url.indexOf('?');
+            var fragmentIndex = url.indexOf('#');
+
+            var newUrl;
+            var parsed;
+
+            if (kc.responseMode === 'query' && queryIndex !== -1) {
+                newUrl = url.substring(0, queryIndex);
+                parsed = parseCallbackParams(url.substring(queryIndex + 1, fragmentIndex !== -1 ? fragmentIndex : url.length), supportedParams);
+                if (parsed.paramsString !== '') {
+                    newUrl += '?' + parsed.paramsString;
                 }
+                if (fragmentIndex !== -1) {
+                    newUrl += url.substring(fragmentIndex);
+                }
+            } else if (kc.responseMode === 'fragment' && fragmentIndex !== -1) {
+                newUrl = url.substring(0, fragmentIndex);
+                parsed = parseCallbackParams(url.substring(fragmentIndex + 1), supportedParams);
+                if (parsed.paramsString !== '') {
+                    newUrl += '#' + parsed.paramsString;
+                }
+            }
 
-                return oauth;
+            if (parsed && parsed.oauthParams) {
+                if (kc.flow === 'standard' || kc.flow === 'hybrid') {
+                    if ((parsed.oauthParams.code || parsed.oauthParams.error) && parsed.oauthParams.state) {
+                        parsed.oauthParams.newUrl = newUrl;
+                        return parsed.oauthParams;
+                    }
+                } else if (kc.flow === 'implicit') {
+                    if ((parsed.oauthParams.access_token || parsed.oauthParams.error) && parsed.oauthParams.state) {
+                        parsed.oauthParams.newUrl = newUrl;
+                        return parsed.oauthParams;
+                    }
+                }
             }
         }
 
+        function parseCallbackParams(paramsString, supportedParams) {
+            var p = paramsString.split('&');
+            var result = {
+                paramsString: '',
+                oauthParams: {}
+            }
+            for (var i = 0; i < p.length; i++) {
+                var t = p[i].split('=');
+                if (supportedParams.indexOf(t[0]) !== -1) {
+                    result.oauthParams[t[0]] = t[1];
+                } else {
+                    if (result.paramsString !== '') {
+                        result.paramsString += '&';
+                    }
+                    result.paramsString += p[i];
+                }
+            }
+            return result;
+        }
+
         function createPromise() {
+            if (typeof Promise === "function") {
+                return createNativePromise();
+            } else {
+                return createLegacyPromise();
+            }
+        }
+
+        function createNativePromise() {
+            // Need to create a native Promise which also preserves the
+            // interface of the custom promise type previously used by the API
+            var p = {
+                setSuccess: function(result) {
+                    p.success = true;
+                    p.resolve(result);
+                },
+
+                setError: function(result) {
+                    p.success = false;
+                    p.reject(result);
+                }
+            };
+            p.promise = new Promise(function(resolve, reject) {
+                p.resolve = resolve;
+                p.reject = reject;
+            });
+            p.promise.success = function(callback) {
+                p.promise.then(callback);
+                return p.promise;
+            }
+            p.promise.error = function(callback) {
+                p.promise.catch(callback);
+                return p.promise;
+            }
+            return p;
+        }
+
+        function createLegacyPromise() {
             var p = {
                 setSuccess: function(result) {
                     p.success = true;
@@ -24716,39 +24758,46 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
             loginIframe.iframe = iframe;
 
             iframe.onload = function() {
-                var realmUrl = getRealmUrl();
-                if (realmUrl.charAt(0) === '/') {
+                var authUrl = kc.endpoints.authorize();
+                if (authUrl.charAt(0) === '/') {
                     loginIframe.iframeOrigin = getOrigin();
                 } else {
-                    loginIframe.iframeOrigin = realmUrl.substring(0, realmUrl.indexOf('/', 8));
+                    loginIframe.iframeOrigin = authUrl.substring(0, authUrl.indexOf('/', 8));
                 }
                 promise.setSuccess();
 
                 setTimeout(check, loginIframe.interval * 1000);
             }
 
-            var src = getRealmUrl() + '/protocol/openid-connect/login-status-iframe.html';
+            var src = kc.endpoints.checkSessionIframe();
             iframe.setAttribute('src', src );
+            iframe.setAttribute('title', 'keycloak-session-iframe' );
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
 
             var messageCallback = function(event) {
-                if (event.origin !== loginIframe.iframeOrigin) {
+                if ((event.origin !== loginIframe.iframeOrigin) || (loginIframe.iframe.contentWindow !== event.source)) {
                     return;
                 }
 
-                if (event.data != "unchanged") {
+                if (!(event.data == 'unchanged' || event.data == 'changed' || event.data == 'error')) {
+                    return;
+                }
+
+
+                if (event.data != 'unchanged') {
                     kc.clearToken();
                 }
 
-                for (var i = loginIframe.callbackList.length - 1; i >= 0; --i) {
-                    var promise = loginIframe.callbackList[i];
-                    if (event.data == "unchanged") {
+                var callbacks = loginIframe.callbackList.splice(0, loginIframe.callbackList.length);
+
+                for (var i = callbacks.length - 1; i >= 0; --i) {
+                    var promise = callbacks[i];
+                    if (event.data == 'unchanged') {
                         promise.setSuccess();
                     } else {
                         promise.setError();
                     }
-                    loginIframe.callbackList.splice(i, 1);
                 }
             };
 
@@ -24800,7 +24849,12 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                     },
 
                     accountManagement : function() {
-                        window.location.href = kc.createAccountUrl();
+                        var accountUrl = kc.createAccountUrl();
+                        if (typeof accountUrl !== 'undefined') {
+                            window.location.href = accountUrl;
+                        } else {
+                            throw "Not supported by the OIDC server";
+                        }
                         return createPromise().promise;
                     },
 
@@ -24814,12 +24868,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                         } else if (kc.redirectUri) {
                             return kc.redirectUri;
                         } else {
-                            var redirectUri = location.href;
-                            if (location.hash && encodeHash) {
-                                redirectUri = redirectUri.substring(0, location.href.indexOf('#'));
-                                redirectUri += (redirectUri.indexOf('?') == -1 ? '?' : '&') + 'redirect_fragment=' + encodeURIComponent(location.hash.substring(1));
-                            }
-                            return redirectUri;
+                            return location.href;
                         }
                     }
                 };
@@ -24827,26 +24876,62 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
             if (type == 'cordova') {
                 loginIframe.enable = false;
+                var cordovaOpenWindowWrapper = function(loginUrl, target, options) {
+                    if (window.cordova && window.cordova.InAppBrowser) {
+                        // Use inappbrowser for IOS and Android if available
+                        return window.cordova.InAppBrowser.open(loginUrl, target, options);
+                    } else {
+                        return window.open(loginUrl, target, options);
+                    }
+                };
+
+                var shallowCloneCordovaOptions = function (userOptions) {
+                    if (userOptions && userOptions.cordovaOptions) {
+                        return Object.keys(userOptions.cordovaOptions).reduce(function (options, optionName) {
+                            options[optionName] = userOptions.cordovaOptions[optionName];
+                            return options;
+                        }, {});
+                    } else {
+                        return {};
+                    }
+                };
+
+                var formatCordovaOptions = function (cordovaOptions) {
+                    return Object.keys(cordovaOptions).reduce(function (options, optionName) {
+                        options.push(optionName+"="+cordovaOptions[optionName]);
+                        return options;
+                    }, []).join(",");
+                };
+
+                var createCordovaOptions = function (userOptions) {
+                    var cordovaOptions = shallowCloneCordovaOptions(userOptions);
+                    cordovaOptions.location = 'no';
+                    if (userOptions && userOptions.prompt == 'none') {
+                        cordovaOptions.hidden = 'yes';
+                    }                    
+                    return formatCordovaOptions(cordovaOptions);
+                };
 
                 return {
                     login: function(options) {
                         var promise = createPromise();
 
-                        var o = 'location=no';
-                        if (options && options.prompt == 'none') {
-                            o += ',hidden=yes';
-                        }
-
+                        var cordovaOptions = createCordovaOptions(options);
                         var loginUrl = kc.createLoginUrl(options);
-                        var ref = window.open(loginUrl, '_blank', o);
-
+                        var ref = cordovaOpenWindowWrapper(loginUrl, '_blank', cordovaOptions);
                         var completed = false;
+                        
+                        var closed = false;
+                        var closeBrowser = function() {
+                            closed = true;
+                            ref.close();
+                        };
 
                         ref.addEventListener('loadstart', function(event) {
                             if (event.url.indexOf('http://localhost') == 0) {
                                 var callback = parseCallback(event.url);
                                 processCallback(callback, promise);
-                                ref.close();
+                                closeBrowser();
                                 completed = true;
                             }
                         });
@@ -24856,12 +24941,20 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
                                 if (event.url.indexOf('http://localhost') == 0) {
                                     var callback = parseCallback(event.url);
                                     processCallback(callback, promise);
-                                    ref.close();
+                                    closeBrowser();
                                     completed = true;
                                 } else {
                                     promise.setError();
-                                    ref.close();
+                                    closeBrowser();
                                 }
+                            }
+                        });
+
+                        ref.addEventListener('exit', function(event) {
+                            if (!closed) {
+                                promise.setError({
+                                    reason: "closed_by_user"
+                                });
                             }
                         });
 
@@ -24870,9 +24963,9 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                     logout: function(options) {
                         var promise = createPromise();
-
+                        
                         var logoutUrl = kc.createLogoutUrl(options);
-                        var ref = window.open(logoutUrl, '_blank', 'location=no,hidden=yes');
+                        var ref = cordovaOpenWindowWrapper(logoutUrl, '_blank', 'location=no,hidden=yes');
 
                         var error;
 
@@ -24905,7 +24998,8 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                     register : function() {
                         var registerUrl = kc.createRegisterUrl();
-                        var ref = window.open(registerUrl, '_blank', 'location=no');
+                        var cordovaOptions = createCordovaOptions(options);
+                        var ref = cordovaOpenWindowWrapper(registerUrl, '_blank', cordovaOptions);
                         ref.addEventListener('loadstart', function(event) {
                             if (event.url.indexOf('http://localhost') == 0) {
                                 ref.close();
@@ -24915,16 +25009,89 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
                     accountManagement : function() {
                         var accountUrl = kc.createAccountUrl();
-                        var ref = window.open(accountUrl, '_blank', 'location=no');
-                        ref.addEventListener('loadstart', function(event) {
-                            if (event.url.indexOf('http://localhost') == 0) {
-                                ref.close();
-                            }
-                        });
+                        if (typeof accountUrl !== 'undefined') {
+                            var ref = cordovaOpenWindowWrapper(accountUrl, '_blank', 'location=no');
+                            ref.addEventListener('loadstart', function(event) {
+                                if (event.url.indexOf('http://localhost') == 0) {
+                                    ref.close();
+                                }
+                            });
+                        } else {
+                            throw "Not supported by the OIDC server";
+                        }
                     },
 
                     redirectUri: function(options) {
                         return 'http://localhost';
+                    }
+                }
+            }
+
+            if (type == 'cordova-native') {
+                loginIframe.enable = false;
+
+                return {
+                    login: function(options) {
+                        var promise = createPromise();
+                        var loginUrl = kc.createLoginUrl(options);
+
+                        universalLinks.subscribe('keycloak', function(event) {
+                            universalLinks.unsubscribe('keycloak');
+                            window.cordova.plugins.browsertab.close();
+                            var oauth = parseCallback(event.url);
+                            processCallback(oauth, promise);
+                        });
+
+                        window.cordova.plugins.browsertab.openUrl(loginUrl);
+                        return promise.promise;
+                    },
+
+                    logout: function(options) {
+                        var promise = createPromise();
+                        var logoutUrl = kc.createLogoutUrl(options);
+
+                        universalLinks.subscribe('keycloak', function(event) {
+                            universalLinks.unsubscribe('keycloak');
+                            window.cordova.plugins.browsertab.close();
+                            kc.clearToken();
+                            promise.setSuccess();
+                        });
+
+                        window.cordova.plugins.browsertab.openUrl(logoutUrl);
+                        return promise.promise;
+                    },
+
+                    register : function(options) {
+                        var promise = createPromise();
+                        var registerUrl = kc.createRegisterUrl(options);
+                        universalLinks.subscribe('keycloak' , function(event) {
+                            universalLinks.unsubscribe('keycloak');
+                            window.cordova.plugins.browsertab.close();
+                            var oauth = parseCallback(event.url);
+                            processCallback(oauth, promise);
+                        });
+                        window.cordova.plugins.browsertab.openUrl(registerUrl);
+                        return promise.promise;
+
+                    },
+
+                    accountManagement : function() {
+                        var accountUrl = kc.createAccountUrl();
+                        if (typeof accountUrl !== 'undefined') {
+                            window.cordova.plugins.browsertab.openUrl(accountUrl);
+                        } else {
+                            throw "Not supported by the OIDC server";
+                        }
+                    },
+
+                    redirectUri: function(options) {
+                        if (options && options.redirectUri) {
+                            return options.redirectUri;
+                        } else if (kc.redirectUri) {
+                            return kc.redirectUri;
+                        } else {
+                            return "http://localhost";
+                        }
                     }
                 }
             }
@@ -24944,7 +25111,7 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
             function clearExpired() {
                 var time = new Date().getTime();
-                for (var i = 1; i <= localStorage.length; i++)  {
+                for (var i = 0; i < localStorage.length; i++)  {
                     var key = localStorage.key(i);
                     if (key && key.indexOf('kc-callback-') == 0) {
                         var value = localStorage.getItem(key);
@@ -25050,102 +25217,6 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
 
             return new CookieStorage();
         }
-
-        var CallbackParser = function(uriToParse, responseMode) {
-            if (!(this instanceof CallbackParser)) {
-                return new CallbackParser(uriToParse, responseMode);
-            }
-            var parser = this;
-
-            var initialParse = function() {
-                var baseUri = null;
-                var queryString = null;
-                var fragmentString = null;
-
-                var questionMarkIndex = uriToParse.indexOf("?");
-                var fragmentIndex = uriToParse.indexOf("#", questionMarkIndex + 1);
-                if (questionMarkIndex == -1 && fragmentIndex == -1) {
-                    baseUri = uriToParse;
-                } else if (questionMarkIndex != -1) {
-                    baseUri = uriToParse.substring(0, questionMarkIndex);
-                    queryString = uriToParse.substring(questionMarkIndex + 1);
-                    if (fragmentIndex != -1) {
-                        fragmentIndex = queryString.indexOf("#");
-                        fragmentString = queryString.substring(fragmentIndex + 1);
-                        queryString = queryString.substring(0, fragmentIndex);
-                    }
-                } else {
-                    baseUri = uriToParse.substring(0, fragmentIndex);
-                    fragmentString = uriToParse.substring(fragmentIndex + 1);
-                }
-
-                return { baseUri: baseUri, queryString: queryString, fragmentString: fragmentString };
-            }
-
-            var parseParams = function(paramString) {
-                var result = {};
-                var params = paramString.split('&');
-                for (var i = 0; i < params.length; i++) {
-                    var p = params[i].split('=');
-                    var paramName = decodeURIComponent(p[0]);
-                    var paramValue = decodeURIComponent(p[1]);
-                    result[paramName] = paramValue;
-                }
-                return result;
-            }
-
-            var handleQueryParam = function(paramName, paramValue, oauth) {
-                var supportedOAuthParams = [ 'code', 'state', 'error', 'error_description' ];
-
-                for (var i = 0 ; i< supportedOAuthParams.length ; i++) {
-                    if (paramName === supportedOAuthParams[i]) {
-                        oauth[paramName] = paramValue;
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-
-            parser.parseUri = function() {
-                var parsedUri = initialParse();
-
-                var queryParams = {};
-                if (parsedUri.queryString) {
-                    queryParams = parseParams(parsedUri.queryString);
-                }
-
-                var oauth = { newUrl: parsedUri.baseUri };
-                for (var param in queryParams) {
-                    switch (param) {
-                    case 'redirect_fragment':
-                        oauth.fragment = queryParams[param];
-                        break;
-                    case 'prompt':
-                        oauth.prompt = queryParams[param];
-                        break;
-                    default:
-                        if (responseMode != 'query' || !handleQueryParam(param, queryParams[param], oauth)) {
-                            oauth.newUrl += (oauth.newUrl.indexOf('?') == -1 ? '?' : '&') + param + '=' + queryParams[param];
-                        }
-                        break;
-                    }
-                }
-
-                if (responseMode === 'fragment') {
-                    var fragmentParams = {};
-                    if (parsedUri.fragmentString) {
-                        fragmentParams = parseParams(parsedUri.fragmentString);
-                    }
-                    for (var param in fragmentParams) {
-                        oauth[param] = fragmentParams[param];
-                    }
-                }
-
-                return oauth;
-            }
-        }
-
     }
 
     if ( typeof module === "object" && module && typeof module.exports === "object" ) {
@@ -25158,51 +25229,124 @@ window.IndexedDBInterop.prototype.saveGeneralAnnotations = function(user, contai
         }
     }
 })( window );
+var Callback5 = function() {};
+Callback5 = stjs.extend(Callback5, null, [], function(constructor, prototype) {
+    prototype.$invoke = function(p1, p2, p3, p4, p5) {};
+}, {}, {});
 /**
- *  Object to hold a triple, used in graph.
+ *  Object Helper Functions
  * 
  *  @author fritz.ray@eduworks.com
- *  @class Triple
+ *  @class EcObject
  *  @module com.eduworks.ec
  */
-var Triple = function() {};
-Triple = stjs.extend(Triple, null, [], function(constructor, prototype) {
+var EcObject = function() {};
+EcObject = stjs.extend(EcObject, null, [], function(constructor, prototype) {
     /**
-     *  Source vertex.
+     *  Returns true if the result is an object.
      * 
-     *  @property source
-     *  @type any
+     *  @param {any} o Object to test.
+     *  @return true iff the object is an object.
+     *  @static
+     *  @method isArray
      */
-    prototype.source = null;
+    constructor.isObject = function(o) {
+        return (typeof o) == "object";
+    };
     /**
-     *  Destination vertex.
+     *  Returns keys on the object
      * 
-     *  @property destination
-     *  @type any
+     *  @param {any} o Object to test.
+     *  @return List of keys
+     *  @static
+     *  @method keys
      */
-    prototype.destination = null;
+    constructor.keys = function(o) {
+        return ecKeys(o);
+    };
+}, {}, {});
+/**
+ *  Array Helper Functions
+ * 
+ *  @author fritz.ray@eduworks.com
+ *  @class EcArray
+ *  @module com.eduworks.ec
+ */
+var EcArray = function() {};
+EcArray = stjs.extend(EcArray, null, [], function(constructor, prototype) {
     /**
-     *  Object to hold in the edge.
+     *  Returns true if the result is an array.
      * 
-     *  @property edge
-     *  @type any
+     *  @param {any} o Object to test.
+     *  @return true iff the object is an array.
+     *  @static
+     *  @method isArray
      */
-    prototype.edge = null;
+    constructor.isArray = function(o) {
+        return Object.prototype.toString.call(o) == "[object Array]";
+    };
     /**
-     *  Returns true IFF sources, destinations, and edges match.
+     *  Removes values IFF the values == one another.
      * 
-     *  @param {Edge} obj
-     *  @return {boolean} true IFF <see method definition>
-     *  @method equals
+     *  @param a {Array} Array to remove duplicates from.
+     *  @static
+     *  @method removeDuplicates
      */
-    prototype.equals = function(obj) {
-        if (Object.prototype.equals.call(this, obj)) 
-            return true;
-        if (stjs.isInstanceOf(obj.constructor, Triple)) {
-            var t = obj;
-            if (this.source == t.source && this.destination == t.destination && this.edge == t.edge) 
+    constructor.removeDuplicates = function(a) {
+        for (var i = 0; i < a.length; i++) 
+            for (var j = i; j < a.length; j++) {
+                if (j == i) 
+                    continue;
+                if (a[i] == a[j]) 
+                    a.splice(j, 1);
+            }
+    };
+    /**
+     *  Adds a value if the array does not have the value already.
+     * 
+     *  @param a {Array} Array to add to.
+     *  @param o {Object} Object to add to the array if it isn't in there already.
+     *  @static
+     *  @method setAdd
+     */
+    constructor.setAdd = function(a, o) {
+        var inThere = false;
+        for (var i = 0; i < a.length; i++) 
+            if (a[i] == o) {
+                inThere = true;
+                break;
+            }
+        if (!inThere) 
+            a.push(o);
+    };
+    /**
+     *  Removes a value from the array.
+     * 
+     *  @param a {Array} Array to add to.
+     *  @param o {Object} Object to add to the array if it isn't in there already.
+     *  @static
+     *  @method setAdd
+     */
+    constructor.setRemove = function(a, o) {
+        for (var i = 0; i < a.length; i++) 
+             while (a[i] == o){
+                a.splice(i, 1);
+            }
+    };
+    /**
+     *  Returns true if the array has the value already.
+     * 
+     *  @param a {Array} Array.
+     *  @param o {Object} Object to sample for.
+     *  @static
+     *  @method has
+     */
+    constructor.has = function(a, o) {
+        var inThere = false;
+        for (var i = 0; i < a.length; i++) 
+            if (a[i] == o) {
                 return true;
-        }
+            }
         return false;
     };
 }, {}, {});
@@ -25667,130 +25811,57 @@ Hypergraph = stjs.extend(Hypergraph, null, [], function(constructor, prototype) 
     prototype.getSuccessors = function(vertex) {};
 }, {}, {});
 /**
- *  Object Helper Functions
+ *  Object to hold a triple, used in graph.
  * 
  *  @author fritz.ray@eduworks.com
- *  @class EcObject
+ *  @class Triple
  *  @module com.eduworks.ec
  */
-var EcObject = function() {};
-EcObject = stjs.extend(EcObject, null, [], function(constructor, prototype) {
+var Triple = function() {};
+Triple = stjs.extend(Triple, null, [], function(constructor, prototype) {
     /**
-     *  Returns true if the result is an object.
+     *  Source vertex.
      * 
-     *  @param {any} o Object to test.
-     *  @return true iff the object is an object.
-     *  @static
-     *  @method isArray
+     *  @property source
+     *  @type any
      */
-    constructor.isObject = function(o) {
-        return (typeof o) == "object";
-    };
+    prototype.source = null;
     /**
-     *  Returns keys on the object
+     *  Destination vertex.
      * 
-     *  @param {any} o Object to test.
-     *  @return List of keys
-     *  @static
-     *  @method keys
+     *  @property destination
+     *  @type any
      */
-    constructor.keys = function(o) {
-        return ecKeys(o);
+    prototype.destination = null;
+    /**
+     *  Object to hold in the edge.
+     * 
+     *  @property edge
+     *  @type any
+     */
+    prototype.edge = null;
+    /**
+     *  Returns true IFF sources, destinations, and edges match.
+     * 
+     *  @param {Edge} obj
+     *  @return {boolean} true IFF <see method definition>
+     *  @method equals
+     */
+    prototype.equals = function(obj) {
+        if (Object.prototype.equals.call(this, obj)) 
+            return true;
+        if (stjs.isInstanceOf(obj.constructor, Triple)) {
+            var t = obj;
+            if (this.source == t.source && this.destination == t.destination && this.edge == t.edge) 
+                return true;
+        }
+        return false;
     };
 }, {}, {});
 var EcLocalStorage = function() {};
 EcLocalStorage = stjs.extend(EcLocalStorage, null, [], function(constructor, prototype) {
     constructor.removeItem = function(s, key) {
         ((s)["removeItem"])(key);
-    };
-}, {}, {});
-var Callback5 = function() {};
-Callback5 = stjs.extend(Callback5, null, [], function(constructor, prototype) {
-    prototype.$invoke = function(p1, p2, p3, p4, p5) {};
-}, {}, {});
-/**
- *  Array Helper Functions
- * 
- *  @author fritz.ray@eduworks.com
- *  @class EcArray
- *  @module com.eduworks.ec
- */
-var EcArray = function() {};
-EcArray = stjs.extend(EcArray, null, [], function(constructor, prototype) {
-    /**
-     *  Returns true if the result is an array.
-     * 
-     *  @param {any} o Object to test.
-     *  @return true iff the object is an array.
-     *  @static
-     *  @method isArray
-     */
-    constructor.isArray = function(o) {
-        return Object.prototype.toString.call(o) == "[object Array]";
-    };
-    /**
-     *  Removes values IFF the values == one another.
-     * 
-     *  @param a {Array} Array to remove duplicates from.
-     *  @static
-     *  @method removeDuplicates
-     */
-    constructor.removeDuplicates = function(a) {
-        for (var i = 0; i < a.length; i++) 
-            for (var j = i; j < a.length; j++) {
-                if (j == i) 
-                    continue;
-                if (a[i] == a[j]) 
-                    a.splice(j, 1);
-            }
-    };
-    /**
-     *  Adds a value if the array does not have the value already.
-     * 
-     *  @param a {Array} Array to add to.
-     *  @param o {Object} Object to add to the array if it isn't in there already.
-     *  @static
-     *  @method setAdd
-     */
-    constructor.setAdd = function(a, o) {
-        var inThere = false;
-        for (var i = 0; i < a.length; i++) 
-            if (a[i] == o) {
-                inThere = true;
-                break;
-            }
-        if (!inThere) 
-            a.push(o);
-    };
-    /**
-     *  Removes a value from the array.
-     * 
-     *  @param a {Array} Array to add to.
-     *  @param o {Object} Object to add to the array if it isn't in there already.
-     *  @static
-     *  @method setAdd
-     */
-    constructor.setRemove = function(a, o) {
-        for (var i = 0; i < a.length; i++) 
-             while (a[i] == o){
-                a.splice(i, 1);
-            }
-    };
-    /**
-     *  Returns true if the array has the value already.
-     * 
-     *  @param a {Array} Array.
-     *  @param o {Object} Object to sample for.
-     *  @static
-     *  @method has
-     */
-    constructor.has = function(a, o) {
-        var inThere = false;
-        for (var i = 0; i < a.length; i++) 
-            if (a[i] == o) {
-                return true;
-            }
-        return false;
     };
 }, {}, {});
 /**
@@ -25847,229 +25918,6 @@ EcDate = stjs.extend(EcDate, null, [], function(constructor, prototype) {
     constructor.toISOString = function(obj) {
         return ((obj)["toISOString"])();
     };
-}, {}, {});
-/**
- *  A graph consisting of a set of vertices of type <code>V</code>
- *  set and a set of edges of type <code>E</code>.  Edges of this
- *  graph type have exactly two endpoints; whether these endpoints
- *  must be distinct depends on the implementation.
- *  <p>
- *  This interface permits, but does not enforce, any of the following
- *  common variations of graphs:
- *  <ul>
- *  <li> directed and undirected edges
- *  <li> vertices and edges with attributes (for example, weighted edges)
- *  <li> vertices and edges of different types (for example, bipartite
- *  or multimodal graphs)
- *  <li> parallel edges (multiple edges which connect a single set of vertices)
- *  <li> representations as matrices or as adjacency lists or adjacency maps
- *  </ul>
- *  Extensions or implementations of this interface
- *  may enforce or disallow any or all of these variations.
- *  <p>
- *  <p>Definitions (with respect to a given vertex <code>v</code>):
- *  <ul>
- *  <li/><b>incoming edge</b> of <code>v</code>: an edge that can be traversed
- *  from a neighbor of <code>v</code> to reach <code>v</code>
- *  <li/><b>outgoing edge</b> of <code>v</code>: an edge that can be traversed
- *  from <code>v</code> to reach some neighbor of <code>v</code>
- *  <li/><b>predecessor</b> of <code>v</code>: a vertex at the other end of an
- *  incoming edge of <code>v</code>
- *  <li/><b>successor</b> of <code>v</code>: a vertex at the other end of an
- *  outgoing edge of <code>v</code>
- *  <li/>
- *  </ul>
- * 
- *  @author Joshua O'Madadhain
- *          <p>
- *          Ported to Javascript by:
- *  @author Fritz Ray (fritz.ray@eduworks.com)
- *  @author Tom Buskirk (tom.buskirk@eduworks.com)
- *  @class Graph
- *  @module com.eduworks.ec
- *  @extends Hypergraph
- */
-var Graph = function() {};
-Graph = stjs.extend(Graph, null, [Hypergraph], function(constructor, prototype) {
-    /**
-     *  Returns a <code>Collection</code> view of the incoming edges incident to <code>vertex</code>
-     *  in this graph.
-     * 
-     *  @param vertex the vertex whose incoming edges are to be returned
-     *  @return a <code>Collection</code> view of the incoming edges incident
-     *  to <code>vertex</code> in this graph
-     *  @method getInEdges
-     */
-    prototype.getInEdges = function(vertex) {};
-    /**
-     *  Returns a <code>Collection</code> view of the outgoing edges incident to <code>vertex</code>
-     *  in this graph.
-     * 
-     *  @param vertex the vertex whose outgoing edges are to be returned
-     *  @return a <code>Collection</code> view of the outgoing edges incident
-     *  to <code>vertex</code> in this graph
-     *  @method getOutEdges
-     */
-    prototype.getOutEdges = function(vertex) {};
-    /**
-     *  Returns a <code>Collection</code> view of the predecessors of <code>vertex</code>
-     *  in this graph.  A predecessor of <code>vertex</code> is defined as a vertex <code>v</code>
-     *  which is connected to
-     *  <code>vertex</code> by an edge <code>e</code>, where <code>e</code> is an outgoing edge of
-     *  <code>v</code> and an incoming edge of <code>vertex</code>.
-     * 
-     *  @param vertex the vertex whose predecessors are to be returned
-     *  @return a <code>Collection</code> view of the predecessors of
-     *  <code>vertex</code> in this graph
-     *  @method getPredecessors
-     */
-    prototype.getPredecessors = function(vertex) {};
-    /**
-     *  Returns a <code>Collection</code> view of the successors of <code>vertex</code>
-     *  in this graph.  A successor of <code>vertex</code> is defined as a vertex <code>v</code>
-     *  which is connected to
-     *  <code>vertex</code> by an edge <code>e</code>, where <code>e</code> is an incoming edge of
-     *  <code>v</code> and an outgoing edge of <code>vertex</code>.
-     * 
-     *  @param vertex the vertex whose predecessors are to be returned
-     *  @return a <code>Collection</code> view of the successors of
-     *  <code>vertex</code> in this graph
-     *  @method getSuccessors
-     */
-    prototype.getSuccessors = function(vertex) {};
-    /**
-     *  Returns the number of incoming edges incident to <code>vertex</code>.
-     *  Equivalent to <code>getInEdges(vertex).size()</code>.
-     * 
-     *  @param vertex the vertex whose indegree is to be calculated
-     *  @return the number of incoming edges incident to <code>vertex</code>
-     *  @method inDegree
-     */
-    prototype.inDegree = function(vertex) {};
-    /**
-     *  Returns the number of outgoing edges incident to <code>vertex</code>.
-     *  Equivalent to <code>getOutEdges(vertex).size()</code>.
-     * 
-     *  @param vertex the vertex whose outdegree is to be calculated
-     *  @return the number of outgoing edges incident to <code>vertex</code>
-     *  @method outDegree
-     */
-    prototype.outDegree = function(vertex) {};
-    /**
-     *  Returns <code>true</code> if <code>v1</code> is a predecessor of <code>v2</code> in this graph.
-     *  Equivalent to <code>v1.getPredecessors().contains(v2)</code>.
-     * 
-     *  @param v1 the first vertex to be queried
-     *  @param v2 the second vertex to be queried
-     *  @return <code>true</code> if <code>v1</code> is a predecessor of <code>v2</code>, and false otherwise.
-     *  @method isPredecessor
-     */
-    prototype.isPredecessor = function(v1, v2) {};
-    /**
-     *  Returns <code>true</code> if <code>v1</code> is a successor of <code>v2</code> in this graph.
-     *  Equivalent to <code>v1.getSuccessors().contains(v2)</code>.
-     * 
-     *  @param v1 the first vertex to be queried
-     *  @param v2 the second vertex to be queried
-     *  @return <code>true</code> if <code>v1</code> is a successor of <code>v2</code>, and false otherwise.
-     *  @method isSuccessor
-     */
-    prototype.isSuccessor = function(v1, v2) {};
-    /**
-     *  Returns the number of predecessors that <code>vertex</code> has in this graph.
-     *  Equivalent to <code>vertex.getPredecessors().size()</code>.
-     * 
-     *  @param vertex the vertex whose predecessor count is to be returned
-     *  @return the number of predecessors that <code>vertex</code> has in this graph
-     *  @method getPredecessorCount
-     */
-    prototype.getPredecessorCount = function(vertex) {};
-    /**
-     *  Returns the number of successors that <code>vertex</code> has in this graph.
-     *  Equivalent to <code>vertex.getSuccessors().size()</code>.
-     * 
-     *  @param vertex the vertex whose successor count is to be returned
-     *  @return the number of successors that <code>vertex</code> has in this graph
-     *  @method getSuccessorCount
-     */
-    prototype.getSuccessorCount = function(vertex) {};
-    /**
-     *  If <code>directed_edge</code> is a directed edge in this graph, returns the source;
-     *  otherwise returns <code>null</code>.
-     *  The source of a directed edge <code>d</code> is defined to be the vertex for which
-     *  <code>d</code> is an outgoing edge.
-     *  <code>directed_edge</code> is guaranteed to be a directed edge if
-     *  its <code>EdgeType</code> is <code>DIRECTED</code>.
-     * 
-     *  @param directed_edge
-     *  @return the source of <code>directed_edge</code> if it is a directed edge in this graph, or <code>null</code> otherwise
-     *  @method getSource
-     */
-    prototype.getSource = function(directed_edge) {};
-    /**
-     *  If <code>directed_edge</code> is a directed edge in this graph, returns the destination;
-     *  otherwise returns <code>null</code>.
-     *  The destination of a directed edge <code>d</code> is defined to be the vertex
-     *  incident to <code>d</code> for which
-     *  <code>d</code> is an incoming edge.
-     *  <code>directed_edge</code> is guaranteed to be a directed edge if
-     *  its <code>EdgeType</code> is <code>DIRECTED</code>.
-     * 
-     *  @param directed_edge
-     *  @return the destination of <code>directed_edge</code> if it is a directed edge in this graph, or <code>null</code> otherwise
-     *  @method getDest
-     */
-    prototype.getDest = function(directed_edge) {};
-    /**
-     *  Returns <code>true</code> if <code>vertex</code> is the source of <code>edge</code>.
-     *  Equivalent to <code>getSource(edge).equals(vertex)</code>.
-     * 
-     *  @param vertex the vertex to be queried
-     *  @param edge   the edge to be queried
-     *  @return <code>true</code> iff <code>vertex</code> is the source of <code>edge</code>
-     *  @method isSource
-     */
-    prototype.isSource = function(vertex, edge) {};
-    /**
-     *  Returns <code>true</code> if <code>vertex</code> is the destination of <code>edge</code>.
-     *  Equivalent to <code>getDest(edge).equals(vertex)</code>.
-     * 
-     *  @param vertex the vertex to be queried
-     *  @param edge   the edge to be queried
-     *  @return <code>true</code> iff <code>vertex</code> is the destination of <code>edge</code>
-     */
-    prototype.isDest = function(vertex, edge) {};
-    /**
-     *  Adds edge <code>e</code> to this graph such that it connects
-     *  vertex <code>v1</code> to <code>v2</code>.
-     *  Equivalent to <code>addEdge(e, new Pair<V>(v1, v2))</code>.
-     *  If this graph does not contain <code>v1</code>, <code>v2</code>,
-     *  or both, implementations may choose to either silently add
-     *  the vertices to the graph or throw an <code>IllegalArgumentException</code>.
-     *  If this graph assigns edge types to its edges, the edge type of
-     *  <code>e</code> will be the default for this graph.
-     *  See <code>Hypergraph.addEdge()</code> for a listing of possible reasons
-     *  for failure.
-     * 
-     *  @param e  the edge to be added
-     *  @param v1 the first vertex to be connected
-     *  @param v2 the second vertex to be connected
-     *  @return <code>true</code> if the add is successful, <code>false</code> otherwise
-     *  @method addEdge
-     *  @see Hypergraph#addEdge(Object, Collection)
-     *  @see #addEdge(Object, Object, Object, EdgeType)
-     */
-    prototype.addEdge = function(e, v1, v2) {};
-    /**
-     *  Returns the vertex at the other end of <code>edge</code> from <code>vertex</code>.
-     *  (That is, returns the vertex incident to <code>edge</code> which is not <code>vertex</code>.)
-     * 
-     *  @param vertex the vertex to be queried
-     *  @param edge   the edge to be queried
-     *  @return the vertex at the other end of <code>edge</code> from <code>vertex</code>
-     *  @method getOpposite
-     */
-    prototype.getOpposite = function(vertex, edge) {};
 }, {}, {});
 /**
  *  Wrapper to handle all remote web service invocations.
@@ -26362,6 +26210,229 @@ EcRemote = stjs.extend(EcRemote, null, [], function(constructor, prototype) {
             EcRemote.handleFailure(failure, paramP1, paramP2, paramP3);
         };
     };
+}, {}, {});
+/**
+ *  A graph consisting of a set of vertices of type <code>V</code>
+ *  set and a set of edges of type <code>E</code>.  Edges of this
+ *  graph type have exactly two endpoints; whether these endpoints
+ *  must be distinct depends on the implementation.
+ *  <p>
+ *  This interface permits, but does not enforce, any of the following
+ *  common variations of graphs:
+ *  <ul>
+ *  <li> directed and undirected edges
+ *  <li> vertices and edges with attributes (for example, weighted edges)
+ *  <li> vertices and edges of different types (for example, bipartite
+ *  or multimodal graphs)
+ *  <li> parallel edges (multiple edges which connect a single set of vertices)
+ *  <li> representations as matrices or as adjacency lists or adjacency maps
+ *  </ul>
+ *  Extensions or implementations of this interface
+ *  may enforce or disallow any or all of these variations.
+ *  <p>
+ *  <p>Definitions (with respect to a given vertex <code>v</code>):
+ *  <ul>
+ *  <li/><b>incoming edge</b> of <code>v</code>: an edge that can be traversed
+ *  from a neighbor of <code>v</code> to reach <code>v</code>
+ *  <li/><b>outgoing edge</b> of <code>v</code>: an edge that can be traversed
+ *  from <code>v</code> to reach some neighbor of <code>v</code>
+ *  <li/><b>predecessor</b> of <code>v</code>: a vertex at the other end of an
+ *  incoming edge of <code>v</code>
+ *  <li/><b>successor</b> of <code>v</code>: a vertex at the other end of an
+ *  outgoing edge of <code>v</code>
+ *  <li/>
+ *  </ul>
+ * 
+ *  @author Joshua O'Madadhain
+ *          <p>
+ *          Ported to Javascript by:
+ *  @author Fritz Ray (fritz.ray@eduworks.com)
+ *  @author Tom Buskirk (tom.buskirk@eduworks.com)
+ *  @class Graph
+ *  @module com.eduworks.ec
+ *  @extends Hypergraph
+ */
+var Graph = function() {};
+Graph = stjs.extend(Graph, null, [Hypergraph], function(constructor, prototype) {
+    /**
+     *  Returns a <code>Collection</code> view of the incoming edges incident to <code>vertex</code>
+     *  in this graph.
+     * 
+     *  @param vertex the vertex whose incoming edges are to be returned
+     *  @return a <code>Collection</code> view of the incoming edges incident
+     *  to <code>vertex</code> in this graph
+     *  @method getInEdges
+     */
+    prototype.getInEdges = function(vertex) {};
+    /**
+     *  Returns a <code>Collection</code> view of the outgoing edges incident to <code>vertex</code>
+     *  in this graph.
+     * 
+     *  @param vertex the vertex whose outgoing edges are to be returned
+     *  @return a <code>Collection</code> view of the outgoing edges incident
+     *  to <code>vertex</code> in this graph
+     *  @method getOutEdges
+     */
+    prototype.getOutEdges = function(vertex) {};
+    /**
+     *  Returns a <code>Collection</code> view of the predecessors of <code>vertex</code>
+     *  in this graph.  A predecessor of <code>vertex</code> is defined as a vertex <code>v</code>
+     *  which is connected to
+     *  <code>vertex</code> by an edge <code>e</code>, where <code>e</code> is an outgoing edge of
+     *  <code>v</code> and an incoming edge of <code>vertex</code>.
+     * 
+     *  @param vertex the vertex whose predecessors are to be returned
+     *  @return a <code>Collection</code> view of the predecessors of
+     *  <code>vertex</code> in this graph
+     *  @method getPredecessors
+     */
+    prototype.getPredecessors = function(vertex) {};
+    /**
+     *  Returns a <code>Collection</code> view of the successors of <code>vertex</code>
+     *  in this graph.  A successor of <code>vertex</code> is defined as a vertex <code>v</code>
+     *  which is connected to
+     *  <code>vertex</code> by an edge <code>e</code>, where <code>e</code> is an incoming edge of
+     *  <code>v</code> and an outgoing edge of <code>vertex</code>.
+     * 
+     *  @param vertex the vertex whose predecessors are to be returned
+     *  @return a <code>Collection</code> view of the successors of
+     *  <code>vertex</code> in this graph
+     *  @method getSuccessors
+     */
+    prototype.getSuccessors = function(vertex) {};
+    /**
+     *  Returns the number of incoming edges incident to <code>vertex</code>.
+     *  Equivalent to <code>getInEdges(vertex).size()</code>.
+     * 
+     *  @param vertex the vertex whose indegree is to be calculated
+     *  @return the number of incoming edges incident to <code>vertex</code>
+     *  @method inDegree
+     */
+    prototype.inDegree = function(vertex) {};
+    /**
+     *  Returns the number of outgoing edges incident to <code>vertex</code>.
+     *  Equivalent to <code>getOutEdges(vertex).size()</code>.
+     * 
+     *  @param vertex the vertex whose outdegree is to be calculated
+     *  @return the number of outgoing edges incident to <code>vertex</code>
+     *  @method outDegree
+     */
+    prototype.outDegree = function(vertex) {};
+    /**
+     *  Returns <code>true</code> if <code>v1</code> is a predecessor of <code>v2</code> in this graph.
+     *  Equivalent to <code>v1.getPredecessors().contains(v2)</code>.
+     * 
+     *  @param v1 the first vertex to be queried
+     *  @param v2 the second vertex to be queried
+     *  @return <code>true</code> if <code>v1</code> is a predecessor of <code>v2</code>, and false otherwise.
+     *  @method isPredecessor
+     */
+    prototype.isPredecessor = function(v1, v2) {};
+    /**
+     *  Returns <code>true</code> if <code>v1</code> is a successor of <code>v2</code> in this graph.
+     *  Equivalent to <code>v1.getSuccessors().contains(v2)</code>.
+     * 
+     *  @param v1 the first vertex to be queried
+     *  @param v2 the second vertex to be queried
+     *  @return <code>true</code> if <code>v1</code> is a successor of <code>v2</code>, and false otherwise.
+     *  @method isSuccessor
+     */
+    prototype.isSuccessor = function(v1, v2) {};
+    /**
+     *  Returns the number of predecessors that <code>vertex</code> has in this graph.
+     *  Equivalent to <code>vertex.getPredecessors().size()</code>.
+     * 
+     *  @param vertex the vertex whose predecessor count is to be returned
+     *  @return the number of predecessors that <code>vertex</code> has in this graph
+     *  @method getPredecessorCount
+     */
+    prototype.getPredecessorCount = function(vertex) {};
+    /**
+     *  Returns the number of successors that <code>vertex</code> has in this graph.
+     *  Equivalent to <code>vertex.getSuccessors().size()</code>.
+     * 
+     *  @param vertex the vertex whose successor count is to be returned
+     *  @return the number of successors that <code>vertex</code> has in this graph
+     *  @method getSuccessorCount
+     */
+    prototype.getSuccessorCount = function(vertex) {};
+    /**
+     *  If <code>directed_edge</code> is a directed edge in this graph, returns the source;
+     *  otherwise returns <code>null</code>.
+     *  The source of a directed edge <code>d</code> is defined to be the vertex for which
+     *  <code>d</code> is an outgoing edge.
+     *  <code>directed_edge</code> is guaranteed to be a directed edge if
+     *  its <code>EdgeType</code> is <code>DIRECTED</code>.
+     * 
+     *  @param directed_edge
+     *  @return the source of <code>directed_edge</code> if it is a directed edge in this graph, or <code>null</code> otherwise
+     *  @method getSource
+     */
+    prototype.getSource = function(directed_edge) {};
+    /**
+     *  If <code>directed_edge</code> is a directed edge in this graph, returns the destination;
+     *  otherwise returns <code>null</code>.
+     *  The destination of a directed edge <code>d</code> is defined to be the vertex
+     *  incident to <code>d</code> for which
+     *  <code>d</code> is an incoming edge.
+     *  <code>directed_edge</code> is guaranteed to be a directed edge if
+     *  its <code>EdgeType</code> is <code>DIRECTED</code>.
+     * 
+     *  @param directed_edge
+     *  @return the destination of <code>directed_edge</code> if it is a directed edge in this graph, or <code>null</code> otherwise
+     *  @method getDest
+     */
+    prototype.getDest = function(directed_edge) {};
+    /**
+     *  Returns <code>true</code> if <code>vertex</code> is the source of <code>edge</code>.
+     *  Equivalent to <code>getSource(edge).equals(vertex)</code>.
+     * 
+     *  @param vertex the vertex to be queried
+     *  @param edge   the edge to be queried
+     *  @return <code>true</code> iff <code>vertex</code> is the source of <code>edge</code>
+     *  @method isSource
+     */
+    prototype.isSource = function(vertex, edge) {};
+    /**
+     *  Returns <code>true</code> if <code>vertex</code> is the destination of <code>edge</code>.
+     *  Equivalent to <code>getDest(edge).equals(vertex)</code>.
+     * 
+     *  @param vertex the vertex to be queried
+     *  @param edge   the edge to be queried
+     *  @return <code>true</code> iff <code>vertex</code> is the destination of <code>edge</code>
+     */
+    prototype.isDest = function(vertex, edge) {};
+    /**
+     *  Adds edge <code>e</code> to this graph such that it connects
+     *  vertex <code>v1</code> to <code>v2</code>.
+     *  Equivalent to <code>addEdge(e, new Pair<V>(v1, v2))</code>.
+     *  If this graph does not contain <code>v1</code>, <code>v2</code>,
+     *  or both, implementations may choose to either silently add
+     *  the vertices to the graph or throw an <code>IllegalArgumentException</code>.
+     *  If this graph assigns edge types to its edges, the edge type of
+     *  <code>e</code> will be the default for this graph.
+     *  See <code>Hypergraph.addEdge()</code> for a listing of possible reasons
+     *  for failure.
+     * 
+     *  @param e  the edge to be added
+     *  @param v1 the first vertex to be connected
+     *  @param v2 the second vertex to be connected
+     *  @return <code>true</code> if the add is successful, <code>false</code> otherwise
+     *  @method addEdge
+     *  @see Hypergraph#addEdge(Object, Collection)
+     *  @see #addEdge(Object, Object, Object, EdgeType)
+     */
+    prototype.addEdge = function(e, v1, v2) {};
+    /**
+     *  Returns the vertex at the other end of <code>edge</code> from <code>vertex</code>.
+     *  (That is, returns the vertex incident to <code>edge</code> which is not <code>vertex</code>.)
+     * 
+     *  @param vertex the vertex to be queried
+     *  @param edge   the edge to be queried
+     *  @return the vertex at the other end of <code>edge</code> from <code>vertex</code>
+     *  @method getOpposite
+     */
+    prototype.getOpposite = function(vertex, edge) {};
 }, {}, {});
 /**
  *  Pattern (probably similar to Promise) that provides fine grained control over asynchronous execution.
@@ -26707,117 +26778,308 @@ EcDirectedGraph = stjs.extend(EcDirectedGraph, null, [Graph], function(construct
     };
 }, {edges: {name: "Array", arguments: [{name: "Triple", arguments: ["V", "V", "E"]}]}, verticies: {name: "Array", arguments: ["V"]}}, {});
 /**
- *  @author Fritz
- */
-var EcCrypto = function() {};
-EcCrypto = stjs.extend(EcCrypto, null, [], function(constructor, prototype) {
-    constructor.caching = false;
-    constructor.decryptionCache = new Object();
-    constructor.md5 = function(s) {
-        var m = forge.md.md5.create();
-        m.update(s);
-        return m.digest().toHex();
-    };
-}, {decryptionCache: "Object"}, {});
-/**
- * Javascript implementation of a basic Public Key Infrastructure, including
- * support for RSA public and private keys.
+ * Secure Hash Algorithm with 256-bit digest (SHA-256) implementation.
+ *
+ * See FIPS 180-2 for details.
  *
  * @author Dave Longley
  *
- * Copyright (c) 2010-2013 Digital Bazaar, Inc.
+ * Copyright (c) 2010-2014 Digital Bazaar, Inc.
  */
 (function() {
 /* ########## Begin module implementation ########## */
 function initModule(forge) {
 
-// shortcut for asn.1 API
-var asn1 = forge.asn1;
-
-/* Public Key Infrastructure (PKI) implementation. */
-var pki = forge.pki = forge.pki || {};
-
-/**
- * NOTE: THIS METHOD IS DEPRECATED. Use pem.decode() instead.
- *
- * Converts PEM-formatted data to DER.
- *
- * @param pem the PEM-formatted data.
- *
- * @return the DER-formatted data.
- */
-pki.pemToDer = function(pem) {
-  var msg = forge.pem.decode(pem)[0];
-  if(msg.procType && msg.procType.type === 'ENCRYPTED') {
-    throw new Error('Could not convert PEM to DER; PEM is encrypted.');
-  }
-  return forge.util.createBuffer(msg.body);
-};
+var sha256 = forge.sha256 = forge.sha256 || {};
+forge.md = forge.md || {};
+forge.md.algorithms = forge.md.algorithms || {};
+forge.md.sha256 = forge.md.algorithms.sha256 = sha256;
 
 /**
- * Converts an RSA private key from PEM format.
+ * Creates a SHA-256 message digest object.
  *
- * @param pem the PEM-formatted private key.
- *
- * @return the private key.
+ * @return a message digest object.
  */
-pki.privateKeyFromPem = function(pem) {
-  var msg = forge.pem.decode(pem)[0];
-
-  if(msg.type !== 'PRIVATE KEY' && msg.type !== 'RSA PRIVATE KEY') {
-    var error = new Error('Could not convert private key from PEM; PEM ' +
-      'header type is not "PRIVATE KEY" or "RSA PRIVATE KEY".');
-    error.headerType = msg.type;
-    throw error;
-  }
-  if(msg.procType && msg.procType.type === 'ENCRYPTED') {
-    throw new Error('Could not convert private key from PEM; PEM is encrypted.');
+sha256.create = function() {
+  // do initialization as necessary
+  if(!_initialized) {
+    _init();
   }
 
-  // convert DER to ASN.1 object
-  var obj = asn1.fromDer(msg.body);
+  // SHA-256 state contains eight 32-bit integers
+  var _state = null;
 
-  return pki.privateKeyFromAsn1(obj);
-};
+  // input buffer
+  var _input = forge.util.createBuffer();
 
-/**
- * Converts an RSA private key to PEM format.
- *
- * @param key the private key.
- * @param maxline the maximum characters per line, defaults to 64.
- *
- * @return the PEM-formatted private key.
- */
-pki.privateKeyToPem = function(key, maxline) {
-  // convert to ASN.1, then DER, then PEM-encode
-  var msg = {
-    type: 'RSA PRIVATE KEY',
-    body: asn1.toDer(pki.privateKeyToAsn1(key)).getBytes()
+  // used for word storage
+  var _w = new Array(64);
+
+  // message digest object
+  var md = {
+    algorithm: 'sha256',
+    blockLength: 64,
+    digestLength: 32,
+    // 56-bit length of message so far (does not including padding)
+    messageLength: 0,
+    // true 64-bit message length as two 32-bit ints
+    messageLength64: [0, 0]
   };
-  return forge.pem.encode(msg, {maxline: maxline});
+
+  /**
+   * Starts the digest.
+   *
+   * @return this digest object.
+   */
+  md.start = function() {
+    md.messageLength = 0;
+    md.messageLength64 = [0, 0];
+    _input = forge.util.createBuffer();
+    _state = {
+      h0: 0x6A09E667,
+      h1: 0xBB67AE85,
+      h2: 0x3C6EF372,
+      h3: 0xA54FF53A,
+      h4: 0x510E527F,
+      h5: 0x9B05688C,
+      h6: 0x1F83D9AB,
+      h7: 0x5BE0CD19
+    };
+    return md;
+  };
+  // start digest automatically for first time
+  md.start();
+
+  /**
+   * Updates the digest with the given message input. The given input can
+   * treated as raw input (no encoding will be applied) or an encoding of
+   * 'utf8' maybe given to encode the input using UTF-8.
+   *
+   * @param msg the message input to update with.
+   * @param encoding the encoding to use (default: 'raw', other: 'utf8').
+   *
+   * @return this digest object.
+   */
+  md.update = function(msg, encoding) {
+    if(encoding === 'utf8') {
+      msg = forge.util.encodeUtf8(msg);
+    }
+
+    // update message length
+    md.messageLength += msg.length;
+    md.messageLength64[0] += (msg.length / 0x100000000) >>> 0;
+    md.messageLength64[1] += msg.length >>> 0;
+
+    // add bytes to input buffer
+    _input.putBytes(msg);
+
+    // process bytes
+    _update(_state, _w, _input);
+
+    // compact input buffer every 2K or if empty
+    if(_input.read > 2048 || _input.length() === 0) {
+      _input.compact();
+    }
+
+    return md;
+  };
+
+  /**
+   * Produces the digest.
+   *
+   * @return a byte buffer containing the digest value.
+   */
+  md.digest = function() {
+    /* Note: Here we copy the remaining bytes in the input buffer and
+    add the appropriate SHA-256 padding. Then we do the final update
+    on a copy of the state so that if the user wants to get
+    intermediate digests they can do so. */
+
+    /* Determine the number of bytes that must be added to the message
+    to ensure its length is congruent to 448 mod 512. In other words,
+    the data to be digested must be a multiple of 512 bits (or 128 bytes).
+    This data includes the message, some padding, and the length of the
+    message. Since the length of the message will be encoded as 8 bytes (64
+    bits), that means that the last segment of the data must have 56 bytes
+    (448 bits) of message and padding. Therefore, the length of the message
+    plus the padding must be congruent to 448 mod 512 because
+    512 - 128 = 448.
+
+    In order to fill up the message length it must be filled with
+    padding that begins with 1 bit followed by all 0 bits. Padding
+    must *always* be present, so if the message length is already
+    congruent to 448 mod 512, then 512 padding bits must be added. */
+
+    // 512 bits == 64 bytes, 448 bits == 56 bytes, 64 bits = 8 bytes
+    // _padding starts with 1 byte with first bit is set in it which
+    // is byte value 128, then there may be up to 63 other pad bytes
+    var padBytes = forge.util.createBuffer();
+    padBytes.putBytes(_input.bytes());
+    // 64 - (remaining msg + 8 bytes msg length) mod 64
+    padBytes.putBytes(
+      _padding.substr(0, 64 - ((md.messageLength64[1] + 8) & 0x3F)));
+
+    /* Now append length of the message. The length is appended in bits
+    as a 64-bit number in big-endian order. Since we store the length in
+    bytes, we must multiply the 64-bit length by 8 (or left shift by 3). */
+    padBytes.putInt32(
+      (md.messageLength64[0] << 3) | (md.messageLength64[0] >>> 28));
+    padBytes.putInt32(md.messageLength64[1] << 3);
+    var s2 = {
+      h0: _state.h0,
+      h1: _state.h1,
+      h2: _state.h2,
+      h3: _state.h3,
+      h4: _state.h4,
+      h5: _state.h5,
+      h6: _state.h6,
+      h7: _state.h7
+    };
+    _update(s2, _w, padBytes);
+    var rval = forge.util.createBuffer();
+    rval.putInt32(s2.h0);
+    rval.putInt32(s2.h1);
+    rval.putInt32(s2.h2);
+    rval.putInt32(s2.h3);
+    rval.putInt32(s2.h4);
+    rval.putInt32(s2.h5);
+    rval.putInt32(s2.h6);
+    rval.putInt32(s2.h7);
+    return rval;
+  };
+
+  return md;
 };
 
+// sha-256 padding bytes not initialized yet
+var _padding = null;
+var _initialized = false;
+
+// table of constants
+var _k = null;
+
 /**
- * Converts a PrivateKeyInfo to PEM format.
- *
- * @param pki the PrivateKeyInfo.
- * @param maxline the maximum characters per line, defaults to 64.
- *
- * @return the PEM-formatted private key.
+ * Initializes the constant tables.
  */
-pki.privateKeyInfoToPem = function(pki, maxline) {
-  // convert to DER, then PEM-encode
-  var msg = {
-    type: 'PRIVATE KEY',
-    body: asn1.toDer(pki).getBytes()
-  };
-  return forge.pem.encode(msg, {maxline: maxline});
-};
+function _init() {
+  // create padding
+  _padding = String.fromCharCode(128);
+  _padding += forge.util.fillString(String.fromCharCode(0x00), 64);
+
+  // create K table for SHA-256
+  _k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+    0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+    0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+    0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+    0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+
+  // now initialized
+  _initialized = true;
+}
+
+/**
+ * Updates a SHA-256 state with the given byte buffer.
+ *
+ * @param s the SHA-256 state to update.
+ * @param w the array to use to store words.
+ * @param bytes the byte buffer to update with.
+ */
+function _update(s, w, bytes) {
+  // consume 512 bit (64 byte) chunks
+  var t1, t2, s0, s1, ch, maj, i, a, b, c, d, e, f, g, h;
+  var len = bytes.length();
+  while(len >= 64) {
+    // the w array will be populated with sixteen 32-bit big-endian words
+    // and then extended into 64 32-bit words according to SHA-256
+    for(i = 0; i < 16; ++i) {
+      w[i] = bytes.getInt32();
+    }
+    for(; i < 64; ++i) {
+      // XOR word 2 words ago rot right 17, rot right 19, shft right 10
+      t1 = w[i - 2];
+      t1 =
+        ((t1 >>> 17) | (t1 << 15)) ^
+        ((t1 >>> 19) | (t1 << 13)) ^
+        (t1 >>> 10);
+      // XOR word 15 words ago rot right 7, rot right 18, shft right 3
+      t2 = w[i - 15];
+      t2 =
+        ((t2 >>> 7) | (t2 << 25)) ^
+        ((t2 >>> 18) | (t2 << 14)) ^
+        (t2 >>> 3);
+      // sum(t1, word 7 ago, t2, word 16 ago) modulo 2^32
+      w[i] = (t1 + w[i - 7] + t2 + w[i - 16]) | 0;
+    }
+
+    // initialize hash value for this chunk
+    a = s.h0;
+    b = s.h1;
+    c = s.h2;
+    d = s.h3;
+    e = s.h4;
+    f = s.h5;
+    g = s.h6;
+    h = s.h7;
+
+    // round function
+    for(i = 0; i < 64; ++i) {
+      // Sum1(e)
+      s1 =
+        ((e >>> 6) | (e << 26)) ^
+        ((e >>> 11) | (e << 21)) ^
+        ((e >>> 25) | (e << 7));
+      // Ch(e, f, g) (optimized the same way as SHA-1)
+      ch = g ^ (e & (f ^ g));
+      // Sum0(a)
+      s0 =
+        ((a >>> 2) | (a << 30)) ^
+        ((a >>> 13) | (a << 19)) ^
+        ((a >>> 22) | (a << 10));
+      // Maj(a, b, c) (optimized the same way as SHA-1)
+      maj = (a & b) | (c & (a ^ b));
+
+      // main algorithm
+      t1 = h + s1 + ch + _k[i] + w[i];
+      t2 = s0 + maj;
+      h = g;
+      g = f;
+      f = e;
+      e = (d + t1) | 0;
+      d = c;
+      c = b;
+      b = a;
+      a = (t1 + t2) | 0;
+    }
+
+    // update hash state
+    s.h0 = (s.h0 + a) | 0;
+    s.h1 = (s.h1 + b) | 0;
+    s.h2 = (s.h2 + c) | 0;
+    s.h3 = (s.h3 + d) | 0;
+    s.h4 = (s.h4 + e) | 0;
+    s.h5 = (s.h5 + f) | 0;
+    s.h6 = (s.h6 + g) | 0;
+    s.h7 = (s.h7 + h) | 0;
+    len -= 64;
+  }
+}
 
 } // end module implementation
 
 /* ########## Begin module wrapper ########## */
-var name = 'pki';
+var name = 'sha256';
 if(typeof define !== 'function') {
   // NodeJS -> AMD
   if(typeof module === 'object' && module.exports) {
@@ -26863,23 +27125,27 @@ define = function(ids, factory) {
   define = tmpDefine;
   return define.apply(null, Array.prototype.slice.call(arguments, 0));
 };
-define([
-  'require',
-  'module',
-  './asn1',
-  './oids',
-  './pbe',
-  './pem',
-  './pbkdf2',
-  './pkcs12',
-  './pss',
-  './rsa',
-  './util',
-  './x509'
-], function() {
+define(['require', 'module', './util'], function() {
   defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
 });
 })();
+var AlgorithmIdentifier = function() {};
+AlgorithmIdentifier = stjs.extend(AlgorithmIdentifier, null, [], function(constructor, prototype) {
+    prototype.name = null;
+    prototype.modulusLength = 0;
+    prototype.length = 0;
+    prototype.publicExponent = null;
+    prototype.hash = null;
+    prototype.iv = null;
+    prototype.counter = null;
+}, {iv: "ArrayBuffer", counter: "ArrayBuffer"}, {});
+var jwk = function() {};
+jwk = stjs.extend(jwk, null, [], function(constructor, prototype) {
+    prototype.kty = null;
+    prototype.k = null;
+    prototype.alg = null;
+    prototype.ext = null;
+}, {}, {});
 /**
  * Javascript implementation of basic RSA algorithms.
  *
@@ -28592,16 +28858,114 @@ define([
   defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
 });
 })();
-var AlgorithmIdentifier = function() {};
-AlgorithmIdentifier = stjs.extend(AlgorithmIdentifier, null, [], function(constructor, prototype) {
-    prototype.name = null;
-    prototype.modulusLength = 0;
-    prototype.length = 0;
-    prototype.publicExponent = null;
-    prototype.hash = null;
-    prototype.iv = null;
-    prototype.counter = null;
-}, {iv: "ArrayBuffer", counter: "ArrayBuffer"}, {});
+/**
+ *  @author Fritz
+ */
+var EcCrypto = function() {};
+EcCrypto = stjs.extend(EcCrypto, null, [], function(constructor, prototype) {
+    constructor.caching = false;
+    constructor.decryptionCache = new Object();
+    constructor.md5 = function(s) {
+        var m = forge.md.md5.create();
+        m.update(s);
+        return m.digest().toHex();
+    };
+}, {decryptionCache: "Object"}, {});
+/**
+ *  Helper classes for dealing with RSA Public Keys.
+ * 
+ *  @author fritz.ray@eduworks.com
+ *  @class EcPk
+ *  @module com.eduworks.ec
+ */
+var EcPk = function() {};
+EcPk = stjs.extend(EcPk, null, [], function(constructor, prototype) {
+    prototype.pk = null;
+    prototype.jwk = null;
+    prototype.key = null;
+    prototype.signKey = null;
+    /**
+     *  Decodes a PEM encoded SubjectPublicKeyInfo (PKCS#8) or RSAPublicKey (PKCS#1) formatted RSA Public Key.
+     *  (In case you were curious.)
+     * 
+     *  @param {string} pem PEM as a string.
+     *  @return {EcPk} Object used to perform public key operations.
+     *  @method fromPem
+     *  @static
+     */
+    constructor.fromPem = function(pem) {
+        var pk = new EcPk();
+        try {
+            pk.pk = forge.pki.publicKeyFromPem(pem);
+        }catch (ex) {
+            return null;
+        }
+        return pk;
+    };
+    /**
+     *  Compares two public keys, and returns true if their PEM forms match.
+     * 
+     *  @param {EcPk} obj Object to compare to.
+     *  @return {boolean} True if the keys match.
+     *  @method equals
+     */
+    prototype.equals = function(obj) {
+        if (stjs.isInstanceOf(obj.constructor, EcPk)) 
+            return this.toPem().equals((obj).toPem());
+        return Object.prototype.equals.call(this, obj);
+    };
+    /**
+     *  Encodes the public key into a PEM encoded SubjectPublicKeyInfo (PKCS#8) formatted RSA Public Key.
+     *  (In case you were curious.)
+     * 
+     *  @return {string} PEM encoded public key without whitespace.
+     *  @method toPem
+     */
+    prototype.toPem = function() {
+        return forge.pki.publicKeyToPem(this.pk).replaceAll("\r?\n", "");
+    };
+    /**
+     *  Encodes the public key into a PEM encoded RSAPublicKey (PKCS#1) formatted RSA Public Key.
+     *  (In case you were curious.)
+     * 
+     *  @return {string} PEM encoded public key without whitespace.
+     *  @method toPkcs1Pem
+     */
+    prototype.toPkcs1Pem = function() {
+        return forge.pki.publicKeyToRSAPublicKeyPem(this.pk).replaceAll("\r?\n", "");
+    };
+    /**
+     *  Encodes the public key into a PEM encoded SubjectPublicKeyInfo (PKCS#8) formatted RSA Public Key.
+     *  (In case you were curious.)
+     * 
+     *  @return {string} PEM encoded public key without whitespace.
+     *  @method toPkcs8Pem
+     */
+    prototype.toPkcs8Pem = function() {
+        return forge.pki.publicKeyToPem(this.pk).replaceAll("\r?\n", "");
+    };
+    prototype.toJwk = function() {
+        if (this.jwk == null) 
+            this.jwk = pemJwk.pem2jwk(forge.pki.publicKeyToPem(this.pk));
+        return this.jwk;
+    };
+    /**
+     *  Hashes the public key into an SSH compatible fingerprint.
+     * 
+     *  @return {string} Public key fingerprint.
+     *  @method fingerprint
+     */
+    prototype.fingerprint = function() {
+        var o = new Object();
+        (o)["encoding"] = "hex";
+        return forge.ssh.getPublicKeyFingerprint(this.pk, o);
+    };
+    prototype.verify = function(bytes, decode64) {
+        return this.pk.verify(bytes, decode64);
+    };
+}, {pk: "forge.pk", jwk: "Object", key: "CryptoKey", signKey: "CryptoKey"}, {});
+var CryptoKey = function() {};
+CryptoKey = stjs.extend(CryptoKey, null, [], null, {}, {});
 /**
  * Message Digest Algorithm 5 with 128-bit digest (MD5) implementation.
  *
@@ -28925,374 +29289,104 @@ define(['require', 'module', './util'], function() {
 });
 })();
 /**
- *  Helper classes for dealing with RSA Public Keys.
- * 
- *  @author fritz.ray@eduworks.com
- *  @class EcPk
- *  @module com.eduworks.ec
- */
-var EcPk = function() {};
-EcPk = stjs.extend(EcPk, null, [], function(constructor, prototype) {
-    prototype.pk = null;
-    prototype.jwk = null;
-    prototype.key = null;
-    prototype.signKey = null;
-    /**
-     *  Decodes a PEM encoded SubjectPublicKeyInfo (PKCS#8) or RSAPublicKey (PKCS#1) formatted RSA Public Key.
-     *  (In case you were curious.)
-     * 
-     *  @param {string} pem PEM as a string.
-     *  @return {EcPk} Object used to perform public key operations.
-     *  @method fromPem
-     *  @static
-     */
-    constructor.fromPem = function(pem) {
-        var pk = new EcPk();
-        try {
-            pk.pk = forge.pki.publicKeyFromPem(pem);
-        }catch (ex) {
-            return null;
-        }
-        return pk;
-    };
-    /**
-     *  Compares two public keys, and returns true if their PEM forms match.
-     * 
-     *  @param {EcPk} obj Object to compare to.
-     *  @return {boolean} True if the keys match.
-     *  @method equals
-     */
-    prototype.equals = function(obj) {
-        if (stjs.isInstanceOf(obj.constructor, EcPk)) 
-            return this.toPem().equals((obj).toPem());
-        return Object.prototype.equals.call(this, obj);
-    };
-    /**
-     *  Encodes the public key into a PEM encoded SubjectPublicKeyInfo (PKCS#8) formatted RSA Public Key.
-     *  (In case you were curious.)
-     * 
-     *  @return {string} PEM encoded public key without whitespace.
-     *  @method toPem
-     */
-    prototype.toPem = function() {
-        return forge.pki.publicKeyToPem(this.pk).replaceAll("\r?\n", "");
-    };
-    /**
-     *  Encodes the public key into a PEM encoded RSAPublicKey (PKCS#1) formatted RSA Public Key.
-     *  (In case you were curious.)
-     * 
-     *  @return {string} PEM encoded public key without whitespace.
-     *  @method toPkcs1Pem
-     */
-    prototype.toPkcs1Pem = function() {
-        return forge.pki.publicKeyToRSAPublicKeyPem(this.pk).replaceAll("\r?\n", "");
-    };
-    /**
-     *  Encodes the public key into a PEM encoded SubjectPublicKeyInfo (PKCS#8) formatted RSA Public Key.
-     *  (In case you were curious.)
-     * 
-     *  @return {string} PEM encoded public key without whitespace.
-     *  @method toPkcs8Pem
-     */
-    prototype.toPkcs8Pem = function() {
-        return forge.pki.publicKeyToPem(this.pk).replaceAll("\r?\n", "");
-    };
-    prototype.toJwk = function() {
-        if (this.jwk == null) 
-            this.jwk = pemJwk.pem2jwk(forge.pki.publicKeyToPem(this.pk));
-        return this.jwk;
-    };
-    /**
-     *  Hashes the public key into an SSH compatible fingerprint.
-     * 
-     *  @return {string} Public key fingerprint.
-     *  @method fingerprint
-     */
-    prototype.fingerprint = function() {
-        var o = new Object();
-        (o)["encoding"] = "hex";
-        return forge.ssh.getPublicKeyFingerprint(this.pk, o);
-    };
-    prototype.verify = function(bytes, decode64) {
-        return this.pk.verify(bytes, decode64);
-    };
-}, {pk: "forge.pk", jwk: "Object", key: "CryptoKey", signKey: "CryptoKey"}, {});
-var CryptoKey = function() {};
-CryptoKey = stjs.extend(CryptoKey, null, [], null, {}, {});
-var EcAesParameters = function(iv) {
-    this.iv = forge.util.decode64(iv);
-};
-EcAesParameters = stjs.extend(EcAesParameters, null, [], function(constructor, prototype) {
-    prototype.iv = null;
-}, {iv: "forge.payload"}, {});
-var jwk = function() {};
-jwk = stjs.extend(jwk, null, [], function(constructor, prototype) {
-    prototype.kty = null;
-    prototype.k = null;
-    prototype.alg = null;
-    prototype.ext = null;
-}, {}, {});
-var SubtleCrypto = function() {};
-SubtleCrypto = stjs.extend(SubtleCrypto, null, [], function(constructor, prototype) {
-    prototype.encrypt = function(algorithm, key, data) {
-        return null;
-    };
-    prototype.decrypt = function(algorithm, key, data) {
-        return null;
-    };
-    prototype.sign = function(algorithm, key, data) {
-        return null;
-    };
-    prototype.verify = function(algorithm, key, signature, data) {
-        return null;
-    };
-    prototype.generateKey = function(algorithm, extractable, keyUsages) {
-        return null;
-    };
-    prototype.deriveBits = function(algorithm, baseKey, length) {
-        return null;
-    };
-    prototype.importKey = function(format, keyData, algorithm, extractable, keyUsages) {
-        return null;
-    };
-}, {}, {});
-/**
- * Cipher base API.
+ * Javascript implementation of a basic Public Key Infrastructure, including
+ * support for RSA public and private keys.
  *
  * @author Dave Longley
  *
- * Copyright (c) 2010-2014 Digital Bazaar, Inc.
+ * Copyright (c) 2010-2013 Digital Bazaar, Inc.
  */
 (function() {
 /* ########## Begin module implementation ########## */
 function initModule(forge) {
 
-forge.cipher = forge.cipher || {};
+// shortcut for asn.1 API
+var asn1 = forge.asn1;
 
-// registered algorithms
-forge.cipher.algorithms = forge.cipher.algorithms || {};
+/* Public Key Infrastructure (PKI) implementation. */
+var pki = forge.pki = forge.pki || {};
 
 /**
- * Creates a cipher object that can be used to encrypt data using the given
- * algorithm and key. The algorithm may be provided as a string value for a
- * previously registered algorithm or it may be given as a cipher algorithm
- * API object.
+ * NOTE: THIS METHOD IS DEPRECATED. Use pem.decode() instead.
  *
- * @param algorithm the algorithm to use, either a string or an algorithm API
- *          object.
- * @param key the key to use, as a binary-encoded string of bytes or a
- *          byte buffer.
+ * Converts PEM-formatted data to DER.
  *
- * @return the cipher.
+ * @param pem the PEM-formatted data.
+ *
+ * @return the DER-formatted data.
  */
-forge.cipher.createCipher = function(algorithm, key) {
-  var api = algorithm;
-  if(typeof api === 'string') {
-    api = forge.cipher.getAlgorithm(api);
-    if(api) {
-      api = api();
-    }
+pki.pemToDer = function(pem) {
+  var msg = forge.pem.decode(pem)[0];
+  if(msg.procType && msg.procType.type === 'ENCRYPTED') {
+    throw new Error('Could not convert PEM to DER; PEM is encrypted.');
   }
-  if(!api) {
-    throw new Error('Unsupported algorithm: ' + algorithm);
-  }
-
-  // assume block cipher
-  return new forge.cipher.BlockCipher({
-    algorithm: api,
-    key: key,
-    decrypt: false
-  });
+  return forge.util.createBuffer(msg.body);
 };
 
 /**
- * Creates a decipher object that can be used to decrypt data using the given
- * algorithm and key. The algorithm may be provided as a string value for a
- * previously registered algorithm or it may be given as a cipher algorithm
- * API object.
+ * Converts an RSA private key from PEM format.
  *
- * @param algorithm the algorithm to use, either a string or an algorithm API
- *          object.
- * @param key the key to use, as a binary-encoded string of bytes or a
- *          byte buffer.
+ * @param pem the PEM-formatted private key.
  *
- * @return the cipher.
+ * @return the private key.
  */
-forge.cipher.createDecipher = function(algorithm, key) {
-  var api = algorithm;
-  if(typeof api === 'string') {
-    api = forge.cipher.getAlgorithm(api);
-    if(api) {
-      api = api();
-    }
+pki.privateKeyFromPem = function(pem) {
+  var msg = forge.pem.decode(pem)[0];
+
+  if(msg.type !== 'PRIVATE KEY' && msg.type !== 'RSA PRIVATE KEY') {
+    var error = new Error('Could not convert private key from PEM; PEM ' +
+      'header type is not "PRIVATE KEY" or "RSA PRIVATE KEY".');
+    error.headerType = msg.type;
+    throw error;
   }
-  if(!api) {
-    throw new Error('Unsupported algorithm: ' + algorithm);
+  if(msg.procType && msg.procType.type === 'ENCRYPTED') {
+    throw new Error('Could not convert private key from PEM; PEM is encrypted.');
   }
 
-  // assume block cipher
-  return new forge.cipher.BlockCipher({
-    algorithm: api,
-    key: key,
-    decrypt: true
-  });
+  // convert DER to ASN.1 object
+  var obj = asn1.fromDer(msg.body);
+
+  return pki.privateKeyFromAsn1(obj);
 };
 
 /**
- * Registers an algorithm by name. If the name was already registered, the
- * algorithm API object will be overwritten.
+ * Converts an RSA private key to PEM format.
  *
- * @param name the name of the algorithm.
- * @param algorithm the algorithm API object.
+ * @param key the private key.
+ * @param maxline the maximum characters per line, defaults to 64.
+ *
+ * @return the PEM-formatted private key.
  */
-forge.cipher.registerAlgorithm = function(name, algorithm) {
-  name = name.toUpperCase();
-  forge.cipher.algorithms[name] = algorithm;
+pki.privateKeyToPem = function(key, maxline) {
+  // convert to ASN.1, then DER, then PEM-encode
+  var msg = {
+    type: 'RSA PRIVATE KEY',
+    body: asn1.toDer(pki.privateKeyToAsn1(key)).getBytes()
+  };
+  return forge.pem.encode(msg, {maxline: maxline});
 };
 
 /**
- * Gets a registered algorithm by name.
+ * Converts a PrivateKeyInfo to PEM format.
  *
- * @param name the name of the algorithm.
+ * @param pki the PrivateKeyInfo.
+ * @param maxline the maximum characters per line, defaults to 64.
  *
- * @return the algorithm, if found, null if not.
+ * @return the PEM-formatted private key.
  */
-forge.cipher.getAlgorithm = function(name) {
-  name = name.toUpperCase();
-  if(name in forge.cipher.algorithms) {
-    return forge.cipher.algorithms[name];
-  }
-  return null;
+pki.privateKeyInfoToPem = function(pki, maxline) {
+  // convert to DER, then PEM-encode
+  var msg = {
+    type: 'PRIVATE KEY',
+    body: asn1.toDer(pki).getBytes()
+  };
+  return forge.pem.encode(msg, {maxline: maxline});
 };
-
-var BlockCipher = forge.cipher.BlockCipher = function(options) {
-  this.algorithm = options.algorithm;
-  this.mode = this.algorithm.mode;
-  this.blockSize = this.mode.blockSize;
-  this._finish = false;
-  this._input = null;
-  this.output = null;
-  this._op = options.decrypt ? this.mode.decrypt : this.mode.encrypt;
-  this._decrypt = options.decrypt;
-  this.algorithm.initialize(options);
-};
-
-/**
- * Starts or restarts the encryption or decryption process, whichever
- * was previously configured.
- *
- * For non-GCM mode, the IV may be a binary-encoded string of bytes, an array
- * of bytes, a byte buffer, or an array of 32-bit integers. If the IV is in
- * bytes, then it must be Nb (16) bytes in length. If the IV is given in as
- * 32-bit integers, then it must be 4 integers long.
- *
- * Note: an IV is not required or used in ECB mode.
- *
- * For GCM-mode, the IV must be given as a binary-encoded string of bytes or
- * a byte buffer. The number of bytes should be 12 (96 bits) as recommended
- * by NIST SP-800-38D but another length may be given.
- *
- * @param options the options to use:
- *          iv the initialization vector to use as a binary-encoded string of
- *            bytes, null to reuse the last ciphered block from a previous
- *            update() (this "residue" method is for legacy support only).
- *          additionalData additional authentication data as a binary-encoded
- *            string of bytes, for 'GCM' mode, (default: none).
- *          tagLength desired length of authentication tag, in bits, for
- *            'GCM' mode (0-128, default: 128).
- *          tag the authentication tag to check if decrypting, as a
- *             binary-encoded string of bytes.
- *          output the output the buffer to write to, null to create one.
- */
-BlockCipher.prototype.start = function(options) {
-  options = options || {};
-  var opts = {};
-  for(var key in options) {
-    opts[key] = options[key];
-  }
-  opts.decrypt = this._decrypt;
-  this._finish = false;
-  this._input = forge.util.createBuffer();
-  this.output = options.output || forge.util.createBuffer();
-  this.mode.start(opts);
-};
-
-/**
- * Updates the next block according to the cipher mode.
- *
- * @param input the buffer to read from.
- */
-BlockCipher.prototype.update = function(input) {
-  if(input) {
-    // input given, so empty it into the input buffer
-    this._input.putBuffer(input);
-  }
-
-  // do cipher operation until it needs more input and not finished
-  while(!this._op.call(this.mode, this._input, this.output, this._finish) &&
-    !this._finish) {}
-
-  // free consumed memory from input buffer
-  this._input.compact();
-};
-
-/**
- * Finishes encrypting or decrypting.
- *
- * @param pad a padding function to use in CBC mode, null for default,
- *          signature(blockSize, buffer, decrypt).
- *
- * @return true if successful, false on error.
- */
-BlockCipher.prototype.finish = function(pad) {
-  // backwards-compatibility w/deprecated padding API
-  // Note: will overwrite padding functions even after another start() call
-  if(pad && (this.mode.name === 'ECB' || this.mode.name === 'CBC')) {
-    this.mode.pad = function(input) {
-      return pad(this.blockSize, input, false);
-    };
-    this.mode.unpad = function(output) {
-      return pad(this.blockSize, output, true);
-    };
-  }
-
-  // build options for padding and afterFinish functions
-  var options = {};
-  options.decrypt = this._decrypt;
-
-  // get # of bytes that won't fill a block
-  options.overflow = this._input.length() % this.blockSize;
-
-  if(!this._decrypt && this.mode.pad) {
-    if(!this.mode.pad(this._input, options)) {
-      return false;
-    }
-  }
-
-  // do final update
-  this._finish = true;
-  this.update();
-
-  if(this._decrypt && this.mode.unpad) {
-    if(!this.mode.unpad(this.output, options)) {
-      return false;
-    }
-  }
-
-  if(this.mode.afterFinish) {
-    if(!this.mode.afterFinish(this.output, options)) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
 
 } // end module implementation
 
 /* ########## Begin module wrapper ########## */
-var name = 'cipher';
+var name = 'pki';
 if(typeof define !== 'function') {
   // NodeJS -> AMD
   if(typeof module === 'object' && module.exports) {
@@ -29338,7 +29432,20 @@ define = function(ids, factory) {
   define = tmpDefine;
   return define.apply(null, Array.prototype.slice.call(arguments, 0));
 };
-define(['require', 'module', './util'], function() {
+define([
+  'require',
+  'module',
+  './asn1',
+  './oids',
+  './pbe',
+  './pem',
+  './pbkdf2',
+  './pkcs12',
+  './pss',
+  './rsa',
+  './util',
+  './x509'
+], function() {
   defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
 });
 })();
@@ -29369,6 +29476,331 @@ EcAes = stjs.extend(EcAes, null, [], function(constructor, prototype) {
      */
     constructor.newIv = function(i) {
         return forge.util.encode64(forge.random.getBytesSync(i));
+    };
+}, {}, {});
+var EcAesParameters = function(iv) {
+    this.iv = forge.util.decode64(iv);
+};
+EcAesParameters = stjs.extend(EcAesParameters, null, [], function(constructor, prototype) {
+    prototype.iv = null;
+}, {iv: "forge.payload"}, {});
+/**
+ * Functions to output keys in SSH-friendly formats.
+ *
+ * This is part of the Forge project which may be used under the terms of
+ * either the BSD License or the GNU General Public License (GPL) Version 2.
+ *
+ * See: https://github.com/digitalbazaar/forge/blob/cbebca3780658703d925b61b2caffb1d263a6c1d/LICENSE
+ *
+ * @author https://github.com/shellac
+ */
+(function() {
+/* ########## Begin module implementation ########## */
+function initModule(forge) {
+
+var ssh = forge.ssh = forge.ssh || {};
+
+/**
+ * Encodes (and optionally encrypts) a private RSA key as a Putty PPK file.
+ *
+ * @param privateKey the key.
+ * @param passphrase a passphrase to protect the key (falsy for no encryption).
+ * @param comment a comment to include in the key file.
+ *
+ * @return the PPK file as a string.
+ */
+ssh.privateKeyToPutty = function(privateKey, passphrase, comment) {
+  comment = comment || '';
+  passphrase = passphrase || '';
+  var algorithm = 'ssh-rsa';
+  var encryptionAlgorithm = (passphrase === '') ? 'none' : 'aes256-cbc';
+
+  var ppk = 'PuTTY-User-Key-File-2: ' + algorithm + '\r\n';
+  ppk += 'Encryption: ' + encryptionAlgorithm + '\r\n';
+  ppk += 'Comment: ' + comment + '\r\n';
+
+  // public key into buffer for ppk
+  var pubbuffer = forge.util.createBuffer();
+  _addStringToBuffer(pubbuffer, algorithm);
+  _addBigIntegerToBuffer(pubbuffer, privateKey.e);
+  _addBigIntegerToBuffer(pubbuffer, privateKey.n);
+
+  // write public key
+  var pub = forge.util.encode64(pubbuffer.bytes(), 64);
+  var length = Math.floor(pub.length / 66) + 1; // 66 = 64 + \r\n
+  ppk += 'Public-Lines: ' + length + '\r\n';
+  ppk += pub;
+
+  // private key into a buffer
+  var privbuffer = forge.util.createBuffer();
+  _addBigIntegerToBuffer(privbuffer, privateKey.d);
+  _addBigIntegerToBuffer(privbuffer, privateKey.p);
+  _addBigIntegerToBuffer(privbuffer, privateKey.q);
+  _addBigIntegerToBuffer(privbuffer, privateKey.qInv);
+
+  // optionally encrypt the private key
+  var priv;
+  if(!passphrase) {
+    // use the unencrypted buffer
+    priv = forge.util.encode64(privbuffer.bytes(), 64);
+  } else {
+    // encrypt RSA key using passphrase
+    var encLen = privbuffer.length() + 16 - 1;
+    encLen -= encLen % 16;
+
+    // pad private key with sha1-d data -- needs to be a multiple of 16
+    var padding = _sha1(privbuffer.bytes());
+
+    padding.truncate(padding.length() - encLen + privbuffer.length());
+    privbuffer.putBuffer(padding);
+
+    var aeskey = forge.util.createBuffer();
+    aeskey.putBuffer(_sha1('\x00\x00\x00\x00', passphrase));
+    aeskey.putBuffer(_sha1('\x00\x00\x00\x01', passphrase));
+
+    // encrypt some bytes using CBC mode
+    // key is 40 bytes, so truncate *by* 8 bytes
+    var cipher = forge.aes.createEncryptionCipher(aeskey.truncate(8), 'CBC');
+    cipher.start(forge.util.createBuffer().fillWithByte(0, 16));
+    cipher.update(privbuffer.copy());
+    cipher.finish();
+    var encrypted = cipher.output;
+
+    // Note: this appears to differ from Putty -- is forge wrong, or putty?
+    // due to padding we finish as an exact multiple of 16
+    encrypted.truncate(16); // all padding
+
+    priv = forge.util.encode64(encrypted.bytes(), 64);
+  }
+
+  // output private key
+  length = Math.floor(priv.length / 66) + 1; // 64 + \r\n
+  ppk += '\r\nPrivate-Lines: ' + length + '\r\n';
+  ppk += priv;
+
+  // MAC
+  var mackey = _sha1('putty-private-key-file-mac-key', passphrase);
+
+  var macbuffer = forge.util.createBuffer();
+  _addStringToBuffer(macbuffer, algorithm);
+  _addStringToBuffer(macbuffer, encryptionAlgorithm);
+  _addStringToBuffer(macbuffer, comment);
+  macbuffer.putInt32(pubbuffer.length());
+  macbuffer.putBuffer(pubbuffer);
+  macbuffer.putInt32(privbuffer.length());
+  macbuffer.putBuffer(privbuffer);
+
+  var hmac = forge.hmac.create();
+  hmac.start('sha1', mackey);
+  hmac.update(macbuffer.bytes());
+
+  ppk += '\r\nPrivate-MAC: ' + hmac.digest().toHex() + '\r\n';
+
+  return ppk;
+};
+
+/**
+ * Encodes a public RSA key as an OpenSSH file.
+ *
+ * @param key the key.
+ * @param comment a comment.
+ *
+ * @return the public key in OpenSSH format.
+ */
+ssh.publicKeyToOpenSSH = function(key, comment) {
+  var type = 'ssh-rsa';
+  comment = comment || '';
+
+  var buffer = forge.util.createBuffer();
+  _addStringToBuffer(buffer, type);
+  _addBigIntegerToBuffer(buffer, key.e);
+  _addBigIntegerToBuffer(buffer, key.n);
+
+  return type + ' ' + forge.util.encode64(buffer.bytes()) + ' ' + comment;
+};
+
+/**
+ * Encodes a private RSA key as an OpenSSH file.
+ *
+ * @param key the key.
+ * @param passphrase a passphrase to protect the key (falsy for no encryption).
+ *
+ * @return the public key in OpenSSH format.
+ */
+ssh.privateKeyToOpenSSH = function(privateKey, passphrase) {
+  if(!passphrase) {
+    return forge.pki.privateKeyToPem(privateKey);
+  }
+  // OpenSSH private key is just a legacy format, it seems
+  return forge.pki.encryptRsaPrivateKey(privateKey, passphrase,
+    {legacy: true, algorithm: 'aes128'});
+};
+
+/**
+ * Gets the SSH fingerprint for the given public key.
+ *
+ * @param options the options to use.
+ *          [md] the message digest object to use (defaults to forge.md.md5).
+ *          [encoding] an alternative output encoding, such as 'hex'
+ *            (defaults to none, outputs a byte buffer).
+ *          [delimiter] the delimiter to use between bytes for 'hex' encoded
+ *            output, eg: ':' (defaults to none).
+ *
+ * @return the fingerprint as a byte buffer or other encoding based on options.
+ */
+ssh.getPublicKeyFingerprint = function(key, options) {
+  options = options || {};
+  var md = options.md || forge.md.md5.create();
+
+  var type = 'ssh-rsa';
+  var buffer = forge.util.createBuffer();
+  _addStringToBuffer(buffer, type);
+  _addBigIntegerToBuffer(buffer, key.e);
+  _addBigIntegerToBuffer(buffer, key.n);
+
+  // hash public key bytes
+  md.start();
+  md.update(buffer.getBytes());
+  var digest = md.digest();
+  if(options.encoding === 'hex') {
+    var hex = digest.toHex();
+    if(options.delimiter) {
+      return hex.match(/.{2}/g).join(options.delimiter);
+    }
+    return hex;
+  } else if(options.encoding === 'binary') {
+    return digest.getBytes();
+  } else if(options.encoding) {
+    throw new Error('Unknown encoding "' + options.encoding + '".');
+  }
+  return digest;
+};
+
+/**
+ * Adds len(val) then val to a buffer.
+ *
+ * @param buffer the buffer to add to.
+ * @param val a big integer.
+ */
+function _addBigIntegerToBuffer(buffer, val) {
+  var hexVal = val.toString(16);
+  // ensure 2s complement +ve
+  if(hexVal[0] >= '8') {
+    hexVal = '00' + hexVal;
+  }
+  var bytes = forge.util.hexToBytes(hexVal);
+  buffer.putInt32(bytes.length);
+  buffer.putBytes(bytes);
+}
+
+/**
+ * Adds len(val) then val to a buffer.
+ *
+ * @param buffer the buffer to add to.
+ * @param val a string.
+ */
+function _addStringToBuffer(buffer, val) {
+  buffer.putInt32(val.length);
+  buffer.putString(val);
+}
+
+/**
+ * Hashes the arguments into one value using SHA-1.
+ *
+ * @return the sha1 hash of the provided arguments.
+ */
+function _sha1() {
+  var sha = forge.md.sha1.create();
+  var num = arguments.length;
+  for (var i = 0; i < num; ++i) {
+    sha.update(arguments[i]);
+  }
+  return sha.digest();
+}
+
+} // end module implementation
+
+/* ########## Begin module wrapper ########## */
+var name = 'ssh';
+if(typeof define !== 'function') {
+  // NodeJS -> AMD
+  if(typeof module === 'object' && module.exports) {
+    var nodeJS = true;
+    define = function(ids, factory) {
+      factory(require, module);
+    };
+  } else {
+    // <script>
+    if(typeof forge === 'undefined') {
+      forge = {};
+    }
+    return initModule(forge);
+  }
+}
+// AMD
+var deps;
+var defineFunc = function(require, module) {
+  module.exports = function(forge) {
+    var mods = deps.map(function(dep) {
+      return require(dep);
+    }).concat(initModule);
+    // handle circular dependencies
+    forge = forge || {};
+    forge.defined = forge.defined || {};
+    if(forge.defined[name]) {
+      return forge[name];
+    }
+    forge.defined[name] = true;
+    for(var i = 0; i < mods.length; ++i) {
+      mods[i](forge);
+    }
+    return forge[name];
+  };
+};
+var tmpDefine = define;
+define = function(ids, factory) {
+  deps = (typeof ids === 'string') ? factory.slice(2) : ids.slice(2);
+  if(nodeJS) {
+    delete define;
+    return tmpDefine.apply(null, Array.prototype.slice.call(arguments, 0));
+  }
+  define = tmpDefine;
+  return define.apply(null, Array.prototype.slice.call(arguments, 0));
+};
+define([
+  'require',
+  'module',
+  './aes',
+  './hmac',
+  './md5',
+  './sha1',
+  './util'
+], function() {
+  defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
+});
+})();
+var SubtleCrypto = function() {};
+SubtleCrypto = stjs.extend(SubtleCrypto, null, [], function(constructor, prototype) {
+    prototype.encrypt = function(algorithm, key, data) {
+        return null;
+    };
+    prototype.decrypt = function(algorithm, key, data) {
+        return null;
+    };
+    prototype.sign = function(algorithm, key, data) {
+        return null;
+    };
+    prototype.verify = function(algorithm, key, signature, data) {
+        return null;
+    };
+    prototype.generateKey = function(algorithm, extractable, keyUsages) {
+        return null;
+    };
+    prototype.deriveBits = function(algorithm, baseKey, length) {
+        return null;
+    };
+    prototype.importKey = function(format, keyData, algorithm, extractable, keyUsages) {
+        return null;
     };
 }, {}, {});
 /**
@@ -29714,301 +30146,6 @@ define(['require', 'module', './util'], function() {
 });
 })();
 /**
- * Functions to output keys in SSH-friendly formats.
- *
- * This is part of the Forge project which may be used under the terms of
- * either the BSD License or the GNU General Public License (GPL) Version 2.
- *
- * See: https://github.com/digitalbazaar/forge/blob/cbebca3780658703d925b61b2caffb1d263a6c1d/LICENSE
- *
- * @author https://github.com/shellac
- */
-(function() {
-/* ########## Begin module implementation ########## */
-function initModule(forge) {
-
-var ssh = forge.ssh = forge.ssh || {};
-
-/**
- * Encodes (and optionally encrypts) a private RSA key as a Putty PPK file.
- *
- * @param privateKey the key.
- * @param passphrase a passphrase to protect the key (falsy for no encryption).
- * @param comment a comment to include in the key file.
- *
- * @return the PPK file as a string.
- */
-ssh.privateKeyToPutty = function(privateKey, passphrase, comment) {
-  comment = comment || '';
-  passphrase = passphrase || '';
-  var algorithm = 'ssh-rsa';
-  var encryptionAlgorithm = (passphrase === '') ? 'none' : 'aes256-cbc';
-
-  var ppk = 'PuTTY-User-Key-File-2: ' + algorithm + '\r\n';
-  ppk += 'Encryption: ' + encryptionAlgorithm + '\r\n';
-  ppk += 'Comment: ' + comment + '\r\n';
-
-  // public key into buffer for ppk
-  var pubbuffer = forge.util.createBuffer();
-  _addStringToBuffer(pubbuffer, algorithm);
-  _addBigIntegerToBuffer(pubbuffer, privateKey.e);
-  _addBigIntegerToBuffer(pubbuffer, privateKey.n);
-
-  // write public key
-  var pub = forge.util.encode64(pubbuffer.bytes(), 64);
-  var length = Math.floor(pub.length / 66) + 1; // 66 = 64 + \r\n
-  ppk += 'Public-Lines: ' + length + '\r\n';
-  ppk += pub;
-
-  // private key into a buffer
-  var privbuffer = forge.util.createBuffer();
-  _addBigIntegerToBuffer(privbuffer, privateKey.d);
-  _addBigIntegerToBuffer(privbuffer, privateKey.p);
-  _addBigIntegerToBuffer(privbuffer, privateKey.q);
-  _addBigIntegerToBuffer(privbuffer, privateKey.qInv);
-
-  // optionally encrypt the private key
-  var priv;
-  if(!passphrase) {
-    // use the unencrypted buffer
-    priv = forge.util.encode64(privbuffer.bytes(), 64);
-  } else {
-    // encrypt RSA key using passphrase
-    var encLen = privbuffer.length() + 16 - 1;
-    encLen -= encLen % 16;
-
-    // pad private key with sha1-d data -- needs to be a multiple of 16
-    var padding = _sha1(privbuffer.bytes());
-
-    padding.truncate(padding.length() - encLen + privbuffer.length());
-    privbuffer.putBuffer(padding);
-
-    var aeskey = forge.util.createBuffer();
-    aeskey.putBuffer(_sha1('\x00\x00\x00\x00', passphrase));
-    aeskey.putBuffer(_sha1('\x00\x00\x00\x01', passphrase));
-
-    // encrypt some bytes using CBC mode
-    // key is 40 bytes, so truncate *by* 8 bytes
-    var cipher = forge.aes.createEncryptionCipher(aeskey.truncate(8), 'CBC');
-    cipher.start(forge.util.createBuffer().fillWithByte(0, 16));
-    cipher.update(privbuffer.copy());
-    cipher.finish();
-    var encrypted = cipher.output;
-
-    // Note: this appears to differ from Putty -- is forge wrong, or putty?
-    // due to padding we finish as an exact multiple of 16
-    encrypted.truncate(16); // all padding
-
-    priv = forge.util.encode64(encrypted.bytes(), 64);
-  }
-
-  // output private key
-  length = Math.floor(priv.length / 66) + 1; // 64 + \r\n
-  ppk += '\r\nPrivate-Lines: ' + length + '\r\n';
-  ppk += priv;
-
-  // MAC
-  var mackey = _sha1('putty-private-key-file-mac-key', passphrase);
-
-  var macbuffer = forge.util.createBuffer();
-  _addStringToBuffer(macbuffer, algorithm);
-  _addStringToBuffer(macbuffer, encryptionAlgorithm);
-  _addStringToBuffer(macbuffer, comment);
-  macbuffer.putInt32(pubbuffer.length());
-  macbuffer.putBuffer(pubbuffer);
-  macbuffer.putInt32(privbuffer.length());
-  macbuffer.putBuffer(privbuffer);
-
-  var hmac = forge.hmac.create();
-  hmac.start('sha1', mackey);
-  hmac.update(macbuffer.bytes());
-
-  ppk += '\r\nPrivate-MAC: ' + hmac.digest().toHex() + '\r\n';
-
-  return ppk;
-};
-
-/**
- * Encodes a public RSA key as an OpenSSH file.
- *
- * @param key the key.
- * @param comment a comment.
- *
- * @return the public key in OpenSSH format.
- */
-ssh.publicKeyToOpenSSH = function(key, comment) {
-  var type = 'ssh-rsa';
-  comment = comment || '';
-
-  var buffer = forge.util.createBuffer();
-  _addStringToBuffer(buffer, type);
-  _addBigIntegerToBuffer(buffer, key.e);
-  _addBigIntegerToBuffer(buffer, key.n);
-
-  return type + ' ' + forge.util.encode64(buffer.bytes()) + ' ' + comment;
-};
-
-/**
- * Encodes a private RSA key as an OpenSSH file.
- *
- * @param key the key.
- * @param passphrase a passphrase to protect the key (falsy for no encryption).
- *
- * @return the public key in OpenSSH format.
- */
-ssh.privateKeyToOpenSSH = function(privateKey, passphrase) {
-  if(!passphrase) {
-    return forge.pki.privateKeyToPem(privateKey);
-  }
-  // OpenSSH private key is just a legacy format, it seems
-  return forge.pki.encryptRsaPrivateKey(privateKey, passphrase,
-    {legacy: true, algorithm: 'aes128'});
-};
-
-/**
- * Gets the SSH fingerprint for the given public key.
- *
- * @param options the options to use.
- *          [md] the message digest object to use (defaults to forge.md.md5).
- *          [encoding] an alternative output encoding, such as 'hex'
- *            (defaults to none, outputs a byte buffer).
- *          [delimiter] the delimiter to use between bytes for 'hex' encoded
- *            output, eg: ':' (defaults to none).
- *
- * @return the fingerprint as a byte buffer or other encoding based on options.
- */
-ssh.getPublicKeyFingerprint = function(key, options) {
-  options = options || {};
-  var md = options.md || forge.md.md5.create();
-
-  var type = 'ssh-rsa';
-  var buffer = forge.util.createBuffer();
-  _addStringToBuffer(buffer, type);
-  _addBigIntegerToBuffer(buffer, key.e);
-  _addBigIntegerToBuffer(buffer, key.n);
-
-  // hash public key bytes
-  md.start();
-  md.update(buffer.getBytes());
-  var digest = md.digest();
-  if(options.encoding === 'hex') {
-    var hex = digest.toHex();
-    if(options.delimiter) {
-      return hex.match(/.{2}/g).join(options.delimiter);
-    }
-    return hex;
-  } else if(options.encoding === 'binary') {
-    return digest.getBytes();
-  } else if(options.encoding) {
-    throw new Error('Unknown encoding "' + options.encoding + '".');
-  }
-  return digest;
-};
-
-/**
- * Adds len(val) then val to a buffer.
- *
- * @param buffer the buffer to add to.
- * @param val a big integer.
- */
-function _addBigIntegerToBuffer(buffer, val) {
-  var hexVal = val.toString(16);
-  // ensure 2s complement +ve
-  if(hexVal[0] >= '8') {
-    hexVal = '00' + hexVal;
-  }
-  var bytes = forge.util.hexToBytes(hexVal);
-  buffer.putInt32(bytes.length);
-  buffer.putBytes(bytes);
-}
-
-/**
- * Adds len(val) then val to a buffer.
- *
- * @param buffer the buffer to add to.
- * @param val a string.
- */
-function _addStringToBuffer(buffer, val) {
-  buffer.putInt32(val.length);
-  buffer.putString(val);
-}
-
-/**
- * Hashes the arguments into one value using SHA-1.
- *
- * @return the sha1 hash of the provided arguments.
- */
-function _sha1() {
-  var sha = forge.md.sha1.create();
-  var num = arguments.length;
-  for (var i = 0; i < num; ++i) {
-    sha.update(arguments[i]);
-  }
-  return sha.digest();
-}
-
-} // end module implementation
-
-/* ########## Begin module wrapper ########## */
-var name = 'ssh';
-if(typeof define !== 'function') {
-  // NodeJS -> AMD
-  if(typeof module === 'object' && module.exports) {
-    var nodeJS = true;
-    define = function(ids, factory) {
-      factory(require, module);
-    };
-  } else {
-    // <script>
-    if(typeof forge === 'undefined') {
-      forge = {};
-    }
-    return initModule(forge);
-  }
-}
-// AMD
-var deps;
-var defineFunc = function(require, module) {
-  module.exports = function(forge) {
-    var mods = deps.map(function(dep) {
-      return require(dep);
-    }).concat(initModule);
-    // handle circular dependencies
-    forge = forge || {};
-    forge.defined = forge.defined || {};
-    if(forge.defined[name]) {
-      return forge[name];
-    }
-    forge.defined[name] = true;
-    for(var i = 0; i < mods.length; ++i) {
-      mods[i](forge);
-    }
-    return forge[name];
-  };
-};
-var tmpDefine = define;
-define = function(ids, factory) {
-  deps = (typeof ids === 'string') ? factory.slice(2) : ids.slice(2);
-  if(nodeJS) {
-    delete define;
-    return tmpDefine.apply(null, Array.prototype.slice.call(arguments, 0));
-  }
-  define = tmpDefine;
-  return define.apply(null, Array.prototype.slice.call(arguments, 0));
-};
-define([
-  'require',
-  'module',
-  './aes',
-  './hmac',
-  './md5',
-  './sha1',
-  './util'
-], function() {
-  defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
-});
-})();
-/**
  * An API for getting cryptographically-secure random bytes. The bytes are
  * generated using the Fortuna algorithm devised by Bruce Schneier and
  * Niels Ferguson.
@@ -30242,6 +30379,292 @@ define = function(ids, factory) {
   return define.apply(null, Array.prototype.slice.call(arguments, 0));
 };
 define(['require', 'module', './aes', './md', './prng', './util'], function() {
+  defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
+});
+})();
+/**
+ * Cipher base API.
+ *
+ * @author Dave Longley
+ *
+ * Copyright (c) 2010-2014 Digital Bazaar, Inc.
+ */
+(function() {
+/* ########## Begin module implementation ########## */
+function initModule(forge) {
+
+forge.cipher = forge.cipher || {};
+
+// registered algorithms
+forge.cipher.algorithms = forge.cipher.algorithms || {};
+
+/**
+ * Creates a cipher object that can be used to encrypt data using the given
+ * algorithm and key. The algorithm may be provided as a string value for a
+ * previously registered algorithm or it may be given as a cipher algorithm
+ * API object.
+ *
+ * @param algorithm the algorithm to use, either a string or an algorithm API
+ *          object.
+ * @param key the key to use, as a binary-encoded string of bytes or a
+ *          byte buffer.
+ *
+ * @return the cipher.
+ */
+forge.cipher.createCipher = function(algorithm, key) {
+  var api = algorithm;
+  if(typeof api === 'string') {
+    api = forge.cipher.getAlgorithm(api);
+    if(api) {
+      api = api();
+    }
+  }
+  if(!api) {
+    throw new Error('Unsupported algorithm: ' + algorithm);
+  }
+
+  // assume block cipher
+  return new forge.cipher.BlockCipher({
+    algorithm: api,
+    key: key,
+    decrypt: false
+  });
+};
+
+/**
+ * Creates a decipher object that can be used to decrypt data using the given
+ * algorithm and key. The algorithm may be provided as a string value for a
+ * previously registered algorithm or it may be given as a cipher algorithm
+ * API object.
+ *
+ * @param algorithm the algorithm to use, either a string or an algorithm API
+ *          object.
+ * @param key the key to use, as a binary-encoded string of bytes or a
+ *          byte buffer.
+ *
+ * @return the cipher.
+ */
+forge.cipher.createDecipher = function(algorithm, key) {
+  var api = algorithm;
+  if(typeof api === 'string') {
+    api = forge.cipher.getAlgorithm(api);
+    if(api) {
+      api = api();
+    }
+  }
+  if(!api) {
+    throw new Error('Unsupported algorithm: ' + algorithm);
+  }
+
+  // assume block cipher
+  return new forge.cipher.BlockCipher({
+    algorithm: api,
+    key: key,
+    decrypt: true
+  });
+};
+
+/**
+ * Registers an algorithm by name. If the name was already registered, the
+ * algorithm API object will be overwritten.
+ *
+ * @param name the name of the algorithm.
+ * @param algorithm the algorithm API object.
+ */
+forge.cipher.registerAlgorithm = function(name, algorithm) {
+  name = name.toUpperCase();
+  forge.cipher.algorithms[name] = algorithm;
+};
+
+/**
+ * Gets a registered algorithm by name.
+ *
+ * @param name the name of the algorithm.
+ *
+ * @return the algorithm, if found, null if not.
+ */
+forge.cipher.getAlgorithm = function(name) {
+  name = name.toUpperCase();
+  if(name in forge.cipher.algorithms) {
+    return forge.cipher.algorithms[name];
+  }
+  return null;
+};
+
+var BlockCipher = forge.cipher.BlockCipher = function(options) {
+  this.algorithm = options.algorithm;
+  this.mode = this.algorithm.mode;
+  this.blockSize = this.mode.blockSize;
+  this._finish = false;
+  this._input = null;
+  this.output = null;
+  this._op = options.decrypt ? this.mode.decrypt : this.mode.encrypt;
+  this._decrypt = options.decrypt;
+  this.algorithm.initialize(options);
+};
+
+/**
+ * Starts or restarts the encryption or decryption process, whichever
+ * was previously configured.
+ *
+ * For non-GCM mode, the IV may be a binary-encoded string of bytes, an array
+ * of bytes, a byte buffer, or an array of 32-bit integers. If the IV is in
+ * bytes, then it must be Nb (16) bytes in length. If the IV is given in as
+ * 32-bit integers, then it must be 4 integers long.
+ *
+ * Note: an IV is not required or used in ECB mode.
+ *
+ * For GCM-mode, the IV must be given as a binary-encoded string of bytes or
+ * a byte buffer. The number of bytes should be 12 (96 bits) as recommended
+ * by NIST SP-800-38D but another length may be given.
+ *
+ * @param options the options to use:
+ *          iv the initialization vector to use as a binary-encoded string of
+ *            bytes, null to reuse the last ciphered block from a previous
+ *            update() (this "residue" method is for legacy support only).
+ *          additionalData additional authentication data as a binary-encoded
+ *            string of bytes, for 'GCM' mode, (default: none).
+ *          tagLength desired length of authentication tag, in bits, for
+ *            'GCM' mode (0-128, default: 128).
+ *          tag the authentication tag to check if decrypting, as a
+ *             binary-encoded string of bytes.
+ *          output the output the buffer to write to, null to create one.
+ */
+BlockCipher.prototype.start = function(options) {
+  options = options || {};
+  var opts = {};
+  for(var key in options) {
+    opts[key] = options[key];
+  }
+  opts.decrypt = this._decrypt;
+  this._finish = false;
+  this._input = forge.util.createBuffer();
+  this.output = options.output || forge.util.createBuffer();
+  this.mode.start(opts);
+};
+
+/**
+ * Updates the next block according to the cipher mode.
+ *
+ * @param input the buffer to read from.
+ */
+BlockCipher.prototype.update = function(input) {
+  if(input) {
+    // input given, so empty it into the input buffer
+    this._input.putBuffer(input);
+  }
+
+  // do cipher operation until it needs more input and not finished
+  while(!this._op.call(this.mode, this._input, this.output, this._finish) &&
+    !this._finish) {}
+
+  // free consumed memory from input buffer
+  this._input.compact();
+};
+
+/**
+ * Finishes encrypting or decrypting.
+ *
+ * @param pad a padding function to use in CBC mode, null for default,
+ *          signature(blockSize, buffer, decrypt).
+ *
+ * @return true if successful, false on error.
+ */
+BlockCipher.prototype.finish = function(pad) {
+  // backwards-compatibility w/deprecated padding API
+  // Note: will overwrite padding functions even after another start() call
+  if(pad && (this.mode.name === 'ECB' || this.mode.name === 'CBC')) {
+    this.mode.pad = function(input) {
+      return pad(this.blockSize, input, false);
+    };
+    this.mode.unpad = function(output) {
+      return pad(this.blockSize, output, true);
+    };
+  }
+
+  // build options for padding and afterFinish functions
+  var options = {};
+  options.decrypt = this._decrypt;
+
+  // get # of bytes that won't fill a block
+  options.overflow = this._input.length() % this.blockSize;
+
+  if(!this._decrypt && this.mode.pad) {
+    if(!this.mode.pad(this._input, options)) {
+      return false;
+    }
+  }
+
+  // do final update
+  this._finish = true;
+  this.update();
+
+  if(this._decrypt && this.mode.unpad) {
+    if(!this.mode.unpad(this.output, options)) {
+      return false;
+    }
+  }
+
+  if(this.mode.afterFinish) {
+    if(!this.mode.afterFinish(this.output, options)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+
+} // end module implementation
+
+/* ########## Begin module wrapper ########## */
+var name = 'cipher';
+if(typeof define !== 'function') {
+  // NodeJS -> AMD
+  if(typeof module === 'object' && module.exports) {
+    var nodeJS = true;
+    define = function(ids, factory) {
+      factory(require, module);
+    };
+  } else {
+    // <script>
+    if(typeof forge === 'undefined') {
+      forge = {};
+    }
+    return initModule(forge);
+  }
+}
+// AMD
+var deps;
+var defineFunc = function(require, module) {
+  module.exports = function(forge) {
+    var mods = deps.map(function(dep) {
+      return require(dep);
+    }).concat(initModule);
+    // handle circular dependencies
+    forge = forge || {};
+    forge.defined = forge.defined || {};
+    if(forge.defined[name]) {
+      return forge[name];
+    }
+    forge.defined[name] = true;
+    for(var i = 0; i < mods.length; ++i) {
+      mods[i](forge);
+    }
+    return forge[name];
+  };
+};
+var tmpDefine = define;
+define = function(ids, factory) {
+  deps = (typeof ids === 'string') ? factory.slice(2) : ids.slice(2);
+  if(nodeJS) {
+    delete define;
+    return tmpDefine.apply(null, Array.prototype.slice.call(arguments, 0));
+  }
+  define = tmpDefine;
+  return define.apply(null, Array.prototype.slice.call(arguments, 0));
+};
+define(['require', 'module', './util'], function() {
   defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
 });
 })();
@@ -33234,358 +33657,6 @@ define(['require', 'module'], function() {
 });
 })();
 /**
- * Secure Hash Algorithm with 256-bit digest (SHA-256) implementation.
- *
- * See FIPS 180-2 for details.
- *
- * @author Dave Longley
- *
- * Copyright (c) 2010-2014 Digital Bazaar, Inc.
- */
-(function() {
-/* ########## Begin module implementation ########## */
-function initModule(forge) {
-
-var sha256 = forge.sha256 = forge.sha256 || {};
-forge.md = forge.md || {};
-forge.md.algorithms = forge.md.algorithms || {};
-forge.md.sha256 = forge.md.algorithms.sha256 = sha256;
-
-/**
- * Creates a SHA-256 message digest object.
- *
- * @return a message digest object.
- */
-sha256.create = function() {
-  // do initialization as necessary
-  if(!_initialized) {
-    _init();
-  }
-
-  // SHA-256 state contains eight 32-bit integers
-  var _state = null;
-
-  // input buffer
-  var _input = forge.util.createBuffer();
-
-  // used for word storage
-  var _w = new Array(64);
-
-  // message digest object
-  var md = {
-    algorithm: 'sha256',
-    blockLength: 64,
-    digestLength: 32,
-    // 56-bit length of message so far (does not including padding)
-    messageLength: 0,
-    // true 64-bit message length as two 32-bit ints
-    messageLength64: [0, 0]
-  };
-
-  /**
-   * Starts the digest.
-   *
-   * @return this digest object.
-   */
-  md.start = function() {
-    md.messageLength = 0;
-    md.messageLength64 = [0, 0];
-    _input = forge.util.createBuffer();
-    _state = {
-      h0: 0x6A09E667,
-      h1: 0xBB67AE85,
-      h2: 0x3C6EF372,
-      h3: 0xA54FF53A,
-      h4: 0x510E527F,
-      h5: 0x9B05688C,
-      h6: 0x1F83D9AB,
-      h7: 0x5BE0CD19
-    };
-    return md;
-  };
-  // start digest automatically for first time
-  md.start();
-
-  /**
-   * Updates the digest with the given message input. The given input can
-   * treated as raw input (no encoding will be applied) or an encoding of
-   * 'utf8' maybe given to encode the input using UTF-8.
-   *
-   * @param msg the message input to update with.
-   * @param encoding the encoding to use (default: 'raw', other: 'utf8').
-   *
-   * @return this digest object.
-   */
-  md.update = function(msg, encoding) {
-    if(encoding === 'utf8') {
-      msg = forge.util.encodeUtf8(msg);
-    }
-
-    // update message length
-    md.messageLength += msg.length;
-    md.messageLength64[0] += (msg.length / 0x100000000) >>> 0;
-    md.messageLength64[1] += msg.length >>> 0;
-
-    // add bytes to input buffer
-    _input.putBytes(msg);
-
-    // process bytes
-    _update(_state, _w, _input);
-
-    // compact input buffer every 2K or if empty
-    if(_input.read > 2048 || _input.length() === 0) {
-      _input.compact();
-    }
-
-    return md;
-  };
-
-  /**
-   * Produces the digest.
-   *
-   * @return a byte buffer containing the digest value.
-   */
-  md.digest = function() {
-    /* Note: Here we copy the remaining bytes in the input buffer and
-    add the appropriate SHA-256 padding. Then we do the final update
-    on a copy of the state so that if the user wants to get
-    intermediate digests they can do so. */
-
-    /* Determine the number of bytes that must be added to the message
-    to ensure its length is congruent to 448 mod 512. In other words,
-    the data to be digested must be a multiple of 512 bits (or 128 bytes).
-    This data includes the message, some padding, and the length of the
-    message. Since the length of the message will be encoded as 8 bytes (64
-    bits), that means that the last segment of the data must have 56 bytes
-    (448 bits) of message and padding. Therefore, the length of the message
-    plus the padding must be congruent to 448 mod 512 because
-    512 - 128 = 448.
-
-    In order to fill up the message length it must be filled with
-    padding that begins with 1 bit followed by all 0 bits. Padding
-    must *always* be present, so if the message length is already
-    congruent to 448 mod 512, then 512 padding bits must be added. */
-
-    // 512 bits == 64 bytes, 448 bits == 56 bytes, 64 bits = 8 bytes
-    // _padding starts with 1 byte with first bit is set in it which
-    // is byte value 128, then there may be up to 63 other pad bytes
-    var padBytes = forge.util.createBuffer();
-    padBytes.putBytes(_input.bytes());
-    // 64 - (remaining msg + 8 bytes msg length) mod 64
-    padBytes.putBytes(
-      _padding.substr(0, 64 - ((md.messageLength64[1] + 8) & 0x3F)));
-
-    /* Now append length of the message. The length is appended in bits
-    as a 64-bit number in big-endian order. Since we store the length in
-    bytes, we must multiply the 64-bit length by 8 (or left shift by 3). */
-    padBytes.putInt32(
-      (md.messageLength64[0] << 3) | (md.messageLength64[0] >>> 28));
-    padBytes.putInt32(md.messageLength64[1] << 3);
-    var s2 = {
-      h0: _state.h0,
-      h1: _state.h1,
-      h2: _state.h2,
-      h3: _state.h3,
-      h4: _state.h4,
-      h5: _state.h5,
-      h6: _state.h6,
-      h7: _state.h7
-    };
-    _update(s2, _w, padBytes);
-    var rval = forge.util.createBuffer();
-    rval.putInt32(s2.h0);
-    rval.putInt32(s2.h1);
-    rval.putInt32(s2.h2);
-    rval.putInt32(s2.h3);
-    rval.putInt32(s2.h4);
-    rval.putInt32(s2.h5);
-    rval.putInt32(s2.h6);
-    rval.putInt32(s2.h7);
-    return rval;
-  };
-
-  return md;
-};
-
-// sha-256 padding bytes not initialized yet
-var _padding = null;
-var _initialized = false;
-
-// table of constants
-var _k = null;
-
-/**
- * Initializes the constant tables.
- */
-function _init() {
-  // create padding
-  _padding = String.fromCharCode(128);
-  _padding += forge.util.fillString(String.fromCharCode(0x00), 64);
-
-  // create K table for SHA-256
-  _k = [
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
-    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
-    0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
-    0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
-    0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
-    0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
-
-  // now initialized
-  _initialized = true;
-}
-
-/**
- * Updates a SHA-256 state with the given byte buffer.
- *
- * @param s the SHA-256 state to update.
- * @param w the array to use to store words.
- * @param bytes the byte buffer to update with.
- */
-function _update(s, w, bytes) {
-  // consume 512 bit (64 byte) chunks
-  var t1, t2, s0, s1, ch, maj, i, a, b, c, d, e, f, g, h;
-  var len = bytes.length();
-  while(len >= 64) {
-    // the w array will be populated with sixteen 32-bit big-endian words
-    // and then extended into 64 32-bit words according to SHA-256
-    for(i = 0; i < 16; ++i) {
-      w[i] = bytes.getInt32();
-    }
-    for(; i < 64; ++i) {
-      // XOR word 2 words ago rot right 17, rot right 19, shft right 10
-      t1 = w[i - 2];
-      t1 =
-        ((t1 >>> 17) | (t1 << 15)) ^
-        ((t1 >>> 19) | (t1 << 13)) ^
-        (t1 >>> 10);
-      // XOR word 15 words ago rot right 7, rot right 18, shft right 3
-      t2 = w[i - 15];
-      t2 =
-        ((t2 >>> 7) | (t2 << 25)) ^
-        ((t2 >>> 18) | (t2 << 14)) ^
-        (t2 >>> 3);
-      // sum(t1, word 7 ago, t2, word 16 ago) modulo 2^32
-      w[i] = (t1 + w[i - 7] + t2 + w[i - 16]) | 0;
-    }
-
-    // initialize hash value for this chunk
-    a = s.h0;
-    b = s.h1;
-    c = s.h2;
-    d = s.h3;
-    e = s.h4;
-    f = s.h5;
-    g = s.h6;
-    h = s.h7;
-
-    // round function
-    for(i = 0; i < 64; ++i) {
-      // Sum1(e)
-      s1 =
-        ((e >>> 6) | (e << 26)) ^
-        ((e >>> 11) | (e << 21)) ^
-        ((e >>> 25) | (e << 7));
-      // Ch(e, f, g) (optimized the same way as SHA-1)
-      ch = g ^ (e & (f ^ g));
-      // Sum0(a)
-      s0 =
-        ((a >>> 2) | (a << 30)) ^
-        ((a >>> 13) | (a << 19)) ^
-        ((a >>> 22) | (a << 10));
-      // Maj(a, b, c) (optimized the same way as SHA-1)
-      maj = (a & b) | (c & (a ^ b));
-
-      // main algorithm
-      t1 = h + s1 + ch + _k[i] + w[i];
-      t2 = s0 + maj;
-      h = g;
-      g = f;
-      f = e;
-      e = (d + t1) | 0;
-      d = c;
-      c = b;
-      b = a;
-      a = (t1 + t2) | 0;
-    }
-
-    // update hash state
-    s.h0 = (s.h0 + a) | 0;
-    s.h1 = (s.h1 + b) | 0;
-    s.h2 = (s.h2 + c) | 0;
-    s.h3 = (s.h3 + d) | 0;
-    s.h4 = (s.h4 + e) | 0;
-    s.h5 = (s.h5 + f) | 0;
-    s.h6 = (s.h6 + g) | 0;
-    s.h7 = (s.h7 + h) | 0;
-    len -= 64;
-  }
-}
-
-} // end module implementation
-
-/* ########## Begin module wrapper ########## */
-var name = 'sha256';
-if(typeof define !== 'function') {
-  // NodeJS -> AMD
-  if(typeof module === 'object' && module.exports) {
-    var nodeJS = true;
-    define = function(ids, factory) {
-      factory(require, module);
-    };
-  } else {
-    // <script>
-    if(typeof forge === 'undefined') {
-      forge = {};
-    }
-    return initModule(forge);
-  }
-}
-// AMD
-var deps;
-var defineFunc = function(require, module) {
-  module.exports = function(forge) {
-    var mods = deps.map(function(dep) {
-      return require(dep);
-    }).concat(initModule);
-    // handle circular dependencies
-    forge = forge || {};
-    forge.defined = forge.defined || {};
-    if(forge.defined[name]) {
-      return forge[name];
-    }
-    forge.defined[name] = true;
-    for(var i = 0; i < mods.length; ++i) {
-      mods[i](forge);
-    }
-    return forge[name];
-  };
-};
-var tmpDefine = define;
-define = function(ids, factory) {
-  deps = (typeof ids === 'string') ? factory.slice(2) : ids.slice(2);
-  if(nodeJS) {
-    delete define;
-    return tmpDefine.apply(null, Array.prototype.slice.call(arguments, 0));
-  }
-  define = tmpDefine;
-  return define.apply(null, Array.prototype.slice.call(arguments, 0));
-};
-define(['require', 'module', './util'], function() {
-  defineFunc.apply(null, Array.prototype.slice.call(arguments, 0));
-});
-})();
-/**
  *  Helper methods for performing RSA Encryption methods. Uses Optimal Asymmetric
  *  Encryption Padding (OAEP) encryption and decryption. Uses RSA SSA PKCS#1 v1.5
  *  (RSASSA-PKCS1-V1_5) signing and verifying with UTF8 encoding.
@@ -33921,7 +33992,7 @@ EcRsaOaepAsyncWorker = stjs.extend(EcRsaOaepAsyncWorker, null, [], function(cons
     constructor.q1 = null;
     constructor.q2 = null;
     constructor.initWorker = function() {
-        if (window == null && ((typeof self).equals("undefined")) || Worker == undefined || Worker == null) {
+        if (window == null && (typeof self).equals("undefined")) {
             return;
         }
         if (!EcRemote.async) {
@@ -34140,7 +34211,7 @@ EcAesCtrAsyncWorker = stjs.extend(EcAesCtrAsyncWorker, null, [], function(constr
     constructor.q1 = null;
     constructor.q2 = null;
     constructor.initWorker = function() {
-        if (window == null && ((typeof self).equals("undefined")) || Worker == undefined || Worker == null) {
+        if (window == null && (typeof self).equals("undefined")) {
             return;
         }
         if (!EcRemote.async) {
@@ -34450,54 +34521,6 @@ EcAesCtrAsync = stjs.extend(EcAesCtrAsync, null, [], function(constructor, proto
         }, failure);
     };
 }, {}, {});
-/**
- *  @author aaron.veden@eduworks.com
- */
-var StorageAdapter = function() {};
-StorageAdapter = stjs.extend(StorageAdapter, null, [], function(constructor, prototype) {
-    constructor.AREA_INCOMING = "Incoming";
-    constructor.AREA_OUTGOING = "Outgoing";
-    constructor.AREA_EVENTS = "Events";
-    constructor.AREA_GENERAL = "General";
-    constructor.AREA_PROFILE = "Profile";
-    constructor.AREA_COMPENTENCIES = "Competencies";
-    constructor.AREA_CURRENT_USER = "CurrentUser";
-    constructor.AREA_CURRENT_BOOK = "CurrentBook";
-    prototype.getAnnotations = function(user, thread, callback) {};
-    prototype.storeCurrentUser = function(user, callback) {};
-    prototype.getCurrentUser = function(callback) {};
-    prototype.storeCurrentBook = function(book) {};
-    prototype.getCurrentBook = function(callback) {};
-    prototype.saveEvent = function(user, containerPath, event) {};
-    prototype.saveEvents = function(user, containerPath, events) {};
-    prototype.getEvents = function(user, containerPath, callback) {};
-    prototype.getCompetencies = function(user, callback) {};
-    prototype.setCompetencies = function(user, competencies) {};
-    prototype.storeOutgoing = function(user, xapi) {};
-    prototype.postMessage = function(user, thread, message) {};
-    prototype.postMessages = function(user, thread, messages) {};
-    prototype.getMessages = function(user, thread, callback) {};
-    prototype.saveUserProfile = function(user) {};
-    prototype.removeAnnotation = function(user, id, containerPath) {};
-    prototype.removeSharedAnnotation = function(user, id) {};
-    prototype.getGeneralAnnotations = function(user, containerPath, callback) {};
-    prototype.getUserProfile = function(id, callback) {};
-    prototype.getOutgoing = function(user, callback) {};
-    prototype.clearOutgoing = function(user, toClear) {};
-    prototype.saveAnnotation = function(user, containerPath, annotation) {};
-    prototype.saveAnnotations = function(user, containerPath, annotations) {};
-    prototype.saveGeneralAnnotation = function(user, containerPath, annotation) {};
-    prototype.saveGeneralAnnotations = function(user, containerPath, annotations) {};
-    prototype.getAsset = function(id, callback) {};
-    prototype.setAsset = function(id, data) {};
-    prototype.removeMessage = function(user, id, thread) {};
-    prototype.removeNotification = function(user, id) {};
-    prototype.getNotifications = function(user, callback) {};
-    prototype.addNotification = function(user, notification) {};
-    prototype.getToc = function(user, containerPath, callback) {};
-    prototype.removeToc = function(user, containerPath, section, id) {};
-    prototype.addToc = function(user, containerPath, data) {};
-}, {}, {});
 var Endpoint = function() {
     this.username = "";
     this.password = "";
@@ -34566,25 +34589,14 @@ Endpoint = stjs.extend(Endpoint, null, [], function(constructor, prototype) {
         return Endpoint.fromMap(JSON.parse(s));
     };
 }, {lastSyncedThreads: {name: "Map", arguments: [null, null]}, lastSyncedBooksMine: {name: "Map", arguments: [null, null]}, lastSyncedBooksShared: {name: "Map", arguments: [null, null]}}, {});
-var UserAdapter = function() {};
-UserAdapter = stjs.extend(UserAdapter, null, [], function(constructor, prototype) {
-    prototype.getUser = function() {};
-    prototype.login = function(callback) {};
-    prototype.loginAsUser = function(username, password, callback) {};
-    prototype.logout = function() {};
-    prototype.loggedIn = function() {};
-    prototype.isSameUser = function() {};
-}, {}, {});
-var NetworkAdapter = function() {};
-NetworkAdapter = stjs.extend(NetworkAdapter, null, [], function(constructor, prototype) {
-    prototype.activate = function(teacher) {};
-    prototype.disable = function(finished) {};
-    prototype.push = function(finished) {};
-}, {}, {});
 var ActivityAdapter = function() {};
 ActivityAdapter = stjs.extend(ActivityAdapter, null, [], function(constructor, prototype) {
+    prototype.getActivityId = function() {};
+    prototype.retrieveActivityListing = function(callback) {};
+    prototype.hasActivityListing = function() {};
     prototype.openBook = function(containerPath, callback) {};
     prototype.getBook = function() {};
+    prototype.getPreviousBook = function() {};
     prototype.setDirectMessageHandler = function(directMessageHandler) {};
     prototype.initializeToc = function(data) {};
     prototype.getToc = function(callback) {};
@@ -34596,6 +34608,63 @@ ActivityAdapter = stjs.extend(ActivityAdapter, null, [], function(constructor, p
     prototype.isSameBook = function() {};
     prototype.unsubscribeAll = function() {};
     prototype.subscribe = function(thread, callback) {};
+}, {}, {});
+var UserAdapter = function() {};
+UserAdapter = stjs.extend(UserAdapter, null, [], function(constructor, prototype) {
+    prototype.getUser = function() {};
+    prototype.login = function(callback) {};
+    prototype.loginAsUser = function(username, password, callback) {};
+    prototype.logout = function(callback) {};
+    prototype.loggedIn = function() {};
+    prototype.isSameUser = function() {};
+}, {}, {});
+/**
+ *  @author aaron.veden@eduworks.com
+ */
+var StorageAdapter = function() {};
+StorageAdapter = stjs.extend(StorageAdapter, null, [], function(constructor, prototype) {
+    constructor.AREA_INCOMING = "Incoming";
+    constructor.AREA_OUTGOING = "Outgoing";
+    constructor.AREA_EVENTS = "Events";
+    constructor.AREA_GENERAL = "General";
+    constructor.AREA_PROFILE = "Profile";
+    constructor.AREA_COMPENTENCIES = "Competencies";
+    constructor.AREA_CURRENT_USER = "CurrentUser";
+    constructor.AREA_CURRENT_BOOK = "CurrentBook";
+    prototype.getAnnotations = function(user, thread, callback) {};
+    prototype.storeCurrentUser = function(user, callback) {};
+    prototype.getCurrentUser = function(callback) {};
+    prototype.storeCurrentBook = function(book) {};
+    prototype.getCurrentBook = function(callback) {};
+    prototype.saveEvent = function(user, containerPath, event) {};
+    prototype.saveEvents = function(user, containerPath, events) {};
+    prototype.getEvents = function(user, containerPath, callback) {};
+    prototype.getCompetencies = function(user, callback) {};
+    prototype.setCompetencies = function(user, competencies) {};
+    prototype.storeOutgoing = function(user, xapi) {};
+    prototype.postMessage = function(user, thread, message) {};
+    prototype.postMessages = function(user, thread, messages) {};
+    prototype.getMessages = function(user, thread, callback) {};
+    prototype.saveUserProfile = function(user) {};
+    prototype.removeAnnotation = function(user, id, containerPath) {};
+    prototype.removeSharedAnnotation = function(user, id) {};
+    prototype.getGeneralAnnotations = function(user, containerPath, callback) {};
+    prototype.getUserProfile = function(id, callback) {};
+    prototype.getOutgoing = function(user, callback) {};
+    prototype.clearOutgoing = function(user, toClear) {};
+    prototype.saveAnnotation = function(user, containerPath, annotation) {};
+    prototype.saveAnnotations = function(user, containerPath, annotations) {};
+    prototype.saveGeneralAnnotation = function(user, containerPath, annotation) {};
+    prototype.saveGeneralAnnotations = function(user, containerPath, annotations) {};
+    prototype.getAsset = function(id, callback) {};
+    prototype.setAsset = function(id, data) {};
+    prototype.removeMessage = function(user, id, thread) {};
+    prototype.removeNotification = function(user, id) {};
+    prototype.getNotifications = function(user, callback) {};
+    prototype.addNotification = function(user, notification) {};
+    prototype.getToc = function(user, containerPath, callback) {};
+    prototype.removeToc = function(user, containerPath, section, id) {};
+    prototype.addToc = function(user, containerPath, data) {};
 }, {}, {});
 var AssetAdapter = function() {};
 AssetAdapter = stjs.extend(AssetAdapter, null, [], function(constructor, prototype) {
@@ -34621,6 +34690,12 @@ LauncherAdapter = stjs.extend(LauncherAdapter, null, [], function(constructor, p
     prototype.connect = function() {};
     prototype.close = function() {};
     prototype.setMessageCallback = function(callback) {};
+}, {}, {});
+var NetworkAdapter = function() {};
+NetworkAdapter = stjs.extend(NetworkAdapter, null, [], function(constructor, prototype) {
+    prototype.activate = function(teacher) {};
+    prototype.disable = function(finished) {};
+    prototype.push = function(finished) {};
 }, {}, {});
 var Page = function(firstVisibleCFI, lastVisibleCFI) {
     this.firstVisibleCFI = firstVisibleCFI;
@@ -34657,7 +34732,9 @@ var UserProfile = function(rawProfile) {
                 this.lrsUrls[e.url] = e;
             }
     }
-    if ((this.homePage == "") || (this.homePage == null)) 
+    if (UserProfile.TLADemo && ((this.homePage == "") || (this.homePage == null))) {
+        this.homePage = "http://adltla.usalearning.net:8081/auth/";
+    } else if ((this.homePage == "") || (this.homePage == null)) 
         this.homePage = "acct:keycloak-server";
 };
 UserProfile = stjs.extend(UserProfile, null, [], function(constructor, prototype) {
@@ -34665,6 +34742,7 @@ UserProfile = stjs.extend(UserProfile, null, [], function(constructor, prototype
     prototype.name = null;
     prototype.homePage = null;
     prototype.preferredName = null;
+    constructor.TLADemo = false;
     prototype.lrsUrls = null;
     prototype.setName = function(name) {
         this.name = name;
@@ -34726,117 +34804,6 @@ UserProfile = stjs.extend(UserProfile, null, [], function(constructor, prototype
         return JSON.stringify(this.toObject());
     };
 }, {lrsUrls: {name: "Map", arguments: [null, "Endpoint"]}}, {});
-var NativeNetworkAdapter = function() {};
-NativeNetworkAdapter = stjs.extend(NativeNetworkAdapter, null, [NetworkAdapter], function(constructor, prototype) {
-    prototype.push = function(finished) {};
-    prototype.disable = function(finished) {};
-    prototype.activate = function(teacher) {};
-}, {}, {});
-var NativeActivityAdapter = function() {};
-NativeActivityAdapter = stjs.extend(NativeActivityAdapter, null, [ActivityAdapter], function(constructor, prototype) {
-    prototype.unsubscribeAll = function() {};
-    prototype.subscribe = function(thread, callback) {};
-    prototype.getToc = function(callback) {};
-    prototype.openBook = function(containerPath, callback) {};
-    prototype.isSameBook = function() {
-        return false;
-    };
-    prototype.getBook = function() {
-        return null;
-    };
-    prototype.getThreads = function() {
-        return null;
-    };
-    prototype.clearParentActivity = function() {};
-    prototype.startParentActivity = function(activity) {};
-    prototype.getParentActivity = function() {
-        return null;
-    };
-    prototype.setDirectMessageHandler = function(directMessageHandler) {};
-    prototype.hookDirectMessages = function() {};
-    prototype.initializeToc = function(data) {};
-}, {}, {});
-var XApiUtils = function() {};
-XApiUtils = stjs.extend(XApiUtils, null, [], function(constructor, prototype) {
-    constructor.sortNewest = function(xapis) {
-        xapis.sort(function(a, b) {
-            var v = new Date(b["timestamp"]).getTime() - new Date(a["timestamp"]).getTime();
-            return v > 0 ? 1 : v != 0 ? -1 : (a["id"]).compareTo(b["id"]);
-        });
-    };
-    constructor.sortNewestTimeSeries = function(xapis) {
-        xapis.sort(function(a, b) {
-            return a.compareTo(b);
-        });
-    };
-    constructor.sortXApiNewest = function(xapis) {
-        xapis.sort(function(a, b) {
-            var v = new Date(b["timestamp"]).getTime() - new Date(a["timestamp"]).getTime();
-            return v > 0 ? 1 : v != 0 ? -1 : (a["id"]).compareTo(b["id"]);
-        });
-    };
-    constructor.addTimestamp = function(xapi) {
-        if (xapi["timestamp"] == null) 
-            xapi["timestamp"] = EcDate.toISOString(new Date());
-        if (xapi["id"] == null) 
-            xapi.generateId();
-    };
-    constructor.getTimestamp = function(xapi) {
-        return new Date(xapi["timestamp"]);
-    };
-    constructor.getActorId = function(xapi) {
-        var actorObj = xapi["actor"];
-        var account = actorObj["account"];
-        if (account != null) {
-            return account["name"];
-        } else {
-            return actorObj["name"];
-        }
-    };
-    constructor.getObjectId = function(xapi) {
-        return (xapi["object"])["id"];
-    };
-    constructor.getVerb = function(xapi) {
-        return ((xapi["verb"])["display"])["en-US"];
-    };
-    constructor.getObjectName = function(xapi) {
-        var object = xapi["object"];
-        var definition = object["definition"];
-        if (definition != null) {
-            var name = definition["name"];
-            if (name != null) 
-                return name["en-US"];
-        }
-        return null;
-    };
-    constructor.getObjectDescription = function(xapi) {
-        var object = xapi["object"];
-        var definition = object["definition"];
-        if (definition != null) {
-            var name = definition["description"];
-            if (name != null) 
-                return name["en-US"];
-        }
-        return null;
-    };
-    constructor.getParentActivity = function(xapi) {
-        return (((xapi["context"])["contextActivities"])["parent"])[0]["id"];
-    };
-    constructor.parseXApiArray = function(s) {
-        var xapis = JSON.parse(s);
-        return xapis == null ? [] : xapis;
-    };
-    constructor.parseXApiMap = function(s) {
-        if ((s == null) || (s.length == 0)) 
-            return {};
-        var map = JSON.parse(s);
-        return map == null ? {} : map;
-    };
-    constructor.pathToFilename = function(path) {
-        var filename = path.substring(path.lastIndexOf("/") + 1);
-        return filename;
-    };
-}, {}, {});
 var TimeSeriesData = function() {};
 TimeSeriesData = stjs.extend(TimeSeriesData, null, [], function(constructor, prototype) {
     constructor.NAMESPACE_USERNAME = "user-";
@@ -34885,6 +34852,125 @@ TimeSeriesData = stjs.extend(TimeSeriesData, null, [], function(constructor, pro
         return JSON.stringify(this.toObject());
     };
 }, {timestamp: "Date"}, {});
+var XApiUtils = function() {};
+XApiUtils = stjs.extend(XApiUtils, null, [], function(constructor, prototype) {
+    constructor.sortNewest = function(xapis) {
+        xapis.sort(function(a, b) {
+            var v = new Date(b["timestamp"]).getTime() - new Date(a["timestamp"]).getTime();
+            return v > 0 ? 1 : v != 0 ? -1 : (a["id"]).compareTo(b["id"]);
+        });
+    };
+    constructor.sortNewestTimeSeries = function(xapis) {
+        xapis.sort(function(a, b) {
+            return a.compareTo(b);
+        });
+    };
+    constructor.sortXApiNewest = function(xapis) {
+        xapis.sort(function(a, b) {
+            var v = new Date(b["timestamp"]).getTime() - new Date(a["timestamp"]).getTime();
+            return v > 0 ? 1 : v != 0 ? -1 : (a["id"]).compareTo(b["id"]);
+        });
+    };
+    constructor.addTimestamp = function(xapi) {
+        if (xapi["timestamp"] == null) 
+            xapi["timestamp"] = EcDate.toISOString(new Date());
+        if (xapi["id"] == null) 
+            xapi.generateId();
+    };
+    constructor.getTimestamp = function(xapi) {
+        return new Date(xapi["timestamp"]);
+    };
+    constructor.getActorId = function(xapi) {
+        var actorObj = xapi["actor"];
+        var account = actorObj["account"];
+        if (account != null) {
+            return account["name"];
+        } else {
+            return actorObj["name"];
+        }
+    };
+    constructor.getActorName = function(xapi) {
+        var actorObj = xapi["actor"];
+        return actorObj["name"];
+    };
+    constructor.getObjectId = function(xapi) {
+        return (xapi["object"])["id"];
+    };
+    constructor.getVerb = function(xapi) {
+        return ((xapi["verb"])["display"])["en-US"];
+    };
+    constructor.getObjectName = function(xapi) {
+        var object = xapi["object"];
+        var definition = object["definition"];
+        if (definition != null) {
+            var name = definition["name"];
+            if (name != null) 
+                return name["en-US"];
+        }
+        return null;
+    };
+    constructor.getObjectDescription = function(xapi) {
+        var object = xapi["object"];
+        var definition = object["definition"];
+        if (definition != null) {
+            var name = definition["description"];
+            if (name != null) 
+                return name["en-US"];
+        }
+        return null;
+    };
+    constructor.getParentActivity = function(xapi) {
+        return (((xapi["context"])["contextActivities"])["parent"])[0]["id"];
+    };
+    constructor.parseXApiArray = function(s) {
+        var xapis = JSON.parse(s);
+        return xapis == null ? [] : xapis;
+    };
+    constructor.parseXApiMap = function(s) {
+        if ((s == null) || (s.length == 0)) 
+            return {};
+        var map = JSON.parse(s);
+        return map == null ? {} : map;
+    };
+    constructor.pathToFilename = function(path) {
+        var filename = path.substring(path.lastIndexOf("/") + 1);
+        return filename;
+    };
+}, {}, {});
+var NativeActivityAdapter = function() {};
+NativeActivityAdapter = stjs.extend(NativeActivityAdapter, null, [ActivityAdapter], function(constructor, prototype) {
+    prototype.unsubscribeAll = function() {};
+    prototype.subscribe = function(thread, callback) {};
+    prototype.getToc = function(callback) {};
+    prototype.openBook = function(containerPath, callback) {};
+    prototype.isSameBook = function() {
+        return false;
+    };
+    prototype.getBook = function() {
+        return null;
+    };
+    prototype.getPreviousBook = function() {
+        return null;
+    };
+    prototype.getThreads = function() {
+        return null;
+    };
+    prototype.clearParentActivity = function() {};
+    prototype.startParentActivity = function(activity) {};
+    prototype.getParentActivity = function() {
+        return null;
+    };
+    prototype.setDirectMessageHandler = function(directMessageHandler) {};
+    prototype.hookDirectMessages = function() {};
+    prototype.initializeToc = function(data) {};
+    prototype.getActivityId = function() {
+        return null;
+    };
+    prototype.retrieveActivityListing = function(callback) {};
+    prototype.hasActivityListing = function() {
+        return false;
+    };
+}, {}, {});
 var NativeAssetAdapter = function() {};
 NativeAssetAdapter = stjs.extend(NativeAssetAdapter, null, [AssetAdapter], function(constructor, prototype) {
     prototype.queue = function(ref) {};
@@ -34892,7 +34978,7 @@ NativeAssetAdapter = stjs.extend(NativeAssetAdapter, null, [AssetAdapter], funct
     prototype.stopSync = function() {};
     prototype.setHookCallback = function(callback) {};
 }, {}, {});
-var LocalLauncherAdapter = function(userManager) {
+var LocalLauncherAdapter = function(userManager, activityManager, xapiGenerator) {
     if (window.SocketConnectionHandler != null) {
         this.connectionHandler = new window.SocketConnectionHandler();
         this.connectionHandler.setMessageCallback(function(message) {
@@ -34905,8 +34991,18 @@ var LocalLauncherAdapter = function(userManager) {
                     var cfi = "";
                     var filename = "";
                     var idref = "";
-                    if (parameter.indexOf("?cfi=") != -1) {
-                        cfi = decodeURIComponent(parameter.substring(parameter.indexOf("?") + 5));
+                    var queryPosition = parameter.indexOf("?");
+                    if (queryPosition != -1) {
+                        var queryParts = (parameter.substring(queryPosition + 1).split("&"));
+                        for (var i = 0; i < queryParts.length; i++) {
+                            var param = queryParts[i];
+                            if (param.startsWith("cfi=")) {
+                                cfi = decodeURIComponent(param.substring("cfi=".length));
+                            }
+                            if (param.startsWith("idref=")) {
+                                idref = decodeURIComponent(param.substring("idref=".length));
+                            }
+                        }
                         filename = parameter.substring(0, parameter.indexOf("?"));
                     } else 
                         filename = parameter;
@@ -34923,7 +35019,7 @@ var LocalLauncherAdapter = function(userManager) {
                     if (idref != "") 
                         payload["idref"] = idref;
                     pack.push(JSON.stringify(payload));
-                    window.ReadiumInterop.postHarnessMessage("pebl", pack);
+                    window.ReadiumInterop.postHarnessMessage("readium", pack);
                 }
             }
         });
@@ -34952,6 +35048,12 @@ LocalLauncherAdapter = stjs.extend(LocalLauncherAdapter, null, [LauncherAdapter]
         }
     };
 }, {connectionHandler: "window.SocketConnectionHandler", userManager: "UserAdapter"}, {});
+var NativeNetworkAdapter = function() {};
+NativeNetworkAdapter = stjs.extend(NativeNetworkAdapter, null, [NetworkAdapter], function(constructor, prototype) {
+    prototype.push = function(finished) {};
+    prototype.disable = function(finished) {};
+    prototype.activate = function(teacher) {};
+}, {}, {});
 var LLUserAdapter = function(storage) {
     this.storage = storage;
     this.isLoggedIn = false;
@@ -35046,9 +35148,6 @@ LLUserAdapter = stjs.extend(LLUserAdapter, null, [UserAdapter], function(constru
                                                 }
                                             }
                                             self.storage.storeCurrentUser(self.profile, function() {
-                                                setTimeout(function() {
-                                                    window.location = window.location;
-                                                }, 5);
                                                 window.Lightbox.close();
                                                 if (callback != null) 
                                                     callback();
@@ -35113,9 +35212,6 @@ LLUserAdapter = stjs.extend(LLUserAdapter, null, [UserAdapter], function(constru
                                         }
                                     }
                                     self.storage.storeCurrentUser(self.profile, function() {
-                                        setTimeout(function() {
-                                            window.location = window.location;
-                                        }, 5);
                                         if (callback != null) 
                                             callback();
                                     });
@@ -35134,14 +35230,11 @@ LLUserAdapter = stjs.extend(LLUserAdapter, null, [UserAdapter], function(constru
             }
         });
     };
-    prototype.logout = function() {
+    prototype.logout = function(callback) {
         var self = this;
         this.isLoggedIn = false;
         this.storage.storeCurrentUser(LLUserAdapter.guest, function() {
             self.profile = null;
-            setTimeout(function() {
-                window.location = window.location;
-            }, 5);
             self.login(self.loginCallback);
         });
     };
@@ -35156,6 +35249,471 @@ LLUserAdapter = stjs.extend(LLUserAdapter, null, [UserAdapter], function(constru
     LLUserAdapter.guest = new UserProfile(null);
     LLUserAdapter.guest.setName("guest");
     LLUserAdapter.guest.setIdentity("guest");
+})();
+var MoodleUserAdapter = function(storage) {
+    this.storage = storage;
+    this.isLoggedIn = false;
+    this.sameUser = false;
+    this.profile = null;
+    this.loginUserNameSelector = "loginUserName";
+    this.loginPasswordSelector = "loginPassword";
+};
+MoodleUserAdapter = stjs.extend(MoodleUserAdapter, null, [UserAdapter], function(constructor, prototype) {
+    constructor.MOODLE_HOST = null;
+    constructor.MOODLE_WEBSERVICE = null;
+    constructor.MOODLE_WEBSERVICE_GET_INFO = null;
+    constructor.MOODLE_LOGIN = null;
+    constructor.MOODLE_LOGIN_PASSWORD = null;
+    constructor.MOODLE_GET_INFO_ENDPOINT = null;
+    constructor.MOODLE_LOGIN_ENDPOINT = null;
+    prototype.storage = null;
+    prototype.isLoggedIn = false;
+    prototype.sameUser = null;
+    prototype.profile = null;
+    prototype.loginUserNameSelector = null;
+    prototype.loginPasswordSelector = null;
+    prototype.loginCallback = null;
+    prototype.loginRequest = null;
+    prototype.getInfoRequest = null;
+    constructor.guest = null;
+    prototype.makeLoginUrl = function(username, password) {
+        return MoodleUserAdapter.MOODLE_LOGIN_ENDPOINT + encodeURIComponent(username) + MoodleUserAdapter.MOODLE_LOGIN_PASSWORD + encodeURIComponent(password);
+    };
+    prototype.makeGetInfoUrl = function(token) {
+        return MoodleUserAdapter.MOODLE_GET_INFO_ENDPOINT + token;
+    };
+    prototype.getUser = function() {
+        if (this.isLoggedIn) 
+            return this.profile;
+        return MoodleUserAdapter.guest;
+    };
+    prototype.login = function(callback) {
+        this.loginRequest = new XMLHttpRequest();
+        this.loginCallback = callback;
+        var self = this;
+        this.storage.getCurrentUser(function(currentUser) {
+            if (window.Lightbox != null) {
+                if ((currentUser == "") || (currentUser == "null") || (currentUser == null) || (currentUser == "guest")) {
+                    window.Lightbox.createLoginFormWithFields();
+                    var loginButton = window.document.getElementById("loginUserNameSubmit");
+                    loginButton.onclick = function(event) {
+                        var user = (window.document.getElementById(self.loginUserNameSelector)).value;
+                        var password = (window.document.getElementById(self.loginPasswordSelector)).value;
+                        self.loginRequest.open("POST", self.makeLoginUrl(user, password), true);
+                        self.loginRequest.onreadystatechange = function() {
+                            if (self.loginRequest.readyState == 4) {
+                                if (self.loginRequest.status == 200) {
+                                    var response = JSON.parse(self.loginRequest.responseText);
+                                    if (response["error"] == null) {
+                                        self.getInfoRequest = new XMLHttpRequest();
+                                        self.getInfoRequest.open("POST", self.makeGetInfoUrl(response["token"]), true);
+                                        self.getInfoRequest.onreadystatechange = function() {
+                                            if (self.getInfoRequest.readyState == 4) {
+                                                var response = JSON.parse(self.getInfoRequest.responseText);
+                                                if (response["error"] == null) {
+                                                    self.isLoggedIn = true;
+                                                    self.storage.getUserProfile(response["username"], function(profile) {
+                                                        self.profile = profile;
+                                                        if (self.profile == null) {
+                                                            self.profile = new UserProfile(null);
+                                                            self.profile.setIdentity(response["username"]);
+                                                            self.profile.setName(response["fullname"]);
+                                                            self.profile.setHomePage(response["siteurl"]);
+                                                            self.profile.setPreferredName(response["fullname"]);
+                                                            var endpoint = new Endpoint();
+                                                            endpoint.username = "pebl.plug";
+                                                            endpoint.password = "#PEBLTest67";
+                                                            endpoint.url = "https://lrs.peblproject.com/xapi/";
+                                                            self.profile.addLrsUrl(endpoint);
+                                                            self.storage.saveUserProfile(self.profile);
+                                                            if (window.FakeCompetency != null) {
+                                                                var result = window.FakeCompetency.getCompetencies(currentUser);
+                                                                if (result != null) {
+                                                                    var collapsed = {};
+                                                                    for (var i = 0; i < result.length; i++) {
+                                                                        var pair = result[i];
+                                                                        var obj = pair[1];
+                                                                        var temp = pair[0]["url"];
+                                                                        collapsed[temp.substring(0, temp.lastIndexOf("/"))] = obj;
+                                                                    }
+                                                                    self.storage.setCompetencies(self.profile, collapsed);
+                                                                }
+                                                            }
+                                                        }
+                                                        self.storage.getCurrentUser(function(id) {
+                                                            self.sameUser = id == self.profile.getIdentity();
+                                                            self.storage.storeCurrentUser(self.profile, function() {
+                                                                window.location = window.location;
+                                                                if (callback != null) 
+                                                                    callback();
+                                                                window.Lightbox.close();
+                                                            });
+                                                        });
+                                                    });
+                                                }
+                                            }
+                                        };
+                                        self.getInfoRequest.send();
+                                    } else {
+                                        self.isLoggedIn = false;
+                                        var e = window.document.getElementById("loginError");
+                                        e.setAttribute("style", "color:red");
+                                    }
+                                }
+                            }
+                        };
+                        self.loginRequest.send();
+                        return true;
+                    };
+                } else {
+                    self.storage.getUserProfile(currentUser, function(profile) {
+                        self.profile = profile;
+                        self.isLoggedIn = true;
+                        self.sameUser = true;
+                        self.storage.storeCurrentUser(profile, callback);
+                    });
+                }
+            }
+        });
+    };
+    prototype.loginAsUser = function(username, password, callback) {};
+    prototype.logout = function(callback) {
+        this.isLoggedIn = false;
+        var self = this;
+        this.storage.storeCurrentUser(MoodleUserAdapter.guest, function() {
+            self.profile = null;
+            window.location = window.location;
+            self.login(self.loginCallback);
+        });
+    };
+    prototype.loggedIn = function() {
+        return this.isLoggedIn;
+    };
+    prototype.isSameUser = function() {
+        return this.sameUser;
+    };
+}, {storage: "StorageAdapter", profile: "UserProfile", loginCallback: "Callback0", loginRequest: "XMLHttpRequest", getInfoRequest: "XMLHttpRequest", guest: "UserProfile"}, {});
+(function() {
+    MoodleUserAdapter.guest = new UserProfile(null);
+    MoodleUserAdapter.guest.setName("guest");
+    MoodleUserAdapter.guest.setIdentity("guest");
+    MoodleUserAdapter.MOODLE_HOST = "http://extension.eduworks.com/moodle/";
+    MoodleUserAdapter.MOODLE_WEBSERVICE = "webservice/rest/server.php";
+    MoodleUserAdapter.MOODLE_WEBSERVICE_GET_INFO = "?wsfunction=core_webservice_get_site_info&moodlewsrestformat=json&wstoken=";
+    MoodleUserAdapter.MOODLE_LOGIN = "login/token.php?service=PEBLLogin&username=";
+    MoodleUserAdapter.MOODLE_LOGIN_PASSWORD = "&password=";
+    MoodleUserAdapter.MOODLE_GET_INFO_ENDPOINT = MoodleUserAdapter.MOODLE_HOST + MoodleUserAdapter.MOODLE_WEBSERVICE + MoodleUserAdapter.MOODLE_WEBSERVICE_GET_INFO;
+    MoodleUserAdapter.MOODLE_LOGIN_ENDPOINT = MoodleUserAdapter.MOODLE_HOST + MoodleUserAdapter.MOODLE_LOGIN;
+})();
+var IndexedDBStorageAdapter = function(callback) {
+    this.interop = new IndexedDBInterop(callback);
+};
+IndexedDBStorageAdapter = stjs.extend(IndexedDBStorageAdapter, null, [StorageAdapter], function(constructor, prototype) {
+    prototype.interop = null;
+    constructor.processMapToXApi = function(records, filter) {
+        var result = [];
+        for (var i = 0; i < records.length; i++) {
+            var xapi = new ADL.XAPIStatement(records[i]);
+            for (var x = 0; x < filter.length; x++) 
+                delete xapi[filter[x]];
+            result.push(xapi);
+        }
+        return result;
+    };
+    prototype.getAnnotations = function(user, thread, callback) {
+        this.interop.getAnnotations(user, thread, function(records) {
+            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "containerPath"]));
+        });
+    };
+    prototype.storeCurrentUser = function(user, callback) {
+        this.interop.storeCurrentUser(user, callback);
+    };
+    prototype.getCurrentUser = function(callback) {
+        this.interop.getCurrentUser(callback);
+    };
+    prototype.storeCurrentBook = function(book) {
+        this.interop.storeCurrentBook(book);
+    };
+    prototype.getCurrentBook = function(callback) {
+        this.interop.getCurrentBook(callback);
+    };
+    prototype.saveEvent = function(user, containerPath, event) {
+        this.interop.saveEvent(user, containerPath, event);
+    };
+    prototype.saveEvents = function(user, containerPath, events) {
+        this.interop.saveEvents(user, containerPath, events);
+    };
+    prototype.getEvents = function(user, containerPath, callback) {
+        this.interop.getEvents(user, containerPath, function(records) {
+            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "containerPath"]));
+        });
+    };
+    prototype.getCompetencies = function(user, callback) {
+        this.interop.getCompetencies(user, callback);
+    };
+    prototype.setCompetencies = function(user, competencies) {
+        this.interop.setCompetencies(user, competencies);
+    };
+    prototype.storeOutgoing = function(user, xapi) {
+        this.interop.storeOutgoing(user, xapi);
+    };
+    prototype.postMessage = function(user, thread, message) {
+        this.interop.postMessage(user, thread, message);
+    };
+    prototype.postMessages = function(user, thread, messages) {
+        this.interop.postMessages(user, thread, messages);
+    };
+    prototype.getMessages = function(user, thread, callback) {
+        this.interop.getMessages(user, thread, function(records) {
+            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "thread"]));
+        });
+    };
+    prototype.saveUserProfile = function(user) {
+        this.interop.saveUserProfile(user);
+    };
+    prototype.removeAnnotation = function(user, id, containerPath) {
+        this.interop.removeAnnotation(user, id);
+    };
+    prototype.removeSharedAnnotation = function(user, id) {
+        this.interop.removeSharedAnnotation(user, id);
+    };
+    prototype.getGeneralAnnotations = function(user, containerPath, callback) {
+        this.interop.getGeneralAnnotations(user, containerPath, function(records) {
+            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["containerPath"]));
+        });
+    };
+    prototype.getUserProfile = function(id, callback) {
+        this.interop.getUserProfile(id, function(record) {
+            callback((record == null) ? null : new UserProfile(record));
+        });
+    };
+    prototype.getOutgoing = function(user, callback) {
+        this.interop.getOutgoing(user, function(records) {
+            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "containerPath", "thread", "url"]));
+        });
+    };
+    prototype.clearOutgoing = function(user, toClear) {
+        this.interop.clearOutgoing(user, toClear);
+    };
+    prototype.saveAnnotation = function(user, containerPath, annotation) {
+        this.interop.saveAnnotation(user, containerPath, annotation);
+    };
+    prototype.saveAnnotations = function(user, containerPath, annotations) {
+        this.interop.saveAnnotations(user, containerPath, annotations);
+    };
+    prototype.saveGeneralAnnotation = function(user, containerPath, annotation) {
+        this.interop.saveGeneralAnnotation(user, containerPath, annotation);
+    };
+    prototype.saveGeneralAnnotations = function(user, containerPath, annotations) {
+        this.interop.saveGeneralAnnotations(user, containerPath, annotations);
+    };
+    prototype.getAsset = function(id, callback) {
+        this.interop.getAsset(id, callback);
+    };
+    prototype.setAsset = function(id, data) {
+        this.interop.saveAsset(id, data);
+    };
+    prototype.removeNotification = function(user, id) {
+        this.interop.removeNotification(user, id);
+    };
+    prototype.getNotifications = function(user, callback) {
+        this.interop.getNotifications(user, callback);
+    };
+    prototype.addNotification = function(user, notification) {
+        this.interop.addNotification(user, notification);
+    };
+    prototype.getToc = function(user, containerPath, callback) {
+        this.interop.getToc(user, containerPath, callback);
+    };
+    prototype.removeToc = function(user, containerPath, section, id) {
+        this.interop.removeToc(user, containerPath, section, id);
+    };
+    prototype.addToc = function(user, containerPath, data) {
+        this.interop.addToc(user, containerPath, data);
+    };
+    prototype.removeMessage = function(user, id, thread) {
+        this.interop.removeMessage(id);
+    };
+}, {interop: "IndexedDBInterop"}, {});
+var OpenIDUserAdapter = function(storage) {
+    this.errored = function() {};
+    this.storage = storage;
+    this.isLoggedIn = false;
+    this.sameUser = false;
+};
+OpenIDUserAdapter = stjs.extend(OpenIDUserAdapter, null, [UserAdapter], function(constructor, prototype) {
+    prototype.storage = null;
+    prototype.isLoggedIn = false;
+    prototype.authChannel = null;
+    prototype.profile = null;
+    prototype.sameUser = null;
+    prototype.errored = null;
+    constructor.guest = null;
+    prototype.getUser = function() {
+        if (this.isLoggedIn) 
+            return this.profile;
+        return OpenIDUserAdapter.guest;
+    };
+    prototype.isSameUser = function() {
+        return this.sameUser;
+    };
+    prototype.handleProfile = function(userId, loginCallback) {
+        var self = this;
+        return function(profile) {
+            if (!OpenIDUserAdapter.guest.getIdentity().equals(userId)) {
+                self.isLoggedIn = false;
+                if (loginCallback != null) {
+                    loginCallback();
+                }
+                return;
+            }
+            self.profile = profile;
+            if (self.profile == null) {
+                self.profile = new UserProfile(null);
+                self.profile.setIdentity(userId);
+                self.profile.setName(userId.substring(userId.lastIndexOf("/") + 1));
+                self.profile.setPreferredName(userId.substring(userId.lastIndexOf("/") + 1));
+                self.profile.setHomePage("https://people.extension.org");
+                var endpoint = new Endpoint();
+                endpoint.token = "NGEyMTFmNzY5MDkyMmVlZmYyM2VlZGEzNjk2YWFkZTcyZDM5NWE4NjozYjljZjY1ZDNkZjY1ZmY3ZGI1YjRjNjhiYzhlYTBiODY5MWZiZDc5";
+                endpoint.url = "https://lrs.peblproject.com/data/xapi/";
+                self.profile.addLrsUrl(endpoint);
+                self.storage.saveUserProfile(self.profile);
+            }
+            self.storage.getCurrentUser(function(storedId) {
+                self.sameUser = storedId == self.profile.getIdentity();
+                self.storage.storeCurrentUser(self.profile, function() {
+                    if (loginCallback != null) 
+                        loginCallback();
+                });
+            });
+        };
+    };
+    prototype.login = function(loginCallback) {
+        var self = this;
+        this.storage.getCurrentUser(function(storedId) {
+            if (storedId != null) {
+                self.isLoggedIn = true;
+                self.storage.getUserProfile(storedId, self.handleProfile(storedId, loginCallback));
+            } else 
+                window.Lightbox.openIDLogin();
+        });
+    };
+    prototype.loginAsUser = function(username, password, callback) {
+        if (username != "") {
+            this.isLoggedIn = true;
+            this.storage.getUserProfile(username, this.handleProfile(username, callback));
+        }
+    };
+    prototype.logout = function(callback) {
+        var self = this;
+        this.isLoggedIn = false;
+        this.storage.storeCurrentUser(OpenIDUserAdapter.guest, function() {
+            self.profile = null;
+            var e = window.document.getElementById("loginIFrame");
+            if (e != null) {
+                (e).src = "https://people.extension.org/signout";
+            }
+            if (callback != null) {
+                callback();
+            }
+        });
+    };
+    prototype.loggedIn = function() {
+        return this.isLoggedIn;
+    };
+}, {storage: "StorageAdapter", authChannel: "Keycloak", profile: "UserProfile", errored: "Callback0", guest: "UserProfile"}, {});
+(function() {
+    OpenIDUserAdapter.guest = new UserProfile(null);
+    OpenIDUserAdapter.guest.setName("guest");
+    OpenIDUserAdapter.guest.setIdentity("guest");
+})();
+var OpenIDConnectUserAdapter = function(storage) {
+    this.errored = function() {};
+    this.storage = storage;
+    this.isLoggedIn = false;
+    this.sameUser = false;
+};
+OpenIDConnectUserAdapter = stjs.extend(OpenIDConnectUserAdapter, null, [UserAdapter], function(constructor, prototype) {
+    prototype.storage = null;
+    prototype.isLoggedIn = false;
+    prototype.authChannel = null;
+    prototype.profile = null;
+    prototype.sameUser = null;
+    prototype.errored = null;
+    constructor.guest = null;
+    prototype.getUser = function() {
+        if (this.isLoggedIn) 
+            return this.profile;
+        return OpenIDConnectUserAdapter.guest;
+    };
+    prototype.isSameUser = function() {
+        return this.sameUser;
+    };
+    prototype.handleProfile = function(userId, loginCallback) {
+        var self = this;
+        return function(profile) {
+            self.profile = profile;
+            if (self.profile == null) {
+                self.profile = new UserProfile(null);
+                self.profile.setIdentity(userId);
+                self.profile.setName(self.authChannel.idTokenParsed["given_name"] + " " + self.authChannel.idTokenParsed["family_name"]);
+                self.profile.setPreferredName(self.authChannel.idTokenParsed["preferred_username"]);
+                var endpoint = new Endpoint();
+                endpoint.token = "NGEyMTFmNzY5MDkyMmVlZmYyM2VlZGEzNjk2YWFkZTcyZDM5NWE4NjozYjljZjY1ZDNkZjY1ZmY3ZGI1YjRjNjhiYzhlYTBiODY5MWZiZDc5";
+                endpoint.url = "http://lrs.peblproject.com/data/xapi/";
+                self.profile.addLrsUrl(endpoint);
+                self.storage.saveUserProfile(self.profile);
+            }
+            self.storage.getCurrentUser(function(storedId) {
+                self.sameUser = storedId == self.profile.getIdentity();
+                self.storage.storeCurrentUser(self.profile, function() {
+                    if (loginCallback != null) 
+                        loginCallback();
+                });
+            });
+        };
+    };
+    prototype.login = function(loginCallback) {
+        var self = this;
+        var config = {};
+        config["realm"] = "fluent";
+        config["url"] = "https://people.extension.org/sigin";
+        config["clientId"] = "pebl";
+        var secret = {};
+        secret["secret"] = "3ab9aad6-631f-40ec-a60d-3ef131b4b77a";
+        config["credentials"] = secret;
+        var initConfig = {};
+        initConfig["onLoad"] = "login-required";
+        initConfig["flow"] = "implicit";
+        this.authChannel = new Keycloak(config);
+        var didLogin = function(authorized) {
+            self.isLoggedIn = authorized;
+            var userId = self.authChannel.idTokenParsed["sub"];
+            self.storage.getUserProfile(userId, self.handleProfile(userId, loginCallback));
+        };
+        this.authChannel.init(initConfig).success(didLogin).error(this.errored);
+    };
+    prototype.loginAsUser = function(username, password, callback) {};
+    prototype.logout = function(callback) {
+        var self = this;
+        var options = {};
+        options["redirectUri"] = window.location.href;
+        this.isLoggedIn = false;
+        this.storage.storeCurrentUser(OpenIDConnectUserAdapter.guest, function() {
+            self.profile = null;
+            if (self.authChannel != null) 
+                self.authChannel.logout(options);
+        });
+    };
+    prototype.loggedIn = function() {
+        return this.isLoggedIn;
+    };
+}, {storage: "StorageAdapter", authChannel: "Keycloak", profile: "UserProfile", errored: "Callback0", guest: "UserProfile"}, {});
+(function() {
+    OpenIDConnectUserAdapter.guest = new UserProfile(null);
+    OpenIDConnectUserAdapter.guest.setName("guest");
+    OpenIDConnectUserAdapter.guest.setIdentity("guest");
 })();
 var ADLDemoUserAdapter = function(storage) {
     this.storage = storage;
@@ -35289,7 +35847,7 @@ ADLDemoUserAdapter = stjs.extend(ADLDemoUserAdapter, null, [UserAdapter], functi
             }
         });
     };
-    prototype.logout = function() {
+    prototype.logout = function(callback) {
         var self = this;
         this.isLoggedIn = false;
         this.storage.storeCurrentUser(ADLDemoUserAdapter.guest, function() {
@@ -35312,379 +35870,529 @@ ADLDemoUserAdapter = stjs.extend(ADLDemoUserAdapter, null, [UserAdapter], functi
     ADLDemoUserAdapter.guest.setName("guest");
     ADLDemoUserAdapter.guest.setIdentity("guest");
 })();
-var IndexedDBStorageAdapter = function(callback) {
-    this.interop = new IndexedDBInterop(callback);
+var Notification = function(message, payload) {
+    TimeSeriesData.call(this);
+    this.id = TimeSeriesData.NAMESPACE_NOTIFICATION + payload.id;
+    this.timestamp = new Date();
+    this.message = message;
+    this.payload = payload;
 };
-IndexedDBStorageAdapter = stjs.extend(IndexedDBStorageAdapter, null, [StorageAdapter], function(constructor, prototype) {
-    prototype.interop = null;
-    constructor.processMapToXApi = function(records, filter) {
-        var result = [];
-        for (var i = 0; i < records.length; i++) {
-            var xapi = new ADL.XAPIStatement(records[i]);
-            for (var x = 0; x < filter.length; x++) 
-                delete xapi[filter[x]];
-            result.push(xapi);
-        }
+Notification = stjs.extend(Notification, TimeSeriesData, [], function(constructor, prototype) {
+    constructor.KEY_MESSAGE = "message";
+    constructor.KEY_PAYLOAD = "payload";
+    prototype.message = null;
+    prototype.payload = null;
+    prototype.pack = function() {
+        var result = {};
+        result[Notification.KEY_MESSAGE] = this.message;
+        result[Notification.KEY_PAYLOAD] = this.payload;
+        return JSON.stringify(result);
+    };
+    prototype.toObject = function() {
+        var result = {};
+        result[TimeSeriesData.KEY_XID] = this.id;
+        result[Notification.KEY_MESSAGE] = this.message;
+        if (this.payload != null) 
+            result[Notification.KEY_PAYLOAD] = this.payload.toObject();
+        result[TimeSeriesData.KEY_TIMESTAMP] = EcDate.toISOString(this.timestamp);
         return result;
     };
-    prototype.getAnnotations = function(user, thread, callback) {
-        this.interop.getAnnotations(user, thread, function(records) {
-            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "containerPath"]));
-        });
+    prototype.toString = function() {
+        return JSON.stringify(this.toObject());
     };
-    prototype.storeCurrentUser = function(user, callback) {
-        this.interop.storeCurrentUser(user, callback);
-    };
-    prototype.getCurrentUser = function(callback) {
-        this.interop.getCurrentUser(callback);
-    };
-    prototype.storeCurrentBook = function(book) {
-        this.interop.storeCurrentBook(book);
-    };
-    prototype.getCurrentBook = function(callback) {
-        this.interop.getCurrentBook(callback);
-    };
-    prototype.saveEvent = function(user, containerPath, event) {
-        this.interop.saveEvent(user, containerPath, event);
-    };
-    prototype.saveEvents = function(user, containerPath, events) {
-        this.interop.saveEvents(user, containerPath, events);
-    };
-    prototype.getEvents = function(user, containerPath, callback) {
-        this.interop.getEvents(user, containerPath, function(records) {
-            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "containerPath"]));
-        });
-    };
-    prototype.getCompetencies = function(user, callback) {
-        this.interop.getCompetencies(user, callback);
-    };
-    prototype.setCompetencies = function(user, competencies) {
-        this.interop.setCompetencies(user, competencies);
-    };
-    prototype.storeOutgoing = function(user, xapi) {
-        this.interop.storeOutgoing(user, xapi);
-    };
-    prototype.postMessage = function(user, thread, message) {
-        this.interop.postMessage(user, thread, message);
-    };
-    prototype.postMessages = function(user, thread, messages) {
-        this.interop.postMessages(user, thread, messages);
-    };
-    prototype.getMessages = function(user, thread, callback) {
-        this.interop.getMessages(user, thread, function(records) {
-            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "thread"]));
-        });
-    };
-    prototype.saveUserProfile = function(user) {
-        this.interop.saveUserProfile(user);
-    };
-    prototype.removeAnnotation = function(user, id, containerPath) {
-        this.interop.removeAnnotation(user, id);
-    };
-    prototype.removeSharedAnnotation = function(user, id) {
-        this.interop.removeSharedAnnotation(user, id);
-    };
-    prototype.getGeneralAnnotations = function(user, containerPath, callback) {
-        this.interop.getGeneralAnnotations(user, containerPath, function(records) {
-            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["containerPath"]));
-        });
-    };
-    prototype.getUserProfile = function(id, callback) {
-        this.interop.getUserProfile(id, function(record) {
-            callback((record == null) ? null : new UserProfile(record));
-        });
-    };
-    prototype.getOutgoing = function(user, callback) {
-        this.interop.getOutgoing(user, function(records) {
-            callback(IndexedDBStorageAdapter.processMapToXApi(records, ["identity", "containerPath", "thread", "url"]));
-        });
-    };
-    prototype.clearOutgoing = function(user, toClear) {
-        this.interop.clearOutgoing(user, toClear);
-    };
-    prototype.saveAnnotation = function(user, containerPath, annotation) {
-        this.interop.saveAnnotation(user, containerPath, annotation);
-    };
-    prototype.saveAnnotations = function(user, containerPath, annotations) {
-        this.interop.saveAnnotations(user, containerPath, annotations);
-    };
-    prototype.saveGeneralAnnotation = function(user, containerPath, annotation) {
-        this.interop.saveGeneralAnnotation(user, containerPath, annotation);
-    };
-    prototype.saveGeneralAnnotations = function(user, containerPath, annotations) {
-        this.interop.saveGeneralAnnotations(user, containerPath, annotations);
-    };
-    prototype.getAsset = function(id, callback) {
-        this.interop.getAsset(id, callback);
-    };
-    prototype.setAsset = function(id, data) {
-        this.interop.saveAsset(id, data);
-    };
-    prototype.removeNotification = function(user, id) {
-        this.interop.removeNotification(user, id);
-    };
-    prototype.getNotifications = function(user, callback) {
-        this.interop.getNotifications(user, callback);
-    };
-    prototype.addNotification = function(user, notification) {
-        this.interop.addNotification(user, notification);
-    };
-    prototype.getToc = function(user, containerPath, callback) {
-        this.interop.getToc(user, containerPath, callback);
-    };
-    prototype.removeToc = function(user, containerPath, section, id) {
-        this.interop.removeToc(user, containerPath, section, id);
-    };
-    prototype.addToc = function(user, containerPath, data) {
-        this.interop.addToc(user, containerPath, data);
-    };
-    prototype.removeMessage = function(user, id, thread) {
-        this.interop.removeMessage(id);
-    };
-}, {interop: "IndexedDBInterop"}, {});
-var MoodleUserAdapter = function(storage) {
+}, {payload: "TimeSeriesData", timestamp: "Date"}, {});
+var LocalActivityAdapter = function(userManager, storage) {
+    this.subscribedThreads = {};
     this.storage = storage;
-    this.isLoggedIn = false;
-    this.sameUser = false;
-    this.profile = null;
-    this.loginUserNameSelector = "loginUserName";
-    this.loginPasswordSelector = "loginPassword";
+    this.userManager = userManager;
 };
-MoodleUserAdapter = stjs.extend(MoodleUserAdapter, null, [UserAdapter], function(constructor, prototype) {
-    constructor.MOODLE_HOST = null;
-    constructor.MOODLE_WEBSERVICE = null;
-    constructor.MOODLE_WEBSERVICE_GET_INFO = null;
-    constructor.MOODLE_LOGIN = null;
-    constructor.MOODLE_LOGIN_PASSWORD = null;
-    constructor.MOODLE_GET_INFO_ENDPOINT = null;
-    constructor.MOODLE_LOGIN_ENDPOINT = null;
+LocalActivityAdapter = stjs.extend(LocalActivityAdapter, null, [ActivityAdapter], function(constructor, prototype) {
     prototype.storage = null;
-    prototype.isLoggedIn = false;
-    prototype.sameUser = null;
-    prototype.profile = null;
-    prototype.loginUserNameSelector = null;
-    prototype.loginPasswordSelector = null;
-    prototype.loginCallback = null;
-    prototype.loginRequest = null;
-    prototype.getInfoRequest = null;
-    constructor.guest = null;
-    prototype.makeLoginUrl = function(username, password) {
-        return MoodleUserAdapter.MOODLE_LOGIN_ENDPOINT + encodeURIComponent(username) + MoodleUserAdapter.MOODLE_LOGIN_PASSWORD + encodeURIComponent(password);
+    prototype.subscribedThreads = null;
+    prototype.currentBook = null;
+    prototype.previousBook = null;
+    prototype.currentActivity = null;
+    prototype.sameBook = false;
+    prototype.userManager = null;
+    prototype.directMessageHandler = null;
+    prototype.getThreads = function() {
+        return this.subscribedThreads;
     };
-    prototype.makeGetInfoUrl = function(token) {
-        return MoodleUserAdapter.MOODLE_GET_INFO_ENDPOINT + token;
+    prototype.setDirectMessageHandler = function(directMessageHandler) {
+        var laa = this;
+        this.directMessageHandler = directMessageHandler;
     };
-    prototype.getUser = function() {
-        if (this.isLoggedIn) 
-            return this.profile;
-        return MoodleUserAdapter.guest;
+    prototype.hookDirectMessages = function() {
+        var laa = this;
+        if (this.userManager.getUser().getIdentity() != "guest") 
+            this.subscribedThreads[TimeSeriesData.NAMESPACE_USERNAME + this.userManager.getUser().getIdentity()] = function(incoming) {
+                if (laa.directMessageHandler != null) 
+                    laa.directMessageHandler(incoming);
+            };
     };
-    prototype.login = function(callback) {
-        this.loginRequest = new XMLHttpRequest();
-        this.loginCallback = callback;
+    prototype.unsubscribeAll = function() {
+        this.subscribedThreads = {};
+    };
+    prototype.subscribe = function(thread, callback) {
+        this.subscribedThreads[thread] = callback;
+    };
+    prototype.initializeToc = function(data) {
         var self = this;
-        this.storage.getCurrentUser(function(currentUser) {
-            if (window.Lightbox != null) {
-                if ((currentUser == "") || (currentUser == "null") || (currentUser == null) || (currentUser == "guest")) {
-                    window.Lightbox.createLoginFormWithFields();
-                    var loginButton = window.document.getElementById("loginUserNameSubmit");
-                    loginButton.onclick = function(event) {
-                        var user = (window.document.getElementById(self.loginUserNameSelector)).value;
-                        var password = (window.document.getElementById(self.loginPasswordSelector)).value;
-                        self.loginRequest.open("POST", self.makeLoginUrl(user, password), true);
-                        self.loginRequest.onreadystatechange = function() {
-                            if (self.loginRequest.readyState == 4) {
-                                if (self.loginRequest.status == 200) {
-                                    var response = JSON.parse(self.loginRequest.responseText);
-                                    if (response["error"] == null) {
-                                        self.getInfoRequest = new XMLHttpRequest();
-                                        self.getInfoRequest.open("POST", self.makeGetInfoUrl(response["token"]), true);
-                                        self.getInfoRequest.onreadystatechange = function() {
-                                            if (self.getInfoRequest.readyState == 4) {
-                                                var response = JSON.parse(self.getInfoRequest.responseText);
-                                                if (response["error"] == null) {
-                                                    self.isLoggedIn = true;
-                                                    self.storage.getUserProfile(response["username"], function(profile) {
-                                                        self.profile = profile;
-                                                        if (self.profile == null) {
-                                                            self.profile = new UserProfile(null);
-                                                            self.profile.setIdentity(response["username"]);
-                                                            self.profile.setName(response["fullname"]);
-                                                            self.profile.setHomePage(response["siteurl"]);
-                                                            self.profile.setPreferredName(response["fullname"]);
-                                                            var endpoint = new Endpoint();
-                                                            endpoint.username = "pebl.plug";
-                                                            endpoint.password = "#PEBLTest67";
-                                                            endpoint.url = "https://lrs.peblproject.com/xapi/";
-                                                            self.profile.addLrsUrl(endpoint);
-                                                            self.storage.saveUserProfile(self.profile);
-                                                            if (window.FakeCompetency != null) {
-                                                                var result = window.FakeCompetency.getCompetencies(currentUser);
-                                                                if (result != null) {
-                                                                    var collapsed = {};
-                                                                    for (var i = 0; i < result.length; i++) {
-                                                                        var pair = result[i];
-                                                                        var obj = pair[1];
-                                                                        var temp = pair[0]["url"];
-                                                                        collapsed[temp.substring(0, temp.lastIndexOf("/"))] = obj;
-                                                                    }
-                                                                    self.storage.setCompetencies(self.profile, collapsed);
-                                                                }
-                                                            }
-                                                        }
-                                                        self.storage.getCurrentUser(function(id) {
-                                                            self.sameUser = id == self.profile.getIdentity();
-                                                            self.storage.storeCurrentUser(self.profile, function() {
-                                                                window.location = window.location;
-                                                                if (callback != null) 
-                                                                    callback();
-                                                                window.Lightbox.close();
-                                                            });
-                                                        });
-                                                    });
-                                                }
-                                            }
-                                        };
-                                        self.getInfoRequest.send();
-                                    } else {
-                                        self.isLoggedIn = false;
-                                        var e = window.document.getElementById("loginError");
-                                        e.setAttribute("style", "color:red");
-                                    }
-                                }
+        this.storage.getToc(this.userManager.getUser(), this.currentBook, function(toc) {
+            if (toc.length == 0) {
+                for (var section in data) {
+                    var pages = data[section];
+                    for (var pageKey in pages) {
+                        var pageMetadata = pages[pageKey];
+                        if (pageKey == "DynamicContent") {
+                            var documents = pageMetadata["documents"];
+                            for (var dynamicPageKey in documents) {
+                                var documentMetadata = documents[dynamicPageKey];
+                                documentMetadata["pageKey"] = dynamicPageKey;
+                                documentMetadata["card"] = documentMetadata["card"];
+                                documentMetadata["docType"] = documentMetadata["docType"];
+                                documentMetadata["documentName"] = documentMetadata["documentName"];
+                                documentMetadata["url"] = documentMetadata["url"];
+                                documentMetadata["section"] = documentMetadata["section"];
+                                documentMetadata["externalURL"] = documentMetadata["externalURL"];
+                                self.storage.addToc(self.userManager.getUser(), self.currentBook, documentMetadata);
                             }
-                        };
-                        self.loginRequest.send();
-                        return true;
-                    };
-                } else {
-                    self.storage.getUserProfile(currentUser, function(profile) {
-                        self.profile = profile;
-                        self.isLoggedIn = true;
-                        self.sameUser = true;
-                        self.storage.storeCurrentUser(profile, callback);
-                    });
+                        } else {
+                            pageMetadata["pageKey"] = pageKey;
+                            pageMetadata["section"] = section;
+                            self.storage.addToc(self.userManager.getUser(), self.currentBook, pageMetadata);
+                        }
+                    }
                 }
             }
         });
     };
-    prototype.loginAsUser = function(username, password, callback) {};
-    prototype.logout = function() {
-        this.isLoggedIn = false;
-        var self = this;
-        this.storage.storeCurrentUser(MoodleUserAdapter.guest, function() {
-            self.profile = null;
-            window.location = window.location;
-            self.login(self.loginCallback);
-        });
-    };
-    prototype.loggedIn = function() {
-        return this.isLoggedIn;
-    };
-    prototype.isSameUser = function() {
-        return this.sameUser;
-    };
-}, {storage: "StorageAdapter", profile: "UserProfile", loginCallback: "Callback0", loginRequest: "XMLHttpRequest", getInfoRequest: "XMLHttpRequest", guest: "UserProfile"}, {});
-(function() {
-    MoodleUserAdapter.guest = new UserProfile(null);
-    MoodleUserAdapter.guest.setName("guest");
-    MoodleUserAdapter.guest.setIdentity("guest");
-    MoodleUserAdapter.MOODLE_HOST = "http://extension.eduworks.com/moodle/";
-    MoodleUserAdapter.MOODLE_WEBSERVICE = "webservice/rest/server.php";
-    MoodleUserAdapter.MOODLE_WEBSERVICE_GET_INFO = "?wsfunction=core_webservice_get_site_info&moodlewsrestformat=json&wstoken=";
-    MoodleUserAdapter.MOODLE_LOGIN = "login/token.php?service=PEBLLogin&username=";
-    MoodleUserAdapter.MOODLE_LOGIN_PASSWORD = "&password=";
-    MoodleUserAdapter.MOODLE_GET_INFO_ENDPOINT = MoodleUserAdapter.MOODLE_HOST + MoodleUserAdapter.MOODLE_WEBSERVICE + MoodleUserAdapter.MOODLE_WEBSERVICE_GET_INFO;
-    MoodleUserAdapter.MOODLE_LOGIN_ENDPOINT = MoodleUserAdapter.MOODLE_HOST + MoodleUserAdapter.MOODLE_LOGIN;
-})();
-var OpenIDUserAdapter = function(storage) {
-    this.errored = function() {};
-    this.storage = storage;
-    this.isLoggedIn = false;
-    this.sameUser = false;
-};
-OpenIDUserAdapter = stjs.extend(OpenIDUserAdapter, null, [UserAdapter], function(constructor, prototype) {
-    prototype.storage = null;
-    prototype.isLoggedIn = false;
-    prototype.authChannel = null;
-    prototype.profile = null;
-    prototype.sameUser = null;
-    prototype.errored = null;
-    constructor.guest = null;
-    prototype.getUser = function() {
-        if (this.isLoggedIn) 
-            return this.profile;
-        return OpenIDUserAdapter.guest;
-    };
-    prototype.isSameUser = function() {
-        return this.sameUser;
-    };
-    prototype.handleProfile = function(userId, loginCallback) {
-        var self = this;
-        return function(profile) {
-            self.profile = profile;
-            if (self.profile == null) {
-                self.profile = new UserProfile(null);
-                self.profile.setIdentity(userId);
-                self.profile.setName(self.authChannel.idTokenParsed["given_name"] + " " + self.authChannel.idTokenParsed["family_name"]);
-                self.profile.setPreferredName(self.authChannel.idTokenParsed["preferred_username"]);
-                var endpoint = new Endpoint();
-                endpoint.username = "cc03593a1bbe60f13e761128a36e2a7739ea91d3";
-                endpoint.password = "35638b8a3f6073d8a4163d6dae62be5437f10128";
-                endpoint.url = "http://tla-core.adlnet.gov:8001/data/xAPI/";
-                self.profile.addLrsUrl(endpoint);
-                self.storage.saveUserProfile(self.profile);
+    prototype.getToc = function(callback) {
+        this.storage.getToc(this.userManager.getUser(), this.currentBook, function(entries) {
+            var toc = {};
+            for (var i = 0; i < entries.length; i++) {
+                var entry = entries[i];
+                var sectionKey = entry["section"];
+                if (toc[sectionKey] == null) {
+                    toc[sectionKey] = {};
+                }
+                var section = toc[sectionKey];
+                if (sectionKey == "DynamicContent") {
+                    if (section["documents"] == null) {
+                        section["location"] = entry["location"];
+                        section["documents"] = {};
+                    }
+                    var dynamicSection = section["documents"];
+                    dynamicSection[entry["pageKey"]] = entry;
+                } else 
+                    section[entry["pageKey"]] = entry;
             }
-            self.storage.getCurrentUser(function(storedId) {
-                self.sameUser = storedId == self.profile.getIdentity();
-                self.storage.storeCurrentUser(self.profile, function() {
-                    if (loginCallback != null) 
-                        loginCallback();
-                });
-            });
-        };
-    };
-    prototype.login = function(loginCallback) {
-        var self = this;
-        var config = {};
-        config["realm"] = "fluent";
-        config["url"] = "http://tla-core.adlnet.gov:8081/auth";
-        config["clientId"] = "PEBL";
-        var secret = {};
-        secret["secret"] = "b13425d1-c730-4b57-9876-566fe08b7875";
-        config["credentials"] = secret;
-        var initConfig = {};
-        initConfig["onLoad"] = "login-required";
-        initConfig["flow"] = "implicit";
-        this.authChannel = new Keycloak(config);
-        var didLogin = function(authorized) {
-            self.isLoggedIn = authorized;
-            var userId = self.authChannel.idTokenParsed["sub"];
-            self.storage.getUserProfile(userId, self.handleProfile(userId, loginCallback));
-        };
-        this.authChannel.init(initConfig).success(didLogin).error(this.errored);
-    };
-    prototype.loginAsUser = function(username, password, callback) {};
-    prototype.logout = function() {
-        var self = this;
-        var options = {};
-        options["redirectUri"] = window.location.href;
-        this.isLoggedIn = false;
-        this.storage.storeCurrentUser(OpenIDUserAdapter.guest, function() {
-            self.profile = null;
-            if (self.authChannel != null) 
-                self.authChannel.logout(options);
+            if (callback != null) 
+                callback(toc);
         });
     };
-    prototype.loggedIn = function() {
-        return this.isLoggedIn;
+    prototype.openBook = function(containerPath, callback) {
+        var laa = this;
+        if (this.previousBook == null) {
+            this.storage.getCurrentBook(function(book) {
+                laa.sameBook = (laa.currentBook == containerPath);
+                laa.previousBook = book;
+                laa.currentBook = containerPath;
+                laa.storage.storeCurrentBook(containerPath);
+                if (callback != null) {
+                    callback(laa.sameBook);
+                }
+            });
+        } else {
+            this.sameBook = (this.currentBook == containerPath);
+            this.previousBook = this.currentBook;
+            this.currentBook = containerPath;
+            laa.storage.storeCurrentBook(containerPath);
+            if (callback != null) 
+                callback(this.sameBook);
+        }
     };
-}, {storage: "StorageAdapter", authChannel: "Keycloak", profile: "UserProfile", errored: "Callback0", guest: "UserProfile"}, {});
-(function() {
-    OpenIDUserAdapter.guest = new UserProfile(null);
-    OpenIDUserAdapter.guest.setName("guest");
-    OpenIDUserAdapter.guest.setIdentity("guest");
-})();
+    prototype.startParentActivity = function(activity) {
+        this.currentActivity = activity;
+    };
+    prototype.clearParentActivity = function() {
+        this.currentActivity = null;
+    };
+    prototype.getParentActivity = function() {
+        return this.currentActivity;
+    };
+    prototype.isSameBook = function() {
+        return this.sameBook;
+    };
+    prototype.getActivityId = function() {
+        var activity = null;
+        if (window.ReadiumInterop != null) {
+            var bookmark = window.ReadiumInterop.getFirstVisibleCfi();
+            if (bookmark != null) {
+                var cfi = (bookmark["idref"]);
+                activity = localStorage.getItem("activityId-" + this.currentBook + cfi);
+            }
+        }
+        if ((activity == null) || (activity == "")) {
+            activity = localStorage.getItem("activityId-" + this.currentBook);
+        }
+        return (activity == "") ? null : activity;
+    };
+    prototype.hasActivityListing = function() {
+        var activity = localStorage.getItem("activityListing");
+        return (activity != null);
+    };
+    prototype.retrieveActivityListing = function(callback) {
+        var endpointRequest = new XMLHttpRequest();
+        endpointRequest.onreadystatechange = function() {
+            if (endpointRequest.readyState == 4) {
+                if (endpointRequest.status == 200) {
+                    var obj = JSON.parse(endpointRequest.responseText);
+                    var activityRequest = new XMLHttpRequest();
+                    activityRequest.onreadystatechange = function() {
+                        if (activityRequest.readyState == 4) {
+                            if (activityRequest.status == 200) {
+                                var activities = JSON.parse(activityRequest.responseText);
+                                for (var i = 0; i < activities.length; i++) {
+                                    var url = activities[i]["url"];
+                                    if ((url != null) && url.startsWith("pebl://")) {
+                                        var cfi = "";
+                                        var activity = null;
+                                        var idref = "";
+                                        var queryPosition = url.indexOf("?");
+                                        if (queryPosition != -1) {
+                                            var queryParts = (url.substring(queryPosition + 1).split("&"));
+                                            for (var x = 0; x < queryParts.length; x++) {
+                                                var param = queryParts[x];
+                                                if (param.startsWith("cfi=")) {
+                                                    cfi = decodeURIComponent(param.substring("cfi=".length));
+                                                }
+                                                if (param.startsWith("activityId=")) {
+                                                    activity = param.substring("activityId=".length);
+                                                }
+                                            }
+                                        }
+                                        if (cfi != "") {
+                                            var sI = cfi.indexOf("[");
+                                            var eI = cfi.indexOf("]");
+                                            if ((sI != -1) && (eI != -1)) 
+                                                idref = cfi.substring(sI + 1, eI);
+                                        }
+                                        var filename = url.substring("pebl://".length, url.indexOf("?"));
+                                        localStorage.setItem("activityId-" + filename + idref, activity);
+                                    }
+                                }
+                                localStorage.setItem("activityListing", new Date().toString());
+                                if (callback != null) 
+                                    callback();
+                            } else if (callback != null) {
+                                callback();
+                            }
+                        }
+                    };
+                    activityRequest.open("GET", obj["activity_index"]["endpoint"], true);
+                    activityRequest.send();
+                } else if (callback != null) {
+                    callback();
+                }
+            }
+        };
+        endpointRequest.open("GET", "http://adltla.usalearning.net:8085/endpoints", true);
+        endpointRequest.send();
+    };
+    prototype.getBook = function() {
+        return this.currentBook;
+    };
+    prototype.getPreviousBook = function() {
+        return this.previousBook;
+    };
+}, {storage: "StorageAdapter", subscribedThreads: {name: "Map", arguments: [null, {name: "Callback1", arguments: [{name: "Array", arguments: ["TimeSeriesData"]}]}]}, userManager: "UserAdapter", directMessageHandler: {name: "Callback1", arguments: [{name: "Array", arguments: ["TimeSeriesData"]}]}}, {});
+/**
+ *  Hooks for which events are recorded during a session
+ *  
+ *  @author aaron.veden@eduworks.com
+ */
+var XApiGenerator = function(userManager, sa, activityManager, TLAEnabled) {
+    this.storage = sa;
+    this.userManager = userManager;
+    this.activityManager = activityManager;
+    this.TLAEnabled = TLAEnabled;
+};
+XApiGenerator = stjs.extend(XApiGenerator, null, [], function(constructor, prototype) {
+    prototype.storage = null;
+    prototype.userManager = null;
+    prototype.activityManager = null;
+    prototype.TLAEnabled = false;
+    prototype.checklisted = function(checklistId, checklistUser, checklistPrompts, checklistResponses) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        var checklistData = {};
+        checklistData["checklistId"] = checklistId;
+        checklistData["checklistUser"] = checklistUser;
+        checklistData["checklistPrompts"] = checklistPrompts;
+        checklistData["checklistResponses"] = checklistResponses;
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#checklisted", "checklisted"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(checklistData)));
+    };
+    prototype.compatibilityTested = function(eReaderName, osName, osVersion, browserName, browserVersion, userAgent, appVersion, platform, vendor, loginResult, localStorageResult, indexedDBResult, discussionResult, contentMorphingResult, figureResult, popoutResult, hotwordResult, quizResult, showHideResult) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        var testData = {};
+        testData["eReaderName"] = eReaderName;
+        testData["osName"] = osName;
+        testData["osVersion"] = osVersion;
+        testData["browserName"] = browserName;
+        testData["browserVersion"] = browserVersion;
+        testData["userAgent"] = userAgent;
+        testData["appVersion"] = appVersion;
+        testData["platform"] = platform;
+        testData["vendor"] = vendor;
+        testData["loginResult"] = loginResult;
+        testData["localStorageResult"] = localStorageResult;
+        testData["indexedDBResult"] = indexedDBResult;
+        testData["discussionResult"] = discussionResult;
+        testData["contentMorphingResult"] = contentMorphingResult;
+        testData["figureResult"] = figureResult;
+        testData["popoutResult"] = popoutResult;
+        testData["hotwordResult"] = hotwordResult;
+        testData["quizResult"] = quizResult;
+        testData["showHideResult"] = showHideResult;
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#compatibilityTested", "compatibilityTested"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(testData)));
+    };
+    prototype.pushed = function(target, location, card, url, docType, name, externalURL) {
+        var containerPath = "peblThread://user-" + target;
+        var pushData = {};
+        pushData["target"] = target;
+        pushData["url"] = url;
+        pushData["name"] = name;
+        pushData["location"] = location;
+        pushData["card"] = card;
+        pushData["docType"] = docType;
+        pushData["externalURL"] = externalURL;
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#pushed", "pushed"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(pushData)));
+    };
+    prototype.pulled = function(target, location, card, url, docType, name, externalURL) {
+        var containerPath = "peblThread://user-" + target;
+        var pushData = {};
+        pushData["target"] = target;
+        pushData["url"] = url;
+        pushData["name"] = name;
+        pushData["location"] = location;
+        pushData["card"] = card;
+        pushData["docType"] = docType;
+        pushData["externalURL"] = externalURL;
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#pulled", "pulled"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(pushData)));
+    };
+    prototype.completed = function(cfi, activity, description) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        if ((activity != null) && (activity.trim() == "")) 
+            activity = null;
+        if (description != null) {
+            if (description.trim() == "") 
+                description = null;
+             else 
+                description = description.replaceAll("\\s+", " ");
+        }
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/completed", "completed"), new ADL.XAPIStatement.Activity(containerPath, activity, description));
+        if (this.TLAEnabled && (this.activityManager.getActivityId() != null)) {
+            this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/completed", "completed"), new ADL.XAPIStatement.Activity(this.activityManager.getActivityId(), activity, description));
+        }
+    };
+    prototype.passed = function(points, activity, description) {
+        var result = {};
+        var score = {};
+        score["scaled"] = points / 100.0;
+        score["raw"] = points;
+        score["min"] = 0;
+        score["max"] = 100;
+        result["score"] = score;
+        result["success"] = true;
+        result["completion"] = true;
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/passed", "passed"), new ADL.XAPIStatement.Activity(containerPath, activity, description), result, {});
+        if (this.TLAEnabled && (this.activityManager.getActivityId() != null)) {
+            result = {};
+            score = {};
+            score["scaled"] = points / 100.0;
+            score["raw"] = points;
+            score["min"] = 0;
+            score["max"] = 100;
+            result["score"] = score;
+            result["success"] = true;
+            result["completion"] = true;
+            containerPath = "pebl://" + this.activityManager.getBook();
+            this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/passed", "passed"), new ADL.XAPIStatement.Activity(this.activityManager.getActivityId(), activity, description), result, {});
+        }
+    };
+    prototype.initialized = function(activity, description) {
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/initialized", "initialized"), new ADL.XAPIStatement.Activity(containerPath, activity, description));
+        if (this.TLAEnabled && (this.activityManager.getActivityId() != null)) {
+            containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+            this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/initialized", "initialized"), new ADL.XAPIStatement.Activity(this.activityManager.getActivityId(), activity, description));
+        }
+    };
+    prototype.TLAinitialized = function() {
+        if (this.TLAEnabled && (this.activityManager.getActivityId() != null)) {
+            this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/initialized", "initialized"), new ADL.XAPIStatement.Activity(this.activityManager.getActivityId(), null, null));
+        }
+    };
+    prototype.failed = function(points, activity, description) {
+        var result = {};
+        var score = {};
+        score["scaled"] = points / 100.0;
+        score["raw"] = points;
+        score["min"] = 0;
+        score["max"] = 100;
+        result["score"] = score;
+        result["success"] = false;
+        result["completion"] = true;
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/failed", "failed"), new ADL.XAPIStatement.Activity(containerPath, activity, description), result, {});
+        if (this.TLAEnabled && (this.activityManager.getActivityId() != null)) {
+            result = {};
+            score = {};
+            score["scaled"] = points / 100.0;
+            score["raw"] = points;
+            score["min"] = 0;
+            score["max"] = 100;
+            result["score"] = score;
+            result["success"] = false;
+            result["completion"] = true;
+            containerPath = "pebl://" + this.activityManager.getBook();
+            this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/failed", "failed"), new ADL.XAPIStatement.Activity(this.activityManager.getActivityId(), activity, description), result, {});
+        }
+    };
+    prototype.morphed = function(level, competency, cfi) {
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#morphed", "morphed"), new ADL.XAPIStatement.Activity(containerPath, "Level = " + level + " - " + competency, cfi));
+    };
+    prototype.interacted = function() {
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/interacted", "interacted"), new ADL.XAPIStatement.Activity(containerPath, null, null));
+    };
+    prototype.terminated = function() {
+        var activity = this.activityManager.getPreviousBook();
+        if (activity != null) {
+            var containerPath = "pebl://" + activity;
+            this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/terminated", "terminated"), new ADL.XAPIStatement.Activity(containerPath, null, null));
+        }
+    };
+    prototype.answered = function(prompt, answers, answer, correct, done) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        var result = {};
+        var score = {};
+        var points = correct ? 1 : 0;
+        score["scaled"] = points;
+        score["raw"] = points;
+        score["min"] = 0;
+        score["max"] = 1;
+        result["score"] = score;
+        result["success"] = correct;
+        result["completion"] = done;
+        result["response"] = answer;
+        var expandedActivity = {};
+        expandedActivity["type"] = "http://adlnet.gov/expapi/activities/cmi.interaction";
+        var cleanedAnswers = [];
+        for (var i = 0; i < answers.length; i++) {
+            var temp = {};
+            temp["id"] = i + "";
+            var temp2 = {};
+            temp2["en-US"] = answers[i];
+            temp["description"] = temp2;
+            cleanedAnswers.push(temp);
+        }
+        expandedActivity["choices"] = cleanedAnswers;
+        expandedActivity["interactionType"] = "choice";
+        var responses = [];
+        responses.push(answer.indexOf(answer) + "");
+        expandedActivity["correctResponsesPattern"] = responses;
+        this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/answered", "answered"), new ADL.XAPIStatement.Activity(containerPath, prompt, null), result, expandedActivity);
+    };
+    prototype.preferred = function(target, type) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/preferred", "preferred"), new ADL.XAPIStatement.Activity(containerPath, type, target));
+    };
+    prototype.nextPage = function(page) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#paged-next", "paged-next"), new ADL.XAPIStatement.Activity(containerPath, null, page.toString()));
+    };
+    prototype.jumpedPage = function(page) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#paged-jump", "paged-jump"), new ADL.XAPIStatement.Activity(containerPath, null, page.toString()));
+    };
+    prototype.prevPage = function(page) {
+        var containerPath = "pebl://" + this.activityManager.getBook();
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#paged-prev", "paged-prev"), new ADL.XAPIStatement.Activity(containerPath, null, page.toString()));
+    };
+    prototype.startSession = function() {
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#entered", "entered"), new ADL.XAPIStatement.Activity(containerPath, null, null));
+    };
+    prototype.login = function() {
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/logged-in", "logged-in"), new ADL.XAPIStatement.Activity(containerPath, null, null));
+    };
+    prototype.logout = function() {
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/logged-out", "logged-out"), new ADL.XAPIStatement.Activity("pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook()), null, null));
+    };
+    prototype.endSession = function() {
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/exited", "exited"), new ADL.XAPIStatement.Activity(containerPath, null, null));
+    };
+    prototype.makeStatement = function(verb, activity) {
+        var up = this.userManager.getUser();
+        if (up.getName().equals("guest")) 
+            return;
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        var o = new ADL.XAPIStatement(new ADL.XAPIStatement.Agent(up.generateAgent(), up.getName()), verb, activity);
+        XApiUtils.addTimestamp(o);
+        var parentActivity = this.activityManager.getParentActivity();
+        if ((parentActivity != null) && (parentActivity != "")) 
+            containerPath = parentActivity;
+        o.addParentActivity(new ADL.XAPIStatement.Activity(containerPath, null, null));
+        if (this.activityManager.getBook() != null) 
+            this.storage.saveEvent(up, this.activityManager.getBook(), o);
+        this.storage.storeOutgoing(up, o);
+    };
+    prototype.makeStatementWithResult = function(verb, activity, result, expandedActivity) {
+        var up = this.userManager.getUser();
+        if (up.getName().equals("guest")) 
+            return;
+        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
+        var def = activity["definition"];
+        if (expandedActivity != null) 
+            for (var key in expandedActivity) 
+                def[key] = expandedActivity[key];
+        var o = new ADL.XAPIStatement(new ADL.XAPIStatement.Agent(up.generateAgent(), up.getName()), verb, activity);
+        o["result"] = result;
+        XApiUtils.addTimestamp(o);
+        var parentActivity = this.activityManager.getParentActivity();
+        if ((parentActivity != null) && (parentActivity != "")) 
+            containerPath = parentActivity;
+        o.addParentActivity(new ADL.XAPIStatement.Activity(containerPath, null, null));
+        if (this.activityManager.getBook() != null) 
+            this.storage.saveEvent(up, this.activityManager.getBook(), o);
+        this.storage.storeOutgoing(up, o);
+    };
+}, {storage: "StorageAdapter", userManager: "UserAdapter", activityManager: "ActivityAdapter"}, {});
+var Voided = function(o) {
+    TimeSeriesData.call(this);
+    this.id = o["id"];
+    this.timestamp = XApiUtils.getTimestamp(o);
+    this.parentActivity = XApiUtils.getParentActivity(o);
+    this.actorId = XApiUtils.getActorId(o);
+    this.target = XApiUtils.getObjectId(o);
+};
+Voided = stjs.extend(Voided, TimeSeriesData, [], function(constructor, prototype) {
+    prototype.target = null;
+    prototype.toObject = function() {
+        var result = TimeSeriesData.prototype.toObject.call(this);
+        result[TimeSeriesData.KEY_TARGET] = this.target;
+        return result;
+    };
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "voided");
+    };
+}, {timestamp: "Date"}, {});
 /**
  *  Basic HTML5 session storage or local storage
  *  @author aaron.veden@eduworks.com
@@ -35867,232 +36575,266 @@ InMemoryStorageAdapter = stjs.extend(InMemoryStorageAdapter, null, [StorageAdapt
     prototype.removeToc = function(user, containerPath, section, id) {};
     prototype.addToc = function(user, containerPath, data) {};
 }, {persistStorage: "Storage", storage: {name: "Map", arguments: [null, null]}}, {});
-/**
- *  Hooks for which events are recorded during a session
- *  
- *  @author aaron.veden@eduworks.com
- */
-var XApiGenerator = function(userManager, sa, activityManager) {
-    this.storage = sa;
-    this.userManager = userManager;
-    this.activityManager = activityManager;
+var Navigation = function(o) {
+    TimeSeriesData.call(this);
+    this.id = o["id"];
+    this.timestamp = XApiUtils.getTimestamp(o);
+    this.parentActivity = XApiUtils.getParentActivity(o);
+    this.actorId = XApiUtils.getActorId(o);
+    this.activityId = XApiUtils.getObjectId(o);
+    this.type = XApiUtils.getVerb(o);
 };
-XApiGenerator = stjs.extend(XApiGenerator, null, [], function(constructor, prototype) {
-    prototype.storage = null;
-    prototype.userManager = null;
-    prototype.activityManager = null;
-    prototype.checklisted = function(checklistId, checklistUser, checklistPrompts, checklistResponses) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        var checklistData = {};
-        checklistData["checklistId"] = checklistId;
-        checklistData["checklistUser"] = checklistUser;
-        checklistData["checklistPrompts"] = checklistPrompts;
-        checklistData["checklistResponses"] = checklistResponses;
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#checklisted", "checklisted"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(checklistData)));
+Navigation = stjs.extend(Navigation, TimeSeriesData, [], function(constructor, prototype) {
+    prototype.activityId = null;
+    prototype.type = null;
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "paged-next") || (verb == "paged-prev") || (verb == "paged-jump") || (verb == "interacted") || (verb == "completed");
     };
-    prototype.compatibilityTested = function(eReaderName, osName, osVersion, browserName, browserVersion, userAgent, appVersion, platform, vendor, loginResult, localStorageResult, indexedDBResult, discussionResult, contentMorphingResult, figureResult, popoutResult, hotwordResult, quizResult, showHideResult) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        var testData = {};
-        testData["eReaderName"] = eReaderName;
-        testData["osName"] = osName;
-        testData["osVersion"] = osVersion;
-        testData["browserName"] = browserName;
-        testData["browserVersion"] = browserVersion;
-        testData["userAgent"] = userAgent;
-        testData["appVersion"] = appVersion;
-        testData["platform"] = platform;
-        testData["vendor"] = vendor;
-        testData["loginResult"] = loginResult;
-        testData["localStorageResult"] = localStorageResult;
-        testData["indexedDBResult"] = indexedDBResult;
-        testData["discussionResult"] = discussionResult;
-        testData["contentMorphingResult"] = contentMorphingResult;
-        testData["figureResult"] = figureResult;
-        testData["popoutResult"] = popoutResult;
-        testData["hotwordResult"] = hotwordResult;
-        testData["quizResult"] = quizResult;
-        testData["showHideResult"] = showHideResult;
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#compatibilityTested", "compatibilityTested"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(testData)));
+    prototype.toObject = function() {
+        var result = TimeSeriesData.prototype.toObject.call(this);
+        result[TimeSeriesData.KEY_ACTIVITY_ID] = this.activityId;
+        result[TimeSeriesData.KEY_TYPE] = this.type;
+        return result;
     };
-    prototype.pushed = function(target, location, card, url, docType, name, externalURL) {
-        var containerPath = "peblThread://user-" + target;
-        var pushData = {};
-        pushData["target"] = target;
-        pushData["url"] = url;
-        pushData["name"] = name;
-        pushData["location"] = location;
-        pushData["card"] = card;
-        pushData["docType"] = docType;
-        pushData["externalURL"] = externalURL;
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#pushed", "pushed"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(pushData)));
+}, {timestamp: "Date"}, {});
+var Session = function(o) {
+    TimeSeriesData.call(this);
+    this.id = o["id"];
+    this.timestamp = XApiUtils.getTimestamp(o);
+    this.parentActivity = XApiUtils.getParentActivity(o);
+    this.actorId = XApiUtils.getActorId(o);
+    this.activityId = XApiUtils.getObjectId(o);
+    this.type = XApiUtils.getVerb(o);
+    if (this.type == "initialized") {
+        this.activityName = XApiUtils.getObjectName(o);
+        this.activityDescription = XApiUtils.getObjectDescription(o);
+    } else {
+        this.activityName = null;
+        this.activityDescription = null;
+    }
+};
+Session = stjs.extend(Session, TimeSeriesData, [], function(constructor, prototype) {
+    prototype.activityId = null;
+    prototype.activityName = null;
+    prototype.activityDescription = null;
+    prototype.type = null;
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "entered") || (verb == "exited") || (verb == "logged-in") || (verb == "logged-out") || (verb == "terminated") || (verb == "initialized");
     };
-    prototype.pulled = function(target, location, card, url, docType, name, externalURL) {
-        var containerPath = "peblThread://user-" + target;
-        var pushData = {};
-        pushData["target"] = target;
-        pushData["url"] = url;
-        pushData["name"] = name;
-        pushData["location"] = location;
-        pushData["card"] = card;
-        pushData["docType"] = docType;
-        pushData["externalURL"] = externalURL;
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#pulled", "pulled"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(pushData)));
+    prototype.toObject = function() {
+        var result = TimeSeriesData.prototype.toObject.call(this);
+        result[TimeSeriesData.KEY_ACTIVITY_ID] = this.activityId;
+        result[TimeSeriesData.KEY_ACTIVITY_NAME] = this.activityName;
+        result[TimeSeriesData.KEY_ACTIVITY_DESCRIPTION] = this.activityDescription;
+        result[TimeSeriesData.KEY_TYPE] = this.type;
+        return result;
     };
-    prototype.completed = function(cfi, activity, description) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        if ((activity != null) && (activity.trim() == "")) 
-            activity = null;
-        if (description != null) {
-            if (description.trim() == "") 
-                description = null;
-             else 
-                description = description.replaceAll("\\s+", " ");
-        }
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/completed", "completed"), new ADL.XAPIStatement.Activity(containerPath, activity, description));
+}, {timestamp: "Date"}, {});
+var Action = function(o) {
+    TimeSeriesData.call(this);
+    this.id = o["id"];
+    this.timestamp = XApiUtils.getTimestamp(o);
+    this.parentActivity = XApiUtils.getParentActivity(o);
+    this.actorId = XApiUtils.getActorId(o);
+    this.activityId = XApiUtils.getObjectId(o);
+    this.action = XApiUtils.getVerb(o);
+    if (this.action == "morphed") {
+        var name = XApiUtils.getObjectName(o);
+        var level = name.substring(0, name.indexOf("-") - 1);
+        var competency = name.substring(name.indexOf("-") + 2);
+        this.target = level;
+        this.type = competency;
+    } else if (this.action == "preferred") {
+        this.type = XApiUtils.getObjectName(o);
+        if (this.type == "link") 
+            this.target = XApiUtils.getObjectDescription(o);
+         else 
+            this.target = "";
+    } else {
+        this.target = "";
+        this.type = "";
+    }
+};
+Action = stjs.extend(Action, TimeSeriesData, [], function(constructor, prototype) {
+    prototype.activityId = null;
+    prototype.target = null;
+    prototype.type = null;
+    prototype.action = null;
+    prototype.toObject = function() {
+        var result = TimeSeriesData.prototype.toObject.call(this);
+        result[TimeSeriesData.KEY_ACTIVITY_ID] = this.activityId;
+        result[TimeSeriesData.KEY_TARGET] = this.target;
+        result[TimeSeriesData.KEY_TYPE] = this.type;
+        result[TimeSeriesData.KEY_ACTION] = this.action;
+        return result;
     };
-    prototype.passed = function(points, activity, description) {
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "preferred") || (verb == "morphed") || (verb == "interacted");
+    };
+}, {timestamp: "Date"}, {});
+var Quiz = function(o) {
+    TimeSeriesData.call(this);
+    this.id = o["id"];
+    this.timestamp = XApiUtils.getTimestamp(o);
+    this.parentActivity = XApiUtils.getParentActivity(o);
+    this.actorId = XApiUtils.getActorId(o);
+    this.activityId = XApiUtils.getObjectId(o);
+    var result = o["result"];
+    this.completion = result["completion"];
+    this.success = result["success"];
+    this.quizId = XApiUtils.getObjectName(o);
+    this.quizName = XApiUtils.getObjectDescription(o);
+    var scores = result["score"];
+    this.min = stjs.trunc(scores["min"]);
+    this.max = stjs.trunc(scores["max"]);
+    this.raw = stjs.trunc(scores["raw"]);
+};
+Quiz = stjs.extend(Quiz, TimeSeriesData, [], function(constructor, prototype) {
+    prototype.raw = 0;
+    prototype.min = 0;
+    prototype.max = 0;
+    prototype.activityId = null;
+    prototype.quizId = null;
+    prototype.quizName = null;
+    prototype.completion = false;
+    prototype.success = false;
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "failed") || (verb == "passed");
+    };
+}, {timestamp: "Date"}, {});
+var Message = function(o) {
+    TimeSeriesData.call(this);
+    var messageData;
+    if (o["object"] != null) {
+        messageData = JSON.parse(XApiUtils.getObjectDescription(o));
+        var temp = XApiUtils.getObjectId(o);
+        if (temp.lastIndexOf("/") != -1) 
+            this.thread = temp.substring(temp.lastIndexOf("/") + 1);
+         else 
+            this.thread = temp;
+        this.prompt = XApiUtils.getObjectName(o);
+        this.actorId = XApiUtils.getActorId(o);
+        this.name = XApiUtils.getActorName(o);
+    } else {
+        messageData = o;
+        this.thread = messageData[Message.KEY_THREAD];
+        this.prompt = messageData[Message.KEY_PROMPT];
+        this.actorId = messageData[Message.KEY_USER_ID];
+        this.name = "You";
+    }
+    this.direct = this.thread == TimeSeriesData.NAMESPACE_USERNAME + this.actorId;
+    this.id = o[Message.KEY_XID];
+    this.text = messageData[Message.KEY_TEXT];
+    this.timestamp = new Date(o[Message.KEY_TIMESTAMP]);
+};
+Message = stjs.extend(Message, TimeSeriesData, [], function(constructor, prototype) {
+    constructor.KEY_XID = "id";
+    constructor.KEY_TIMESTAMP = "timestamp";
+    constructor.KEY_THREAD = "thread";
+    constructor.KEY_PROMPT = "prompt";
+    constructor.KEY_USER_ID = "userId";
+    constructor.KEY_TEXT = "text";
+    constructor.KEY_FROM = "from";
+    constructor.KEY_NAME = "name";
+    prototype.thread = null;
+    prototype.text = null;
+    prototype.prompt = null;
+    prototype.name = null;
+    prototype.direct = false;
+    prototype.pack = function() {
         var result = {};
-        var score = {};
-        score["scaled"] = points / 100.0;
-        score["raw"] = points;
-        score["min"] = 0;
-        score["max"] = 100;
-        result["score"] = score;
-        result["success"] = true;
-        result["completion"] = true;
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/passed", "passed"), new ADL.XAPIStatement.Activity(containerPath, activity, description), result, {});
+        result[Message.KEY_TEXT] = this.text;
+        return JSON.stringify(result);
     };
-    prototype.initialized = function(activity, description) {
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/initialized", "initialized"), new ADL.XAPIStatement.Activity(containerPath, activity, description));
-    };
-    prototype.failed = function(points, activity, description) {
+    prototype.toObject = function() {
         var result = {};
-        var score = {};
-        score["scaled"] = points / 100.0;
-        score["raw"] = points;
-        score["min"] = 0;
-        score["max"] = 100;
-        result["score"] = score;
-        result["success"] = false;
-        result["completion"] = true;
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/failed", "failed"), new ADL.XAPIStatement.Activity(containerPath, activity, description), result, {});
+        result[Message.KEY_XID] = this.id;
+        result[Message.KEY_THREAD] = this.thread;
+        result[Message.KEY_PROMPT] = this.prompt;
+        result[Message.KEY_TEXT] = this.text;
+        result[Message.KEY_USER_ID] = this.actorId;
+        result[Message.KEY_NAME] = this.name;
+        result[Message.KEY_TIMESTAMP] = EcDate.toISOString(this.timestamp);
+        return result;
     };
-    prototype.morphed = function(level, competency, cfi) {
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#morphed", "morphed"), new ADL.XAPIStatement.Activity(containerPath, "Level = " + level + " - " + competency, cfi));
+    prototype.toString = function() {
+        return JSON.stringify(this.toObject());
     };
-    prototype.interacted = function() {
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/interacted", "interacted"), new ADL.XAPIStatement.Activity(containerPath, null, null));
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "responded");
     };
-    prototype.terminated = function() {
-        var activity = this.activityManager.getBook();
-        if (activity != null) {
-            var containerPath = "pebl://" + activity;
-            this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/terminated", "terminated"), new ADL.XAPIStatement.Activity(containerPath, null, null));
-        }
-    };
-    prototype.answered = function(prompt, answers, answer, correct, done) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
+}, {timestamp: "Date"}, {});
+var Reference = function(o) {
+    TimeSeriesData.call(this);
+    var messageData;
+    if (o["object"] != null) {
+        messageData = JSON.parse(XApiUtils.getObjectDescription(o));
+        this.actorId = XApiUtils.getActorId(o);
+    } else {
+        messageData = o;
+        this.actorId = o[TimeSeriesData.KEY_ACTOR_ID];
+    }
+    this.docType = messageData[TimeSeriesData.KEY_DOCTYPE];
+    this.location = messageData[Reference.KEY_LOCATION];
+    this.card = messageData[Reference.KEY_CARD];
+    this.url = messageData[Reference.KEY_URL];
+    this.target = messageData[TimeSeriesData.KEY_TARGET];
+    this.id = o[TimeSeriesData.KEY_XID];
+    this.name = messageData[Reference.KEY_NAME];
+    this.externalURL = messageData[Reference.KEY_EXTERNAL_URL];
+    this.timestamp = new Date(o[TimeSeriesData.KEY_TIMESTAMP]);
+};
+Reference = stjs.extend(Reference, TimeSeriesData, [], function(constructor, prototype) {
+    constructor.KEY_LOCATION = "location";
+    constructor.KEY_CARD = "card";
+    constructor.KEY_URL = "url";
+    constructor.KEY_NAME = "name";
+    constructor.KEY_EXTERNAL_URL = "externalURL";
+    prototype.name = null;
+    prototype.location = null;
+    prototype.card = null;
+    prototype.target = null;
+    prototype.url = null;
+    prototype.docType = null;
+    prototype.externalURL = null;
+    prototype.pack = function() {
         var result = {};
-        var score = {};
-        var points = correct ? 1 : 0;
-        score["scaled"] = points;
-        score["raw"] = points;
-        score["min"] = 0;
-        score["max"] = 1;
-        result["score"] = score;
-        result["success"] = correct;
-        result["completion"] = done;
-        result["response"] = answer;
-        var expandedActivity = {};
-        expandedActivity["type"] = "http://adlnet.gov/expapi/activities/cmi.interaction";
-        var cleanedAnswers = [];
-        for (var i = 0; i < answers.length; i++) {
-            var temp = {};
-            temp["id"] = i + "";
-            var temp2 = {};
-            temp2["en-US"] = answers[i];
-            temp["description"] = temp2;
-            cleanedAnswers.push(temp);
-        }
-        expandedActivity["choices"] = cleanedAnswers;
-        expandedActivity["interactionType"] = "choice";
-        var responses = [];
-        responses.push(answer.indexOf(answer) + "");
-        expandedActivity["correctResponsesPattern"] = responses;
-        this.makeStatementWithResult(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/answered", "answered"), new ADL.XAPIStatement.Activity(containerPath, prompt, null), result, expandedActivity);
+        result[Reference.KEY_LOCATION] = this.location;
+        result[Reference.KEY_CARD] = this.card;
+        result[TimeSeriesData.KEY_TARGET] = this.target;
+        result[Reference.KEY_URL] = this.url;
+        result[TimeSeriesData.KEY_DOCTYPE] = this.docType;
+        result[Reference.KEY_NAME] = this.name;
+        result[Reference.KEY_EXTERNAL_URL] = this.externalURL;
+        return JSON.stringify(result);
     };
-    prototype.preferred = function(target, type) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/preferred", "preferred"), new ADL.XAPIStatement.Activity(containerPath, type, target));
+    prototype.toObject = function() {
+        var result = {};
+        result[TimeSeriesData.KEY_XID] = this.id;
+        result[Reference.KEY_URL] = this.url;
+        result[TimeSeriesData.KEY_ACTOR_ID] = this.actorId;
+        result[Reference.KEY_LOCATION] = this.location;
+        result[Reference.KEY_CARD] = this.card;
+        result[TimeSeriesData.KEY_TARGET] = this.target;
+        result[TimeSeriesData.KEY_DOCTYPE] = this.docType;
+        result[Reference.KEY_NAME] = this.name;
+        result[Reference.KEY_EXTERNAL_URL] = this.externalURL;
+        result[TimeSeriesData.KEY_TIMESTAMP] = EcDate.toISOString(this.timestamp);
+        return result;
     };
-    prototype.nextPage = function(page) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#paged-next", "paged-next"), new ADL.XAPIStatement.Activity(containerPath, null, page.toString()));
+    prototype.toString = function() {
+        return JSON.stringify(this.toObject());
     };
-    prototype.jumpedPage = function(page) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#paged-jump", "paged-jump"), new ADL.XAPIStatement.Activity(containerPath, null, page.toString()));
+    constructor.is = function(record) {
+        var verb = XApiUtils.getVerb(record);
+        return (verb == "pushed") || (verb == "pulled");
     };
-    prototype.prevPage = function(page) {
-        var containerPath = "pebl://" + this.activityManager.getBook();
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#paged-prev", "paged-prev"), new ADL.XAPIStatement.Activity(containerPath, null, page.toString()));
-    };
-    prototype.startSession = function() {
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#entered", "entered"), new ADL.XAPIStatement.Activity(containerPath, null, null));
-    };
-    prototype.login = function() {
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/logged-in", "logged-in"), new ADL.XAPIStatement.Activity(containerPath, null, null));
-    };
-    prototype.logout = function() {
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/logged-out", "logged-out"), new ADL.XAPIStatement.Activity("pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook()), null, null));
-    };
-    prototype.endSession = function() {
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        this.makeStatement(new ADL.XAPIStatement.Verb("http://adlnet.gov/expapi/verbs/exited", "exited"), new ADL.XAPIStatement.Activity(containerPath, null, null));
-    };
-    prototype.makeStatement = function(verb, activity) {
-        var up = this.userManager.getUser();
-        if (up.getName().equals("guest")) 
-            return;
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        var o = new ADL.XAPIStatement(new ADL.XAPIStatement.Agent(up.generateAgent(), up.getName()), verb, activity);
-        XApiUtils.addTimestamp(o);
-        var parentActivity = this.activityManager.getParentActivity();
-        if ((parentActivity != null) && (parentActivity != "")) 
-            containerPath = parentActivity;
-        o.addParentActivity(new ADL.XAPIStatement.Activity(containerPath, null, null));
-        if (this.activityManager.getBook() != null) 
-            this.storage.saveEvent(up, this.activityManager.getBook(), o);
-        this.storage.storeOutgoing(up, o);
-    };
-    prototype.makeStatementWithResult = function(verb, activity, result, expandedActivity) {
-        var up = this.userManager.getUser();
-        if (up.getName().equals("guest")) 
-            return;
-        var containerPath = "pebl://" + (this.activityManager.getBook() == null ? "" : this.activityManager.getBook());
-        var def = activity["definition"];
-        if (expandedActivity != null) 
-            for (var key in expandedActivity) 
-                def[key] = expandedActivity[key];
-        var o = new ADL.XAPIStatement(new ADL.XAPIStatement.Agent(up.generateAgent(), up.getName()), verb, activity);
-        o["result"] = result;
-        XApiUtils.addTimestamp(o);
-        var parentActivity = this.activityManager.getParentActivity();
-        if ((parentActivity != null) && (parentActivity != "")) 
-            containerPath = parentActivity;
-        o.addParentActivity(new ADL.XAPIStatement.Activity(containerPath, null, null));
-        if (this.activityManager.getBook() != null) 
-            this.storage.saveEvent(up, this.activityManager.getBook(), o);
-        this.storage.storeOutgoing(up, o);
-    };
-}, {storage: "StorageAdapter", userManager: "UserAdapter", activityManager: "ActivityAdapter"}, {});
+}, {timestamp: "Date"}, {});
 /**
  *  Basic HTML5 session storage or local storage
  *  @author aaron.veden@eduworks.com
@@ -36273,473 +37015,6 @@ KeyValueStorageAdapter = stjs.extend(KeyValueStorageAdapter, null, [StorageAdapt
     prototype.removeToc = function(user, containerPath, section, id) {};
     prototype.addToc = function(user, containerPath, data) {};
 }, {storage: "Storage"}, {});
-var Notification = function(message, payload) {
-    TimeSeriesData.call(this);
-    this.id = TimeSeriesData.NAMESPACE_NOTIFICATION + payload.id;
-    this.timestamp = new Date();
-    this.message = message;
-    this.payload = payload;
-};
-Notification = stjs.extend(Notification, TimeSeriesData, [], function(constructor, prototype) {
-    constructor.KEY_MESSAGE = "message";
-    constructor.KEY_PAYLOAD = "payload";
-    prototype.message = null;
-    prototype.payload = null;
-    prototype.pack = function() {
-        var result = {};
-        result[Notification.KEY_MESSAGE] = this.message;
-        result[Notification.KEY_PAYLOAD] = this.payload;
-        return JSON.stringify(result);
-    };
-    prototype.toObject = function() {
-        var result = {};
-        result[TimeSeriesData.KEY_XID] = this.id;
-        result[Notification.KEY_MESSAGE] = this.message;
-        if (this.payload != null) 
-            result[Notification.KEY_PAYLOAD] = this.payload.toObject();
-        result[TimeSeriesData.KEY_TIMESTAMP] = EcDate.toISOString(this.timestamp);
-        return result;
-    };
-    prototype.toString = function() {
-        return JSON.stringify(this.toObject());
-    };
-}, {payload: "TimeSeriesData", timestamp: "Date"}, {});
-var LocalActivityAdapter = function(userManager, storage) {
-    this.subscribedThreads = {};
-    this.storage = storage;
-    this.userManager = userManager;
-};
-LocalActivityAdapter = stjs.extend(LocalActivityAdapter, null, [ActivityAdapter], function(constructor, prototype) {
-    prototype.storage = null;
-    prototype.subscribedThreads = null;
-    prototype.currentBook = null;
-    prototype.previousBook = null;
-    prototype.currentActivity = null;
-    prototype.sameBook = false;
-    prototype.userManager = null;
-    prototype.directMessageHandler = null;
-    prototype.getThreads = function() {
-        return this.subscribedThreads;
-    };
-    prototype.setDirectMessageHandler = function(directMessageHandler) {
-        var laa = this;
-        this.directMessageHandler = directMessageHandler;
-    };
-    prototype.hookDirectMessages = function() {
-        var laa = this;
-        if (this.userManager.getUser().getIdentity() != "guest") 
-            this.subscribedThreads[TimeSeriesData.NAMESPACE_USERNAME + this.userManager.getUser().getIdentity()] = function(incoming) {
-                if (laa.directMessageHandler != null) 
-                    laa.directMessageHandler(incoming);
-            };
-    };
-    prototype.unsubscribeAll = function() {
-        this.subscribedThreads = {};
-        this.hookDirectMessages();
-    };
-    prototype.subscribe = function(thread, callback) {
-        this.subscribedThreads[thread] = callback;
-    };
-    prototype.initializeToc = function(data) {
-        var self = this;
-        this.storage.getToc(this.userManager.getUser(), this.currentBook, function(toc) {
-            if (toc.length == 0) {
-                for (var section in data) {
-                    var pages = data[section];
-                    for (var pageKey in pages) {
-                        var pageMetadata = pages[pageKey];
-                        if (pageKey == "DynamicContent") {
-                            var documents = pageMetadata["documents"];
-                            for (var dynamicPageKey in documents) {
-                                var documentMetadata = documents[dynamicPageKey];
-                                documentMetadata["pageKey"] = dynamicPageKey;
-                                documentMetadata["card"] = documentMetadata["card"];
-                                documentMetadata["docType"] = documentMetadata["docType"];
-                                documentMetadata["documentName"] = documentMetadata["documentName"];
-                                documentMetadata["url"] = documentMetadata["url"];
-                                documentMetadata["section"] = documentMetadata["section"];
-                                documentMetadata["externalURL"] = documentMetadata["externalURL"];
-                                self.storage.addToc(self.userManager.getUser(), self.currentBook, documentMetadata);
-                            }
-                        } else {
-                            pageMetadata["pageKey"] = pageKey;
-                            pageMetadata["section"] = section;
-                            self.storage.addToc(self.userManager.getUser(), self.currentBook, pageMetadata);
-                        }
-                    }
-                }
-            }
-        });
-    };
-    prototype.getToc = function(callback) {
-        this.storage.getToc(this.userManager.getUser(), this.currentBook, function(entries) {
-            var toc = {};
-            for (var i = 0; i < entries.length; i++) {
-                var entry = entries[i];
-                var sectionKey = entry["section"];
-                if (toc[sectionKey] == null) {
-                    toc[sectionKey] = {};
-                }
-                var section = toc[sectionKey];
-                if (sectionKey == "DynamicContent") {
-                    if (section["documents"] == null) {
-                        section["location"] = entry["location"];
-                        section["documents"] = {};
-                    }
-                    var dynamicSection = section["documents"];
-                    dynamicSection[entry["pageKey"]] = entry;
-                } else 
-                    section[entry["pageKey"]] = entry;
-            }
-            if (callback != null) 
-                callback(toc);
-        });
-    };
-    prototype.openBook = function(containerPath, callback) {
-        var laa = this;
-        if (this.previousBook == null) {
-            this.storage.getCurrentBook(function(book) {
-                laa.previousBook = book;
-                laa.sameBook = (laa.currentBook == containerPath);
-                laa.previousBook = laa.currentBook;
-                laa.currentBook = containerPath;
-                laa.storage.storeCurrentBook(containerPath);
-                laa.hookDirectMessages();
-                if (callback != null) 
-                    callback(laa.sameBook);
-            });
-        } else {
-            this.sameBook = (this.currentBook == containerPath);
-            this.previousBook = this.currentBook;
-            this.currentBook = containerPath;
-            laa.storage.storeCurrentBook(containerPath);
-            this.hookDirectMessages();
-            if (callback != null) 
-                callback(this.sameBook);
-        }
-    };
-    prototype.startParentActivity = function(activity) {
-        this.currentActivity = activity;
-    };
-    prototype.clearParentActivity = function() {
-        this.currentActivity = null;
-    };
-    prototype.getParentActivity = function() {
-        return this.currentActivity;
-    };
-    prototype.isSameBook = function() {
-        return this.sameBook;
-    };
-    prototype.getBook = function() {
-        return this.currentBook;
-    };
-}, {storage: "StorageAdapter", subscribedThreads: {name: "Map", arguments: [null, {name: "Callback1", arguments: [{name: "Array", arguments: ["TimeSeriesData"]}]}]}, userManager: "UserAdapter", directMessageHandler: {name: "Callback1", arguments: [{name: "Array", arguments: ["TimeSeriesData"]}]}}, {});
-var Quiz = function(o) {
-    TimeSeriesData.call(this);
-    this.id = o["id"];
-    this.timestamp = XApiUtils.getTimestamp(o);
-    this.parentActivity = XApiUtils.getParentActivity(o);
-    this.actorId = XApiUtils.getActorId(o);
-    this.activityId = XApiUtils.getObjectId(o);
-    var result = o["result"];
-    this.completion = result["completion"];
-    this.success = result["success"];
-    this.quizId = XApiUtils.getObjectName(o);
-    this.quizName = XApiUtils.getObjectDescription(o);
-    var scores = result["score"];
-    this.min = stjs.trunc(scores["min"]);
-    this.max = stjs.trunc(scores["max"]);
-    this.raw = stjs.trunc(scores["raw"]);
-};
-Quiz = stjs.extend(Quiz, TimeSeriesData, [], function(constructor, prototype) {
-    prototype.raw = 0;
-    prototype.min = 0;
-    prototype.max = 0;
-    prototype.activityId = null;
-    prototype.quizId = null;
-    prototype.quizName = null;
-    prototype.completion = false;
-    prototype.success = false;
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "failed") || (verb == "passed");
-    };
-}, {timestamp: "Date"}, {});
-var Annotation = function(o) {
-    TimeSeriesData.call(this);
-    this.stmt = o;
-    var annotationData;
-    var dateKey;
-    if (o["object"] != null) {
-        annotationData = JSON.parse(XApiUtils.getObjectDescription(o));
-        dateKey = TimeSeriesData.KEY_TIMESTAMP;
-        var temp = XApiUtils.getObjectId(o);
-        if (temp.lastIndexOf("/") != -1) 
-            this.containerPath = temp.substring(temp.lastIndexOf("/") + 1);
-         else 
-            this.containerPath = temp;
-        this.parentActivity = XApiUtils.getParentActivity(o);
-        this.verb = XApiUtils.getVerb(o);
-        this.actorId = XApiUtils.getActorId(o);
-        this.owner = XApiUtils.getActorId(o);
-    } else {
-        annotationData = o;
-        dateKey = Annotation.KEY_DATE;
-        this.containerPath = annotationData[Annotation.KEY_CONTAINER_PATH];
-        var parent = annotationData[TimeSeriesData.KEY_PARENT_ACTIVITY];
-        if ((parent != null) && (parent != "")) 
-            this.parentActivity = parent;
-         else 
-            this.parentActivity = this.containerPath;
-        this.verb = "commented";
-        this.owner = "N/A";
-    }
-    this.id = o[TimeSeriesData.KEY_XID];
-    this.annId = stjs.trunc(annotationData[Annotation.KEY_ID]);
-    this.type = stjs.trunc(annotationData[Annotation.KEY_TYPE]);
-    this.cfi = annotationData[Annotation.KEY_CFI];
-    this.idRef = annotationData[Annotation.KEY_IDREF];
-    this.title = annotationData[Annotation.KEY_TITLE];
-    this.style = stjs.trunc(annotationData[Annotation.KEY_STYLE]);
-    this.text = annotationData[Annotation.KEY_TEXT];
-    this.timestamp = new Date(o[dateKey]);
-};
-Annotation = stjs.extend(Annotation, TimeSeriesData, [], function(constructor, prototype) {
-    constructor.TYPE_BOOKMARK = 1;
-    constructor.TYPE_HIGHLIGHT = 2;
-    constructor.TYPE_NOTE = 3;
-    constructor.KEY_ID = "AnnID";
-    constructor.KEY_TYPE = "Type";
-    constructor.KEY_CFI = "CFI";
-    constructor.KEY_CONTAINER_PATH = "ContainerPath";
-    constructor.KEY_IDREF = "IDRef";
-    constructor.KEY_TITLE = "Title";
-    constructor.KEY_STYLE = "Style";
-    constructor.KEY_TEXT = "Text";
-    constructor.KEY_DATE = "Date";
-    constructor.KEY_OWNER = "Owner";
-    prototype.verb = null;
-    prototype.annId = 0;
-    prototype.type = 0;
-    prototype.cfi = null;
-    prototype.containerPath = null;
-    prototype.idRef = null;
-    prototype.title = null;
-    prototype.style = 0;
-    prototype.text = null;
-    prototype.owner = null;
-    prototype.stmt = null;
-    prototype.pack = function() {
-        var result = {};
-        result[Annotation.KEY_ID] = this.annId;
-        result[Annotation.KEY_CFI] = this.cfi;
-        result[Annotation.KEY_TYPE] = this.type;
-        result[Annotation.KEY_IDREF] = this.idRef;
-        result[Annotation.KEY_TITLE] = this.title;
-        result[Annotation.KEY_STYLE] = this.style;
-        result[Annotation.KEY_TEXT] = this.text;
-        result[Annotation.KEY_OWNER] = this.owner;
-        return JSON.stringify(result);
-    };
-    prototype.toObject = function() {
-        var result = {};
-        result[TimeSeriesData.KEY_XID] = this.id;
-        result[Annotation.KEY_ID] = this.annId;
-        result[Annotation.KEY_CFI] = this.cfi;
-        result[Annotation.KEY_TYPE] = this.type;
-        result[Annotation.KEY_CONTAINER_PATH] = this.containerPath;
-        result[TimeSeriesData.KEY_PARENT_ACTIVITY] = this.parentActivity;
-        result[Annotation.KEY_IDREF] = this.idRef;
-        result[Annotation.KEY_TITLE] = this.title;
-        result[Annotation.KEY_STYLE] = this.style;
-        result[Annotation.KEY_TEXT] = this.text;
-        result[Annotation.KEY_DATE] = EcDate.toISOString(this.timestamp);
-        result[Annotation.KEY_OWNER] = this.owner;
-        return result;
-    };
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "commented");
-    };
-}, {stmt: {name: "Map", arguments: [null, "Object"]}, timestamp: "Date"}, {});
-var Message = function(o) {
-    TimeSeriesData.call(this);
-    var messageData;
-    if (o["object"] != null) {
-        messageData = JSON.parse(XApiUtils.getObjectDescription(o));
-        var temp = XApiUtils.getObjectId(o);
-        if (temp.lastIndexOf("/") != -1) 
-            this.thread = temp.substring(temp.lastIndexOf("/") + 1);
-         else 
-            this.thread = temp;
-        this.prompt = XApiUtils.getObjectName(o);
-        this.actorId = XApiUtils.getActorId(o);
-    } else {
-        messageData = o;
-        this.thread = messageData[Message.KEY_THREAD];
-        this.prompt = messageData[Message.KEY_PROMPT];
-        this.actorId = messageData[Message.KEY_USER_ID];
-    }
-    this.direct = this.thread == TimeSeriesData.NAMESPACE_USERNAME + this.actorId;
-    this.id = o[Message.KEY_XID];
-    this.text = messageData[Message.KEY_TEXT];
-    this.timestamp = new Date(o[Message.KEY_TIMESTAMP]);
-};
-Message = stjs.extend(Message, TimeSeriesData, [], function(constructor, prototype) {
-    constructor.KEY_XID = "id";
-    constructor.KEY_TIMESTAMP = "timestamp";
-    constructor.KEY_THREAD = "thread";
-    constructor.KEY_PROMPT = "prompt";
-    constructor.KEY_USER_ID = "userId";
-    constructor.KEY_TEXT = "text";
-    constructor.KEY_FROM = "from";
-    prototype.thread = null;
-    prototype.text = null;
-    prototype.prompt = null;
-    prototype.direct = false;
-    prototype.pack = function() {
-        var result = {};
-        result[Message.KEY_TEXT] = this.text;
-        return JSON.stringify(result);
-    };
-    prototype.toObject = function() {
-        var result = {};
-        result[Message.KEY_XID] = this.id;
-        result[Message.KEY_THREAD] = this.thread;
-        result[Message.KEY_PROMPT] = this.prompt;
-        result[Message.KEY_TEXT] = this.text;
-        result[Message.KEY_USER_ID] = this.actorId;
-        result[Message.KEY_TIMESTAMP] = EcDate.toISOString(this.timestamp);
-        return result;
-    };
-    prototype.toString = function() {
-        return JSON.stringify(this.toObject());
-    };
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "responded");
-    };
-}, {timestamp: "Date"}, {});
-var Action = function(o) {
-    TimeSeriesData.call(this);
-    this.id = o["id"];
-    this.timestamp = XApiUtils.getTimestamp(o);
-    this.parentActivity = XApiUtils.getParentActivity(o);
-    this.actorId = XApiUtils.getActorId(o);
-    this.activityId = XApiUtils.getObjectId(o);
-    this.action = XApiUtils.getVerb(o);
-    if (this.action == "morphed") {
-        var name = XApiUtils.getObjectName(o);
-        var level = name.substring(0, name.indexOf("-") - 1);
-        var competency = name.substring(name.indexOf("-") + 2);
-        this.target = level;
-        this.type = competency;
-    } else if (this.action == "preferred") {
-        this.type = XApiUtils.getObjectName(o);
-        if (this.type == "link") 
-            this.target = XApiUtils.getObjectDescription(o);
-         else 
-            this.target = "";
-    } else {
-        this.target = "";
-        this.type = "";
-    }
-};
-Action = stjs.extend(Action, TimeSeriesData, [], function(constructor, prototype) {
-    prototype.activityId = null;
-    prototype.target = null;
-    prototype.type = null;
-    prototype.action = null;
-    prototype.toObject = function() {
-        var result = TimeSeriesData.prototype.toObject.call(this);
-        result[TimeSeriesData.KEY_ACTIVITY_ID] = this.activityId;
-        result[TimeSeriesData.KEY_TARGET] = this.target;
-        result[TimeSeriesData.KEY_TYPE] = this.type;
-        result[TimeSeriesData.KEY_ACTION] = this.action;
-        return result;
-    };
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "preferred") || (verb == "morphed") || (verb == "interacted");
-    };
-}, {timestamp: "Date"}, {});
-var Session = function(o) {
-    TimeSeriesData.call(this);
-    this.id = o["id"];
-    this.timestamp = XApiUtils.getTimestamp(o);
-    this.parentActivity = XApiUtils.getParentActivity(o);
-    this.actorId = XApiUtils.getActorId(o);
-    this.activityId = XApiUtils.getObjectId(o);
-    this.type = XApiUtils.getVerb(o);
-    if (this.type == "initialized") {
-        this.activityName = XApiUtils.getObjectName(o);
-        this.activityDescription = XApiUtils.getObjectDescription(o);
-    } else {
-        this.activityName = null;
-        this.activityDescription = null;
-    }
-};
-Session = stjs.extend(Session, TimeSeriesData, [], function(constructor, prototype) {
-    prototype.activityId = null;
-    prototype.activityName = null;
-    prototype.activityDescription = null;
-    prototype.type = null;
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "entered") || (verb == "exited") || (verb == "logged-in") || (verb == "logged-out") || (verb == "terminated") || (verb == "initialized");
-    };
-    prototype.toObject = function() {
-        var result = TimeSeriesData.prototype.toObject.call(this);
-        result[TimeSeriesData.KEY_ACTIVITY_ID] = this.activityId;
-        result[TimeSeriesData.KEY_ACTIVITY_NAME] = this.activityName;
-        result[TimeSeriesData.KEY_ACTIVITY_DESCRIPTION] = this.activityDescription;
-        result[TimeSeriesData.KEY_TYPE] = this.type;
-        return result;
-    };
-}, {timestamp: "Date"}, {});
-var Voided = function(o) {
-    TimeSeriesData.call(this);
-    this.id = o["id"];
-    this.timestamp = XApiUtils.getTimestamp(o);
-    this.parentActivity = XApiUtils.getParentActivity(o);
-    this.actorId = XApiUtils.getActorId(o);
-    this.target = XApiUtils.getObjectId(o);
-};
-Voided = stjs.extend(Voided, TimeSeriesData, [], function(constructor, prototype) {
-    prototype.target = null;
-    prototype.toObject = function() {
-        var result = TimeSeriesData.prototype.toObject.call(this);
-        result[TimeSeriesData.KEY_TARGET] = this.target;
-        return result;
-    };
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "voided");
-    };
-}, {timestamp: "Date"}, {});
-var Navigation = function(o) {
-    TimeSeriesData.call(this);
-    this.id = o["id"];
-    this.timestamp = XApiUtils.getTimestamp(o);
-    this.parentActivity = XApiUtils.getParentActivity(o);
-    this.actorId = XApiUtils.getActorId(o);
-    this.activityId = XApiUtils.getObjectId(o);
-    this.type = XApiUtils.getVerb(o);
-};
-Navigation = stjs.extend(Navigation, TimeSeriesData, [], function(constructor, prototype) {
-    prototype.activityId = null;
-    prototype.type = null;
-    constructor.is = function(record) {
-        var verb = XApiUtils.getVerb(record);
-        return (verb == "paged-next") || (verb == "paged-prev") || (verb == "paged-jump") || (verb == "interacted") || (verb == "completed");
-    };
-    prototype.toObject = function() {
-        var result = TimeSeriesData.prototype.toObject.call(this);
-        result[TimeSeriesData.KEY_ACTIVITY_ID] = this.activityId;
-        result[TimeSeriesData.KEY_TYPE] = this.type;
-        return result;
-    };
-}, {timestamp: "Date"}, {});
 var Question = function(o) {
     TimeSeriesData.call(this);
     this.id = o["id"];
@@ -36882,72 +37157,103 @@ SharedAnnotation = stjs.extend(SharedAnnotation, TimeSeriesData, [], function(co
         return (verb == "shared");
     };
 }, {stmt: {name: "Map", arguments: [null, "Object"]}, timestamp: "Date"}, {});
-var Reference = function(o) {
+var Annotation = function(o) {
     TimeSeriesData.call(this);
-    var messageData;
+    this.stmt = o;
+    var annotationData;
+    var dateKey;
     if (o["object"] != null) {
-        messageData = JSON.parse(XApiUtils.getObjectDescription(o));
+        annotationData = JSON.parse(XApiUtils.getObjectDescription(o));
+        dateKey = TimeSeriesData.KEY_TIMESTAMP;
+        var temp = XApiUtils.getObjectId(o);
+        if (temp.lastIndexOf("/") != -1) 
+            this.containerPath = temp.substring(temp.lastIndexOf("/") + 1);
+         else 
+            this.containerPath = temp;
+        this.parentActivity = XApiUtils.getParentActivity(o);
+        this.verb = XApiUtils.getVerb(o);
         this.actorId = XApiUtils.getActorId(o);
+        this.owner = XApiUtils.getActorId(o);
     } else {
-        messageData = o;
-        this.actorId = o[TimeSeriesData.KEY_ACTOR_ID];
+        annotationData = o;
+        dateKey = Annotation.KEY_DATE;
+        this.containerPath = annotationData[Annotation.KEY_CONTAINER_PATH];
+        var parent = annotationData[TimeSeriesData.KEY_PARENT_ACTIVITY];
+        if ((parent != null) && (parent != "")) 
+            this.parentActivity = parent;
+         else 
+            this.parentActivity = this.containerPath;
+        this.verb = "commented";
+        this.owner = "N/A";
     }
-    this.docType = messageData[TimeSeriesData.KEY_DOCTYPE];
-    this.location = messageData[Reference.KEY_LOCATION];
-    this.card = messageData[Reference.KEY_CARD];
-    this.url = messageData[Reference.KEY_URL];
-    this.target = messageData[TimeSeriesData.KEY_TARGET];
     this.id = o[TimeSeriesData.KEY_XID];
-    this.name = messageData[Reference.KEY_NAME];
-    this.externalURL = messageData[Reference.KEY_EXTERNAL_URL];
-    this.timestamp = new Date(o[TimeSeriesData.KEY_TIMESTAMP]);
+    this.annId = stjs.trunc(annotationData[Annotation.KEY_ID]);
+    this.type = stjs.trunc(annotationData[Annotation.KEY_TYPE]);
+    this.cfi = annotationData[Annotation.KEY_CFI];
+    this.idRef = annotationData[Annotation.KEY_IDREF];
+    this.title = annotationData[Annotation.KEY_TITLE];
+    this.style = stjs.trunc(annotationData[Annotation.KEY_STYLE]);
+    this.text = annotationData[Annotation.KEY_TEXT];
+    this.timestamp = new Date(o[dateKey]);
 };
-Reference = stjs.extend(Reference, TimeSeriesData, [], function(constructor, prototype) {
-    constructor.KEY_LOCATION = "location";
-    constructor.KEY_CARD = "card";
-    constructor.KEY_URL = "url";
-    constructor.KEY_NAME = "name";
-    constructor.KEY_EXTERNAL_URL = "externalURL";
-    prototype.name = null;
-    prototype.location = null;
-    prototype.card = null;
-    prototype.target = null;
-    prototype.url = null;
-    prototype.docType = null;
-    prototype.externalURL = null;
+Annotation = stjs.extend(Annotation, TimeSeriesData, [], function(constructor, prototype) {
+    constructor.TYPE_BOOKMARK = 1;
+    constructor.TYPE_HIGHLIGHT = 2;
+    constructor.TYPE_NOTE = 3;
+    constructor.KEY_ID = "AnnID";
+    constructor.KEY_TYPE = "Type";
+    constructor.KEY_CFI = "CFI";
+    constructor.KEY_CONTAINER_PATH = "ContainerPath";
+    constructor.KEY_IDREF = "IDRef";
+    constructor.KEY_TITLE = "Title";
+    constructor.KEY_STYLE = "Style";
+    constructor.KEY_TEXT = "Text";
+    constructor.KEY_DATE = "Date";
+    constructor.KEY_OWNER = "Owner";
+    prototype.verb = null;
+    prototype.annId = 0;
+    prototype.type = 0;
+    prototype.cfi = null;
+    prototype.containerPath = null;
+    prototype.idRef = null;
+    prototype.title = null;
+    prototype.style = 0;
+    prototype.text = null;
+    prototype.owner = null;
+    prototype.stmt = null;
     prototype.pack = function() {
         var result = {};
-        result[Reference.KEY_LOCATION] = this.location;
-        result[Reference.KEY_CARD] = this.card;
-        result[TimeSeriesData.KEY_TARGET] = this.target;
-        result[Reference.KEY_URL] = this.url;
-        result[TimeSeriesData.KEY_DOCTYPE] = this.docType;
-        result[Reference.KEY_NAME] = this.name;
-        result[Reference.KEY_EXTERNAL_URL] = this.externalURL;
+        result[Annotation.KEY_ID] = this.annId;
+        result[Annotation.KEY_CFI] = this.cfi;
+        result[Annotation.KEY_TYPE] = this.type;
+        result[Annotation.KEY_IDREF] = this.idRef;
+        result[Annotation.KEY_TITLE] = this.title;
+        result[Annotation.KEY_STYLE] = this.style;
+        result[Annotation.KEY_TEXT] = this.text;
+        result[Annotation.KEY_OWNER] = this.owner;
         return JSON.stringify(result);
     };
     prototype.toObject = function() {
         var result = {};
         result[TimeSeriesData.KEY_XID] = this.id;
-        result[Reference.KEY_URL] = this.url;
-        result[TimeSeriesData.KEY_ACTOR_ID] = this.actorId;
-        result[Reference.KEY_LOCATION] = this.location;
-        result[Reference.KEY_CARD] = this.card;
-        result[TimeSeriesData.KEY_TARGET] = this.target;
-        result[TimeSeriesData.KEY_DOCTYPE] = this.docType;
-        result[Reference.KEY_NAME] = this.name;
-        result[Reference.KEY_EXTERNAL_URL] = this.externalURL;
-        result[TimeSeriesData.KEY_TIMESTAMP] = EcDate.toISOString(this.timestamp);
+        result[Annotation.KEY_ID] = this.annId;
+        result[Annotation.KEY_CFI] = this.cfi;
+        result[Annotation.KEY_TYPE] = this.type;
+        result[Annotation.KEY_CONTAINER_PATH] = this.containerPath;
+        result[TimeSeriesData.KEY_PARENT_ACTIVITY] = this.parentActivity;
+        result[Annotation.KEY_IDREF] = this.idRef;
+        result[Annotation.KEY_TITLE] = this.title;
+        result[Annotation.KEY_STYLE] = this.style;
+        result[Annotation.KEY_TEXT] = this.text;
+        result[Annotation.KEY_DATE] = EcDate.toISOString(this.timestamp);
+        result[Annotation.KEY_OWNER] = this.owner;
         return result;
-    };
-    prototype.toString = function() {
-        return JSON.stringify(this.toObject());
     };
     constructor.is = function(record) {
         var verb = XApiUtils.getVerb(record);
-        return (verb == "pushed") || (verb == "pulled");
+        return (verb == "commented");
     };
-}, {timestamp: "Date"}, {});
+}, {stmt: {name: "Map", arguments: [null, "Object"]}, timestamp: "Date"}, {});
 var LocalAssetAdapter = function(userManager, storageManager, activityManager) {
     this.queuedResources = new Array();
     this.userManager = userManager;
@@ -37401,7 +37707,7 @@ LocalNetworkAdapter = stjs.extend(LocalNetworkAdapter, null, [NetworkAdapter], f
         var endpoints = this.userManager.getUser().getLrsUrls();
         for (var key in endpoints) 
             this.endpointHandlers.push(new SyncAction(endpoints[key], true, this.userManager, this.storage, this.activityManager, this.assetManager, teacher));
-        if (this.TLAEnabled) 
+        if (false) 
             this.pullCompetencies();
         this.push(null);
     };
@@ -37444,79 +37750,111 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
     prototype.assetManager = null;
     prototype.teacher = false;
     prototype.loaded = false;
+    constructor.onReadyCallbacks = [];
     prototype.directMessageHandler = null;
     constructor.TLAEnabled = false;
+    constructor.instance = null;
     constructor.start = function(teacher, callback, inRegistry) {
-        var pebl = new PEBL();
-        pebl.loaded = false;
-        pebl.teacher = teacher;
-        if (window.PEBLNative != null) {
-            Debugger.debug("found native");
-            pebl.storage = window.PEBLNative.storage;
-            pebl.userManager = window.PEBLNative.userManager;
-            pebl.activityManager = window.PEBLNative.activityManager;
-            if (PEBL.TLAEnabled) 
-                pebl.launcherManager = window.PEBLNative.launcherManager;
-            pebl.networkManager = window.PEBLNative.networkManager;
-            pebl.assetManager = window.PEBLNative.assetManager;
-            pebl.xapiGenerator = new XApiGenerator(pebl.userManager, pebl.storage, pebl.activityManager);
-            window.Lightbox.initDefaultLRSSettings();
-            callback(pebl);
-        } else {
-            Debugger.debug("created pebl libraries");
-            if (inRegistry != null && inRegistry) {
-                IndexedDBStorageAdapterExists = false;
-                Debugger.debug("in registry");
-            }
-            if (IndexedDBStorageAdapterExists == true) 
-                pebl.storage = new IndexedDBStorageAdapter(function() {
+        if (PEBL.instance == null) {
+            var pebl = new PEBL();
+            pebl.loaded = false;
+            pebl.teacher = teacher;
+            UserProfile.TLADemo = PEBL.TLAEnabled;
+            if (window.PEBLNative != null) {
+                Debugger.debug("found native");
+                pebl.storage = window.PEBLNative.storage;
+                pebl.userManager = window.PEBLNative.userManager;
+                pebl.activityManager = window.PEBLNative.activityManager;
+                if (PEBL.TLAEnabled) 
+                    pebl.launcherManager = window.PEBLNative.launcherManager;
+                pebl.networkManager = window.PEBLNative.networkManager;
+                pebl.assetManager = window.PEBLNative.assetManager;
+                pebl.xapiGenerator = new XApiGenerator(pebl.userManager, pebl.storage, pebl.activityManager, PEBL.TLAEnabled);
+                window.Lightbox.initDefaultLRSSettings();
+                callback(pebl);
+            } else {
+                Debugger.debug("created pebl libraries");
+                if (inRegistry != null && inRegistry) {
+                    IndexedDBStorageAdapterExists = false;
+                    Debugger.debug("in registry");
+                }
+                if (IndexedDBStorageAdapterExists == true) 
+                    pebl.storage = new IndexedDBStorageAdapter(function() {
+                        PEBL.finishBootSequence(pebl, callback);
+                    });
+                 else {
+                    if (localStorage != null) 
+                        pebl.storage = new KeyValueStorageAdapter(localStorage);
+                     else if (sessionStorage != null) 
+                        pebl.storage = new KeyValueStorageAdapter(sessionStorage);
+                     else 
+                        pebl.storage = new InMemoryStorageAdapter(localStorage);
                     PEBL.finishBootSequence(pebl, callback);
-                });
-             else {
-                if (localStorage != null) 
-                    pebl.storage = new KeyValueStorageAdapter(localStorage);
-                 else if (sessionStorage != null) 
-                    pebl.storage = new KeyValueStorageAdapter(sessionStorage);
-                 else 
-                    pebl.storage = new InMemoryStorageAdapter(localStorage);
-                PEBL.finishBootSequence(pebl, callback);
+                }
             }
-        }
+        } else if (callback != null) 
+            callback(PEBL.instance);
     };
     constructor.finishBootSequence = function(pebl, callback) {
         if (pebl.storage != null) {
             if (PEBL.TLAEnabled) 
-                pebl.userManager = new OpenIDUserAdapter(pebl.storage);
+                pebl.userManager = new OpenIDConnectUserAdapter(pebl.storage);
              else 
-                pebl.userManager = new LLUserAdapter(pebl.storage);
+                pebl.userManager = new OpenIDUserAdapter(pebl.storage);
             pebl.activityManager = new LocalActivityAdapter(pebl.userManager, pebl.storage);
-            pebl.xapiGenerator = new XApiGenerator(pebl.userManager, pebl.storage, pebl.activityManager);
+            pebl.xapiGenerator = new XApiGenerator(pebl.userManager, pebl.storage, pebl.activityManager, PEBL.TLAEnabled);
             if (PEBL.TLAEnabled) 
-                pebl.launcherManager = new LocalLauncherAdapter(pebl.userManager);
+                pebl.launcherManager = new LocalLauncherAdapter(pebl.userManager, pebl.activityManager, pebl.xapiGenerator);
             pebl.assetManager = new LocalAssetAdapter(pebl.userManager, pebl.storage, pebl.activityManager);
             pebl.networkManager = new LocalNetworkAdapter(pebl.userManager, pebl.storage, pebl.activityManager, pebl.assetManager, PEBL.TLAEnabled);
             pebl.loaded = true;
-            window.Lightbox.initDefaultLRSSettings();
+            PEBL.instance = pebl;
             callback(pebl);
+            for (var i = 0; i < PEBL.onReadyCallbacks.length; i++) 
+                PEBL.onReadyCallbacks[i](pebl);
         }
+    };
+    prototype.retrieveActivityListing = function(callback) {
+        if (PEBL.TLAEnabled) {
+            this.activityManager.retrieveActivityListing(callback);
+        } else 
+            callback();
     };
     prototype.login = function(loggedIn) {
         var self = this;
-        if ((this.userManager != null) && (!this.userManager.loggedIn())) {
-            this.userManager.login(function() {
-                if (!self.userManager.isSameUser()) 
-                    self.xapiGenerator.login();
-                if (self.userManager.loggedIn()) {
-                    self.networkManager.activate(self.teacher);
-                    if (PEBL.TLAEnabled) 
-                        self.launcherManager.connect();
-                    self.activityManager.hookDirectMessages();
-                }
-                if (loggedIn != null) 
-                    loggedIn();
-            });
-        } else if (loggedIn != null) 
-            loggedIn();
+        var loginRoutine = function() {
+            if ((self.userManager != null) && (!self.userManager.loggedIn())) {
+                self.userManager.login(function() {
+                    if (!self.userManager.isSameUser()) 
+                        self.xapiGenerator.login();
+                    if (self.userManager.loggedIn()) {
+                        self.networkManager.activate(self.teacher);
+                        if (PEBL.TLAEnabled) 
+                            self.launcherManager.connect();
+                    }
+                    if (loggedIn != null) 
+                        loggedIn();
+                });
+            } else if (loggedIn != null) 
+                loggedIn();
+        };
+        if (PEBL.TLAEnabled) {
+            if (!this.activityManager.hasActivityListing()) 
+                this.retrieveActivityListing(loginRoutine);
+             else 
+                loginRoutine();
+        } else {
+            loginRoutine();
+        }
+    };
+    prototype.loginStoredUser = function(callback) {
+        var self = this;
+        this.storage.getCurrentUser(function(id) {
+            if ((id == null) && (callback != null)) {
+                callback();
+            } else 
+                self.loginAsUser(id, null, callback);
+        });
     };
     prototype.loginAsUser = function(username, password, loggedIn) {
         var self = this;
@@ -37528,21 +37866,20 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
                     self.networkManager.activate(self.teacher);
                     if (PEBL.TLAEnabled) 
                         self.launcherManager.connect();
-                    self.activityManager.hookDirectMessages();
                 }
                 if (loggedIn != null) 
                     loggedIn();
             });
         }
     };
-    prototype.logout = function() {
+    prototype.logout = function(callback) {
         if (this.userManager != null) {
             this.xapiGenerator.logout();
             var self = this;
             this.networkManager.disable(function() {
                 if (PEBL.TLAEnabled) 
                     self.launcherManager.close();
-                self.userManager.logout();
+                self.userManager.logout(callback);
             });
         }
     };
@@ -37554,6 +37891,9 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
     };
     prototype.eventCompleted = function(activity, description) {
         this.xapiGenerator.completed(this.activityManager.getParentActivity(), activity, description);
+    };
+    prototype.eventInitialized = function() {
+        this.xapiGenerator.TLAinitialized();
     };
     prototype.eventNextPage = function(firstVisibleCFI, lastVisibleCFI) {
         this.xapiGenerator.nextPage(new Page(firstVisibleCFI, lastVisibleCFI));
@@ -37605,12 +37945,10 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
     prototype.openBook = function(containerPath, callback) {
         if (containerPath.lastIndexOf("/") != -1) 
             containerPath = containerPath.substring(containerPath.lastIndexOf("/") + 1);
-        if (this.activityManager.getBook() != containerPath) {
-            this.xapiGenerator.terminated();
-        }
         var p = this;
         this.activityManager.openBook(containerPath, function(sameBook) {
             if (!sameBook) {
+                p.xapiGenerator.terminated();
                 p.activityManager.clearParentActivity();
                 p.xapiGenerator.interacted();
                 p.xapiGenerator.initialized(null, null);
@@ -37810,10 +38148,16 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
         this.storage.storeOutgoing(user, stmt);
         this.storage.removeAnnotation(user, annotation.id, annotation.containerPath);
     };
+    constructor.registerReadyCallback = function(readyCallback) {
+        if (PEBL.instance != null) 
+            readyCallback(PEBL.instance);
+         else 
+            PEBL.onReadyCallbacks.push(readyCallback);
+    };
     prototype.debugLog = function() {
         return Debugger.logs;
     };
-}, {storage: "StorageAdapter", userManager: "UserAdapter", activityManager: "ActivityAdapter", networkManager: "NetworkAdapter", launcherManager: "LauncherAdapter", xapiGenerator: "XApiGenerator", assetManager: "AssetAdapter", directMessageHandler: {name: "Callback1", arguments: [{name: "Array", arguments: [{name: "Map", arguments: [null, "Object"]}]}]}}, {});
+}, {storage: "StorageAdapter", userManager: "UserAdapter", activityManager: "ActivityAdapter", networkManager: "NetworkAdapter", launcherManager: "LauncherAdapter", xapiGenerator: "XApiGenerator", assetManager: "AssetAdapter", onReadyCallbacks: {name: "Array", arguments: [{name: "Callback1", arguments: ["PEBL"]}]}, directMessageHandler: {name: "Callback1", arguments: [{name: "Array", arguments: [{name: "Map", arguments: [null, "Object"]}]}]}, instance: "PEBL"}, {});
 
     
     return PEBL;
