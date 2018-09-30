@@ -35560,7 +35560,7 @@ OpenIDUserAdapter = stjs.extend(OpenIDUserAdapter, null, [UserAdapter], function
     prototype.handleProfile = function(userId, loginCallback) {
         var self = this;
         return function(profile) {
-            if (!OpenIDUserAdapter.guest.getIdentity().equals(userId)) {
+            if (OpenIDUserAdapter.guest.getIdentity().equals(userId)) {
                 self.isLoggedIn = false;
                 if (loginCallback != null) {
                     loginCallback();
