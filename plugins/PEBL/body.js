@@ -35932,6 +35932,7 @@ LocalActivityAdapter = stjs.extend(LocalActivityAdapter, null, [ActivityAdapter]
     };
     prototype.unsubscribeAll = function() {
         this.subscribedThreads = {};
+        this.hookDirectMessages();
     };
     prototype.subscribe = function(thread, callback) {
         this.subscribedThreads[thread] = callback;
@@ -35999,6 +36000,7 @@ LocalActivityAdapter = stjs.extend(LocalActivityAdapter, null, [ActivityAdapter]
                 laa.previousBook = book;
                 laa.currentBook = containerPath;
                 laa.storage.storeCurrentBook(containerPath);
+                laa.hookDirectMessages();
                 if (callback != null) {
                     callback(laa.sameBook);
                 }
@@ -36008,6 +36010,7 @@ LocalActivityAdapter = stjs.extend(LocalActivityAdapter, null, [ActivityAdapter]
             this.previousBook = this.currentBook;
             this.currentBook = containerPath;
             laa.storage.storeCurrentBook(containerPath);
+            this.hookDirectMessages();
             if (callback != null) 
                 callback(this.sameBook);
         }
@@ -37299,9 +37302,7 @@ LocalAssetAdapter = stjs.extend(LocalAssetAdapter, null, [AssetAdapter], functio
         var self = this;
         xmr.onreadystatechange = function() {
             if (xmr.readyState == 4) {
-                if (xmr.status >= 200 && xmr.status < 300) {
-                    var data = {"content": xmr};
-                    self.storageManager.setAsset(ref.url, data);
+                if (xmr.status >= 200) {
                     self.storageManager.addNotification(self.userManager.getUser(), new Notification("Success", ref));
                     var tocEntry = {};
                     tocEntry["url"] = ref.url;
@@ -37372,6 +37373,277 @@ var SyncAction = function(endpoint, repeat, userManager, storage, activityManage
     this.pull();
 };
 SyncAction = stjs.extend(SyncAction, null, [], function(constructor, prototype) {
+    prototype.bookMinePoll = null;
+    prototype.bookSharedPoll = null;
+    prototype.chatPoll = null;
+    prototype.bookMinePollingCallback = null;
+    prototype.bookSharedPollingCallback = null;
+    prototype.chatPollingCallback = null;
+    prototype.pulledThread = null;
+    prototype.endpoint = null;
+    prototype.terminated = false;
+    prototype.repeat = false;
+    prototype.userManager = null;
+    prototype.storage = null;
+    prototype.activityManager = null;
+    prototype.assetManager = null;
+    prototype.teacher = false;
+    prototype.clearTimeouts = function() {
+        if (this.bookMinePoll != null) 
+            clearTimeout(this.bookMinePoll);
+        this.bookMinePoll = null;
+        if (this.bookSharedPoll != null) 
+            clearTimeout(this.bookSharedPoll);
+        this.bookSharedPoll = null;
+        if (this.chatPoll != null) 
+            clearTimeout(this.chatPoll);
+        this.chatPoll = null;
+    };
+    prototype.pull = function() {
+        this.terminated = false;
+        this.clearTimeouts();
+        this.bookMinePollingCallback();
+        this.bookSharedPollingCallback();
+        this.chatPollingCallback();
+    };
+    prototype.terminate = function() {
+        this.terminated = true;
+        this.clearTimeouts();
+    };
+    prototype.pullHelper = function(searchParams, callback) {
+        var sa = this;
+        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject());
+        ADL.XAPIWrapper.getStatements(searchParams, "", function(xhr) {
+            if (xhr.readyState == 4) {
+                var results = [];
+                if (xhr.status == 200) {
+                    if (!sa.terminated) {
+                        var response = JSON.parse(xhr.responseText);
+                        results = (response["statements"]);
+                    }
+                }
+                callback(results);
+            }
+        });
+    };
+    prototype.pullMessages = function(lastSynced, thread, callback) {
+        var sa = this;
+        var params = ADL.XAPIWrapper.searchParams();
+        params["activity"] = "peblThread://" + thread;
+        params["ascending"] = "true";
+        params["since"] = lastSynced;
+        params["limit"] = 1500;
+        this.pullHelper(params, function(items) {
+            var lastSyncedDate = new Date(lastSynced);
+            var deleteIds = [];
+            var messages = {};
+            for (var i = 0; i < items.length; i++) {
+                var xapi = items[i];
+                var id = xapi["id"];
+                if (Message.is(xapi)) 
+                    messages[id] = new Message(xapi);
+                 else if (Reference.is(xapi)) {
+                    var r = new Reference(xapi);
+                    sa.assetManager.queue(r);
+                    messages[id] = r;
+                } else if (Voided.is(xapi)) {
+                    var v = new Voided(xapi);
+                    deleteIds.push(v.target);
+                }
+                var temp = new Date(xapi["stored"]);
+                if (lastSyncedDate.getTime() < temp.getTime()) 
+                    lastSyncedDate = temp;
+            }
+            sa.storage.postMessages(sa.userManager.getUser(), thread, items);
+            for (var x = 0; x < deleteIds.length; x++) {
+                var id = deleteIds[x];
+                var up = sa.userManager.getUser();
+                delete messages[id];
+                sa.storage.removeMessage(up, id, thread);
+            }
+            var cleanMessages = [];
+            for (var key in messages) 
+                cleanMessages.push(messages[key]);
+            XApiUtils.sortNewestTimeSeries(cleanMessages);
+            if (lastSyncedDate.getTime() > new Date(lastSynced).getTime()) {
+                lastSyncedDate.setMilliseconds(stjs.trunc(lastSyncedDate.getMilliseconds()) + 1);
+                sa.endpoint.lastSyncedThreads[thread] = EcDate.toISOString(lastSyncedDate);
+                sa.storage.saveUserProfile(sa.userManager.getUser());
+            }
+            sa.pulledThread[thread] = true;
+            if (sa.repeat) {
+                var finished = true;
+                for (var key in sa.pulledThread) 
+                    if (!sa.pulledThread[key]) {
+                        finished = false;
+                        break;
+                    }
+                if (finished) 
+                    sa.chatPoll = setTimeout(sa.chatPollingCallback, 2000);
+            }
+            if (callback != null) 
+                callback(cleanMessages);
+        });
+    };
+    prototype.pullBookMine = function(lastSynced, containerPath, teacher) {
+        var sa = this;
+        var params = ADL.XAPIWrapper.searchParams();
+        params["activity"] = "pebl://" + containerPath;
+        params["since"] = lastSynced;
+        params["limit"] = 1500;
+        params["ascending"] = "true";
+        if (!teacher) 
+            params["agent"] = JSON.stringify(sa.userManager.getUser().generateAgent());
+        this.pullHelper(params, function(items) {
+            var lastSyncedDate = new Date(lastSynced);
+            var annotations = [];
+            var generalAnnotations = [];
+            var events = [];
+            var deleteIds = [];
+            for (var i = 0; i < items.length; i++) {
+                var xapi = items[i];
+                if (Annotation.is(xapi)) 
+                    annotations.push(xapi);
+                 else if (SharedAnnotation.is(xapi)) 
+                    generalAnnotations.push(xapi);
+                 else if (Voided.is(xapi)) {
+                    var v = new Voided(xapi);
+                    deleteIds.push(v.target);
+                } else 
+                    events.push(xapi);
+                var temp = new Date(xapi["stored"]);
+                if (lastSyncedDate.getTime() < temp.getTime()) 
+                    lastSyncedDate = temp;
+            }
+            sa.storage.saveAnnotations(sa.userManager.getUser(), containerPath, annotations);
+            sa.storage.saveGeneralAnnotations(sa.userManager.getUser(), containerPath, generalAnnotations);
+            sa.storage.saveEvents(sa.userManager.getUser(), containerPath, events);
+            for (var x = 0; x < deleteIds.length; x++) {
+                var id = deleteIds[x];
+                var up = sa.userManager.getUser();
+                sa.storage.removeSharedAnnotation(up, id);
+                sa.storage.removeAnnotation(up, id, containerPath);
+            }
+            if (lastSyncedDate.getTime() > new Date(lastSynced).getTime()) {
+                lastSyncedDate.setMilliseconds(stjs.trunc(lastSyncedDate.getMilliseconds()) + 1);
+                sa.endpoint.lastSyncedBooksMine[containerPath] = EcDate.toISOString(lastSyncedDate);
+                sa.storage.saveUserProfile(sa.userManager.getUser());
+            }
+            if (sa.repeat) 
+                sa.bookMinePoll = setTimeout(sa.bookMinePollingCallback, 5000);
+        });
+    };
+    prototype.pullBookShared = function(lastSynced, containerPath) {
+        var sa = this;
+        var params = ADL.XAPIWrapper.searchParams();
+        params["limit"] = 1500;
+        params["since"] = lastSynced;
+        params["ascending"] = "true";
+        params["verb"] = "http://adlnet.gov/expapi/verbs/shared";
+        this.pullHelper(params, function(items) {
+            var lastSyncedDate = new Date(lastSynced);
+            var deleteIds = [];
+            var gaMap = {};
+            for (var i = 0; i < items.length; i++) {
+                var xapi = items[i];
+                if (SharedAnnotation.is(xapi)) {
+                    var tempCp = XApiUtils.getObjectId(xapi);
+                    var cp;
+                    if (tempCp.lastIndexOf("/") != -1) 
+                        cp = tempCp.substring(tempCp.lastIndexOf("/") + 1);
+                     else 
+                        cp = tempCp;
+                    if (gaMap[cp] == null) 
+                        gaMap[cp] = [];
+                    gaMap[cp].push(xapi);
+                } else if (Voided.is(xapi)) {
+                    var v = new Voided(xapi);
+                    deleteIds.push(v.target);
+                }
+                var temp = new Date(xapi["stored"]);
+                if (lastSyncedDate.getTime() < temp.getTime()) 
+                    lastSyncedDate = temp;
+            }
+            for (var cp in gaMap) 
+                sa.storage.saveGeneralAnnotations(sa.userManager.getUser(), cp, gaMap[cp]);
+            for (var x = 0; x < deleteIds.length; x++) {
+                var id = deleteIds[x];
+                var up = sa.userManager.getUser();
+                sa.storage.removeSharedAnnotation(up, id);
+            }
+            if (lastSyncedDate.getTime() > new Date(lastSynced).getTime()) {
+                lastSyncedDate.setMilliseconds(stjs.trunc(lastSyncedDate.getMilliseconds()) + 1);
+                sa.endpoint.lastSyncedBooksShared[containerPath] = EcDate.toISOString(lastSyncedDate);
+                sa.storage.saveUserProfile(sa.userManager.getUser());
+            }
+            if (sa.repeat) 
+                sa.bookSharedPoll = setTimeout(sa.bookSharedPollingCallback, 5000);
+        });
+    };
+    prototype.push = function(outgoing, callback) {
+        var sa = this;
+        if (outgoing == null) 
+            outgoing = [];
+        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject());
+        ADL.XAPIWrapper.sendStatements(outgoing, function(xhr) {
+            if (xhr.readyState == 4) {
+                var success = xhr.status == 200;
+                if (!success) 
+                    Debugger.debug(sa.endpoint.url + ", " + xhr.status);
+                if (callback != null) 
+                    callback(sa.endpoint, success);
+            }
+        });
+    };
+}, {bookMinePoll: "TimeoutHandler", bookSharedPoll: "TimeoutHandler", chatPoll: "TimeoutHandler", bookMinePollingCallback: "Callback0", bookSharedPollingCallback: "Callback0", chatPollingCallback: "Callback0", pulledThread: {name: "Map", arguments: [null, null]}, endpoint: "Endpoint", userManager: "UserAdapter", storage: "StorageAdapter", activityManager: "ActivityAdapter", assetManager: "AssetAdapter"}, {});
+var LLSyncAction = function(endpoint, repeat, userManager, storage, activityManager, assetManager, teacher) {
+    this.endpoint = endpoint;
+    this.repeat = repeat;
+    this.userManager = userManager;
+    this.storage = storage;
+    this.activityManager = activityManager;
+    this.assetManager = assetManager;
+    this.teacher = teacher;
+    var sa = this;
+    this.bookMinePollingCallback = function() {
+        var containerPath = sa.activityManager.getBook();
+        if (containerPath != null) {
+            var lastSynced = sa.endpoint.lastSyncedBooksMine[containerPath];
+            if (lastSynced == null) 
+                lastSynced = "2017-06-05T21:07:49-07:00";
+            sa.pullBookMine(lastSynced, containerPath, sa.teacher);
+        } else if (sa.repeat) 
+            sa.bookMinePoll = setTimeout(sa.bookMinePollingCallback, 5000);
+    };
+    this.bookSharedPollingCallback = function() {
+        var containerPath = sa.activityManager.getBook();
+        if (containerPath != null) {
+            var lastSynced = sa.endpoint.lastSyncedBooksShared[containerPath];
+            if (lastSynced == null) 
+                lastSynced = "2017-06-05T21:07:49-07:00";
+            sa.pullBookShared(lastSynced, containerPath);
+        } else if (sa.repeat) 
+            sa.bookSharedPoll = setTimeout(sa.bookSharedPollingCallback, 5000);
+    };
+    this.chatPollingCallback = function() {
+        var threads = sa.activityManager.getThreads();
+        sa.pulledThread = {};
+        for (var thread in threads) 
+            sa.pulledThread[thread] = false;
+        var i = 0;
+        for (var thread in threads) {
+            i++;
+            var lastSynced = sa.endpoint.lastSyncedThreads[thread];
+            if (lastSynced == null) 
+                lastSynced = "2017-06-05T21:07:49-07:00";
+            sa.pullMessages(lastSynced, thread, threads[thread]);
+        }
+        if ((i == 0) && sa.repeat) 
+            sa.chatPoll = setTimeout(sa.chatPollingCallback, 2000);
+    };
+    this.pull();
+};
+LLSyncAction = stjs.extend(LLSyncAction, null, [], function(constructor, prototype) {
     prototype.bookMinePoll = null;
     prototype.bookSharedPoll = null;
     prototype.chatPoll = null;
@@ -37772,6 +38044,8 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
                 pebl.xapiGenerator = new XApiGenerator(pebl.userManager, pebl.storage, pebl.activityManager, PEBL.TLAEnabled);
                 window.Lightbox.initDefaultLRSSettings();
                 callback(pebl);
+                for (var i = 0; i < PEBL.onReadyCallbacks.length; i++) 
+                    PEBL.onReadyCallbacks[i](PEBL.instance);
             } else {
                 Debugger.debug("created pebl libraries");
                 if (inRegistry != null && inRegistry) {
@@ -37792,8 +38066,11 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
                     PEBL.finishBootSequence(pebl, callback);
                 }
             }
-        } else if (callback != null) 
+        } else if (callback != null) {
             callback(PEBL.instance);
+            for (var i = 0; i < PEBL.onReadyCallbacks.length; i++) 
+                PEBL.onReadyCallbacks[i](PEBL.instance);
+        }
     };
     constructor.finishBootSequence = function(pebl, callback) {
         if (pebl.storage != null) {
@@ -37831,6 +38108,7 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
                         self.networkManager.activate(self.teacher);
                         if (PEBL.TLAEnabled) 
                             self.launcherManager.connect();
+                        self.activityManager.hookDirectMessages();
                     }
                     if (loggedIn != null) 
                         loggedIn();
@@ -37866,6 +38144,7 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
                     self.networkManager.activate(self.teacher);
                     if (PEBL.TLAEnabled) 
                         self.launcherManager.connect();
+                    self.activityManager.hookDirectMessages();
                 }
                 if (loggedIn != null) 
                     loggedIn();
@@ -37882,6 +38161,9 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
                 self.userManager.logout(callback);
             });
         }
+    };
+    prototype.eventPulled = function(target, location, card, url, docType, name, externalURL) {
+        this.xapiGenerator.pulled(target, location, card, url, docType, name, externalURL);
     };
     prototype.eventChecklisted = function(checklistId, checklistUser, checklistPrompts, checklistResponses) {
         this.xapiGenerator.checklisted(checklistId, checklistUser, checklistPrompts, checklistResponses);
