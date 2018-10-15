@@ -1,5 +1,5 @@
-define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "rangy"],
-       function($, _, Class, HighlightHelpers, HighlightGroup, rangy) {
+define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "rangy", "readium_cfi_js"],
+       function($, _, Class, HighlightHelpers, HighlightGroup, rangy, EPUBcfi) {
     var HighlightsController = Class.extend({
 
         highlights: [],
@@ -35,8 +35,6 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
                     that.context.manager.trigger("textSelectionEvent", event, range, that.context.iframe);
                 }
             });
-
-	    debugger;
 	    
             if (!rangy.initialized) {
                 rangy.init();
