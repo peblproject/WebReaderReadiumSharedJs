@@ -98,37 +98,40 @@ function (Globals, $, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, Plugins
     // Plugins bootstrapping begins
     Globals.Plugins = PluginsController;
     Globals.on(Globals.Events.READER_INITIALIZED, function(reader) {
-        
+
         Globals.logEvent("READER_INITIALIZED", "ON", "globalsSetup.js");
-        
+
+	var pluginsLoaded = function () {
+	    _.defer(function() {
+		Globals.logEvent("PLUGINS_LOADED", "EMIT", "globalsSetup.js");
+		Globals.emit(Globals.Events.PLUGINS_LOADED, reader);
+            });
+
+	    if (window._RJS_isBrowser) {
+		// If under a browser env and using RequireJS, dynamically require all plugins
+		var pluginsList = window._RJS_pluginsList;
+		console.log("Plugins included: ", pluginsList.map(function(v) {
+		    // To stay consistent with bundled output
+		    return v.replace('readium_plugin_', '');
+		}));
+
+		require(pluginsList);
+	    } else {
+		// Else list which plugins were included when using almond and bundle(s)
+		setTimeout(function() {
+		    // Assume that in the next callback all the plugins have been registered
+		    var pluginsList = Object.keys(PluginsController.getLoadedPlugins());
+		    console.log("Plugins included: ", pluginsList);
+		}, 0);
+	    }	    
+	}
+	
         try {
-            PluginsController.initialize(reader);
+            PluginsController.initialize(reader, pluginsLoaded);
         } catch (ex) {
             console.error("Plugins failed to initialize:", ex);
         }
 
-        _.defer(function() {
-            Globals.logEvent("PLUGINS_LOADED", "EMIT", "globalsSetup.js");
-            Globals.emit(Globals.Events.PLUGINS_LOADED, reader);
-        });
     });
-
-    if (window._RJS_isBrowser) {
-        // If under a browser env and using RequireJS, dynamically require all plugins
-        var pluginsList = window._RJS_pluginsList;
-        console.log("Plugins included: ", pluginsList.map(function(v) {
-            // To stay consistent with bundled output
-            return v.replace('readium_plugin_', '');
-        }));
-
-        require(pluginsList);
-    } else {
-        // Else list which plugins were included when using almond and bundle(s)
-        setTimeout(function() {
-            // Assume that in the next callback all the plugins have been registered
-            var pluginsList = Object.keys(PluginsController.getLoadedPlugins());
-            console.log("Plugins included: ", pluginsList);
-        }, 0);
-    }
     // Plugins bootstrapping ends
 });

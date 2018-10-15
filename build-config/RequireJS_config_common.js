@@ -69,7 +69,11 @@ require.config({
             process._RJS_rootDir(0) + '/node_modules/es6-shim/es6-shim',
 
         'cssom':
-            process._RJS_rootDir(0) + '/node_modules/cssom/build/CSSOM',
+        process._RJS_rootDir(0) + '/node_modules/cssom/build/CSSOM',
+
+	rangy:
+        process._RJS_rootDir(0) + '/node_modules/rangy/lib/rangy-core',
+
 
         // ------ LIBs
 

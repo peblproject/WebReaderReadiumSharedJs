@@ -30,7 +30,8 @@
 define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
 
     var _registeredPlugins = {};
-
+    var _readyCallback = null;
+    
     /**
      * A  plugins controller used to easily add plugins from the host app, eg.
      * ReadiumSDK.Plugins.register("footnotes", function(api){ ... });
@@ -41,9 +42,12 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
         var self = this;
 
 
-        this.initialize = function (reader) {
+        this.initialize = function (reader, readyCallback) {
+	    _readyCallback = readyCallback;
             var apiFactory = new PluginApiFactory(reader);
 
+	    var ready = true;
+	    
             if (!reader.plugins) {
                 //attach an object to the reader that will be
                 // used for plugin namespaces and their extensions
@@ -53,9 +57,30 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
             }
             _.each(_registeredPlugins, function (plugin) {
                 plugin.init(apiFactory);
+		if (!plugin.initialized)
+		    ready = false;
             });
+	    if (ready && _readyCallback) {
+		var callback = _readyCallback;
+		_readyCallback = null;
+		callback();
+	    }	    
         };
 
+	this.pluginReady = function(plugin) {
+	    plugin.initialized = true;
+	    var ready = true;
+	    _.each(_registeredPlugins, function (plugin) {
+		if (!plugin.initialized)
+		    ready = false;
+            });
+	    if (ready && _readyCallback) {
+		var callback = _readyCallback;
+		_readyCallback = null;
+		callback();
+	    }
+	};
+	
         this.getLoadedPlugins = function() {
             return _registeredPlugins;
         };
@@ -74,6 +99,7 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
                 dependencies = optDependencies;
             }
 
+	    var self = this;
             _registeredPlugins[name] = new Plugin(name, dependencies, function(plugin, api) {
                 if (!plugin.initialized || !api.host.plugins[plugin.name]) {
                     plugin.initialized = true;
@@ -81,7 +107,10 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
                         var pluginContext = {};
                         $.extend(pluginContext, new EventEmitter());
 
-                        initFunc.call(pluginContext, api.instance);
+			initFunc.call(pluginContext, api.instance, function () {
+			    self.pluginReady(api.instance.plugin);
+			});
+                        
                         plugin.supported = true;
 
                         api.host.plugins[plugin.name] = pluginContext;
@@ -107,29 +136,29 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
         };
     }
 
-//
-//  The following is adapted from Rangy's Module class:
-//
-//  Copyright (c) 2014 Tim Down
-//
-//  The MIT License (MIT)
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
+    //
+    //  The following is adapted from Rangy's Module class:
+    //
+    //  Copyright (c) 2014 Tim Down
+    //
+    //  The MIT License (MIT)
+    //  Permission is hereby granted, free of charge, to any person obtaining a copy
+    //  of this software and associated documentation files (the "Software"), to deal
+    //  in the Software without restriction, including without limitation the rights
+    //  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    //  copies of the Software, and to permit persons to whom the Software is
+    //  furnished to do so, subject to the following conditions:
+    //
+    //  The above copyright notice and this permission notice shall be included in all
+    //  copies or substantial portions of the Software.
+    //
+    //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    //  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    //  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    //  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    //  SOFTWARE.
 
     function Plugin(name, dependencies, initializer) {
         this.name = name;
@@ -150,7 +179,7 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
                     throw new Error("required Plugin '" + PluginName + "' not found");
                 }
 
-                requiredPlugin.init(apiFactory);
+                requiredPlugin.init(apiFactory, this.pluginsLoaded);
 
                 if (!requiredPlugin.supported) {
                     throw new Error("required Plugin '" + PluginName + "' not supported");
@@ -173,7 +202,7 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
 
         deprecationNotice: function (deprecated, replacement) {
             console.warn("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use "
-            + replacement + " instead");
+			 + replacement + " instead");
         },
 
         createError: function (msg) {

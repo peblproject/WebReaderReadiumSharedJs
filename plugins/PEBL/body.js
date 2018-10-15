@@ -1221,6 +1221,67 @@ window.ReadiumInterop = {
 	return window.ReadiumSDK.reader.getFirstVisibleCfi();
     }
 };
+
+
+window.LearningLockerAPI = function () {};
+
+
+var toVoidRecod = function (rec) {
+    var o = {
+	"context" : {
+	    "contextActivities" : {
+		"parent" : [{
+		    "id" : rec.object.id,
+		    "objectType" : "Activity"
+		}]
+	    }
+	},
+	"actor" : rec.actor,
+	"verb": {
+	    "display": {
+		"en-US": "voided"
+	    },
+	    "id": "http://adlnet.gov/expapi/verbs/voided"
+	},
+	"object": {
+	    "id": rec.id,
+	    "objectType": "StatementRef"
+	},
+	"stored" : rec.stored,
+	"timestamp" : rec.timestamp,
+	"id" : "v-" + rec.id
+    };
+
+    return o;
+};
+
+window.LearningLockerAPI.prototype.pull = function (endpoint, searchParams, callback) {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+	if (request.readyState == 4) {
+	    if (request.status == 200) {
+		var result = JSON.parse(request.responseText);
+		for (var i = 0; i < result.length; i++) {
+		    var rec = result[i]
+		    if (!rec.voided)
+			result[i] = rec.statement;
+		    else
+			result[i] = toVoidRecod(rec.statement);
+		}
+		if (callback != null) {
+		    callback(result);
+		}
+	    }			
+	}
+    };
+
+    request.open("GET", endpoint.url + "api/statements/aggregate?pipeline=" + encodeURIComponent(JSON.stringify(searchParams)), true);
+    
+    request.setRequestHeader("Authorization", "Basic " + endpoint.token);
+    request.setRequestHeader("Content-Type", "application/json");    
+
+    request.send();       		    
+}
 window.FakeCompetency = {
     "getCompetencies" : function (user) {
 	return window.FakeCompetency[user];
@@ -23215,7 +23276,7 @@ function cleanRecord(r) {
 
 window.IndexedDBInterop = function (readyCallback) {
     var self = this;
-    var request = window.indexedDB.open("pebl", 7);
+    var request = window.indexedDB.open("pebl", 10);
 
     request.onupgradeneeded = function (event) {
 	var db = event.target.result;
@@ -23232,10 +23293,11 @@ window.IndexedDBInterop = function (readyCallback) {
 	var messageStore = db.createObjectStore("messages", {keyPath:"id"});
 	var userStore = db.createObjectStore("user", {keyPath:"identity"});
 	var stateStore = db.createObjectStore("state", {keyPath:"id"});
-	var assetStore = db.createObjectStore("assets", {keyPath:"id"});
+	var assetStore = db.createObjectStore("assets", {keyPath:"id"});	
+	var queuedReferences = db.createObjectStore("queuedReferences", {keyPath:["identity", "id"]});
 	var notificationStore = db.createObjectStore("notifications", {keyPath:["identity", "id"]});
 	var tocStore = db.createObjectStore("tocs", { keyPath:["identity", "containerPath", "section", "pageKey"] });
-    var lrsAuthStore = db.createObjectStore("lrsAuth", {keyPath:"id"});
+	var lrsAuthStore = db.createObjectStore("lrsAuth", {keyPath:"id"});
 
 	eventStore.createIndex(MASTER_INDEX, ["identity", "containerPath"]);
 	annotationStore.createIndex(MASTER_INDEX, ["identity", "containerPath"]);
@@ -23243,8 +23305,10 @@ window.IndexedDBInterop = function (readyCallback) {
 	generalAnnotationStore.createIndex(MASTER_INDEX, "containerPath");
 	outgoingStore.createIndex(MASTER_INDEX, "identity");
 	messageStore.createIndex(MASTER_INDEX, ["identity", "thread"]);
+	queuedReferences.createIndex(MASTER_INDEX, "identity");
 	notificationStore.createIndex(MASTER_INDEX, "identity");
 	tocStore.createIndex(MASTER_INDEX, ["identity", "containerPath"]);
+	
     };
 
     
@@ -23491,6 +23555,19 @@ window.IndexedDBInterop.prototype.addToc = function(user, containerPath, data) {
     };    
 };
 
+window.IndexedDBInterop.prototype.addToc = function(user, containerPath, data) {
+    data.identity = user.identity;
+    data.containerPath = containerPath;
+    var request = this.db.transaction(["tocs"], "readwrite").objectStore("tocs").put(cleanRecord(data));
+    request.onerror = function (e) {
+	//console.log(e);
+    };
+    request.onsuccess = function (e) {
+	//console.log(e);
+    };    
+};
+
+
 window.IndexedDBInterop.prototype.getToc = function(user, containerPath, callback) {
     if (containerPath == null)
 	return [];
@@ -23499,6 +23576,58 @@ window.IndexedDBInterop.prototype.getToc = function(user, containerPath, callbac
     var index = os.index(MASTER_INDEX);
     getAll(index,
 	   window.IDBKeyRange.only([user.identity, containerPath]),
+	   callback);
+};
+
+window.IndexedDBInterop.prototype.removeQueuedReference = function(user, id) {
+    var request = this.db.transaction(["queuedReferences"], "readwrite").objectStore("queuedReferences").delete(window.IDBKeyRange.only([user.identity, id]));
+    request.onerror = function (e) {
+	//console.log(e);
+    };
+    request.onsuccess = function (e) {
+	//console.log(e);
+    };    
+};
+
+window.IndexedDBInterop.prototype.saveQueuedReference = function(user, ref) {    
+    ref.identity = user.identity;
+
+    var request = this.db.transaction(["queuedReferences"], "readwrite").objectStore("queuedReferences").put(cleanRecord(ref));
+    request.onerror = function (e) {
+	//console.log(e);
+    };
+    request.onsuccess = function (e) {
+	//console.log(e);
+    };    
+};
+
+window.IndexedDBInterop.prototype.getQueuedReference = function(user, callback) {
+    var os = this.db.transaction(["queuedReferences"], "readonly").objectStore("queuedReferences")
+    var index = os.index(MASTER_INDEX);
+    var request = index.openCursor(window.IDBKeyRange.only(user.identity));
+    request.onerror = function (e) {
+
+    };
+    request.onsuccess = function (e) {
+	if (e.target.result == null) {
+	    var req = index.openCursor(window.IDBKeyRange.only([user.identity]));
+	    req.onerror = function (e) {
+
+	    };
+	    req.onsuccess = function (e) {
+		if (callback && e.target.result)
+		    callback(e.target.result.value);
+	    };    
+	} else if (callback && e.target.result)
+	    callback(e.target.result.value);
+    };    
+};
+
+window.IndexedDBInterop.prototype.getMessages = function(user, thread, callback) {
+    var os = this.db.transaction(["messages"], "readonly").objectStore("messages");
+    var index = os.index(MASTER_INDEX);
+    getAll(index,
+	   window.IDBKeyRange.only([user.identity, thread]),
 	   callback);
 };
 
@@ -23543,10 +23672,10 @@ window.IndexedDBInterop.prototype.removeAnnotation = function(user, id) {
 window.IndexedDBInterop.prototype.removeSharedAnnotation = function(user, id) {
     var request = this.db.transaction(["generalAnnotations"], "readwrite").objectStore("generalAnnotations").delete(window.IDBKeyRange.only(id));
     request.onerror = function (e) {
-    //console.log(e);
+	//console.log(e);
     };
     request.onsuccess = function (e) {
-    //console.log(e);
+	//console.log(e);
     };
 };
 
@@ -34538,11 +34667,11 @@ Endpoint = stjs.extend(Endpoint, null, [], function(constructor, prototype) {
     prototype.lastSyncedThreads = null;
     prototype.lastSyncedBooksMine = null;
     prototype.lastSyncedBooksShared = null;
-    prototype.toConfigObject = function() {
+    prototype.toConfigObject = function(URLSuffix) {
         var s = {};
         s["user"] = this.username;
         s["password"] = this.password;
-        s["endpoint"] = this.url;
+        s["endpoint"] = this.url + URLSuffix;
         s["token"] = this.token;
         s["lastSyncedThreads"] = this.lastSyncedThreads;
         s["lastSyncedBooksMine"] = this.lastSyncedBooksMine;
@@ -34659,6 +34788,9 @@ StorageAdapter = stjs.extend(StorageAdapter, null, [], function(constructor, pro
     prototype.getAsset = function(id, callback) {};
     prototype.setAsset = function(id, data) {};
     prototype.removeMessage = function(user, id, thread) {};
+    prototype.saveQueuedReference = function(user, ref) {};
+    prototype.getQueuedReference = function(user, callback) {};
+    prototype.removeQueuedReference = function(user, id) {};
     prototype.removeNotification = function(user, id) {};
     prototype.getNotifications = function(user, callback) {};
     prototype.addNotification = function(user, notification) {};
@@ -34672,6 +34804,12 @@ AssetAdapter = stjs.extend(AssetAdapter, null, [], function(constructor, prototy
     prototype.queue = function(ref) {};
     prototype.startSync = function() {};
     prototype.stopSync = function() {};
+}, {}, {});
+var SyncProcess = function() {};
+SyncProcess = stjs.extend(SyncProcess, null, [], function(constructor, prototype) {
+    prototype.pull = function() {};
+    prototype.push = function(outgoing, callback) {};
+    prototype.terminate = function() {};
 }, {}, {});
 var Debugger = function() {};
 Debugger = stjs.extend(Debugger, null, [], function(constructor, prototype) {
@@ -34823,6 +34961,7 @@ TimeSeriesData = stjs.extend(TimeSeriesData, null, [], function(constructor, pro
     prototype.timestamp = null;
     prototype.parentActivity = null;
     prototype.actorId = null;
+    prototype.stmt = null;
     prototype.compareTo = function(arg0) {
         var r = stjs.trunc((this.timestamp.getTime() - arg0.timestamp.getTime()));
         if (r == 0) 
@@ -34832,11 +34971,11 @@ TimeSeriesData = stjs.extend(TimeSeriesData, null, [], function(constructor, pro
     constructor.sort = function(data, asc) {
         if (asc) 
             data.sort(function(a, b) {
-                return b.compareTo(a);
+                return a.compareTo(b);
             });
          else 
             data.sort(function(a, b) {
-                return a.compareTo(b);
+                return -a.compareTo(b);
             });
         return data;
     };
@@ -34851,7 +34990,7 @@ TimeSeriesData = stjs.extend(TimeSeriesData, null, [], function(constructor, pro
     prototype.toString = function() {
         return JSON.stringify(this.toObject());
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var XApiUtils = function() {};
 XApiUtils = stjs.extend(XApiUtils, null, [], function(constructor, prototype) {
     constructor.sortNewest = function(xapis) {
@@ -35513,6 +35652,15 @@ IndexedDBStorageAdapter = stjs.extend(IndexedDBStorageAdapter, null, [StorageAda
     prototype.setAsset = function(id, data) {
         this.interop.saveAsset(id, data);
     };
+    prototype.saveQueuedReference = function(user, ref) {
+        this.interop.saveQueuedReference(user, ref);
+    };
+    prototype.getQueuedReference = function(user, callback) {
+        this.interop.getQueuedReference(user, callback);
+    };
+    prototype.removeQueuedReference = function(user, id) {
+        this.interop.removeQueuedReference(user, id);
+    };
     prototype.removeNotification = function(user, id) {
         this.interop.removeNotification(user, id);
     };
@@ -35575,8 +35723,8 @@ OpenIDUserAdapter = stjs.extend(OpenIDUserAdapter, null, [UserAdapter], function
                 self.profile.setPreferredName(userId.substring(userId.lastIndexOf("/") + 1));
                 self.profile.setHomePage("https://people.extension.org");
                 var endpoint = new Endpoint();
-                endpoint.token = "NGEyMTFmNzY5MDkyMmVlZmYyM2VlZGEzNjk2YWFkZTcyZDM5NWE4NjozYjljZjY1ZDNkZjY1ZmY3ZGI1YjRjNjhiYzhlYTBiODY5MWZiZDc5";
-                endpoint.url = "https://lrs.peblproject.com/data/xapi/";
+                endpoint.token = "ZmI0YmRkZmM5Yzc2NzM2Mjg5MmUzOWI2NjUyZmM3YzgwZDcxMGMzZDowNGNiNDJmNTgzODZkN2ZkMDgzNGJmMDcwMmRjMDFjY2I0YzVkNWRi";
+                endpoint.url = "https://lrs.peblproject.com/";
                 self.profile.addLrsUrl(endpoint);
                 self.storage.saveUserProfile(self.profile);
             }
@@ -35872,6 +36020,7 @@ ADLDemoUserAdapter = stjs.extend(ADLDemoUserAdapter, null, [UserAdapter], functi
 })();
 var Notification = function(message, payload) {
     TimeSeriesData.call(this);
+    this.stmt = {"message": message, "payload": payload};
     this.id = TimeSeriesData.NAMESPACE_NOTIFICATION + payload.id;
     this.timestamp = new Date();
     this.message = message;
@@ -35900,7 +36049,7 @@ Notification = stjs.extend(Notification, TimeSeriesData, [], function(constructo
     prototype.toString = function() {
         return JSON.stringify(this.toObject());
     };
-}, {payload: "TimeSeriesData", timestamp: "Date"}, {});
+}, {payload: "TimeSeriesData", timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var LocalActivityAdapter = function(userManager, storage) {
     this.subscribedThreads = {};
     this.storage = storage;
@@ -35940,7 +36089,7 @@ LocalActivityAdapter = stjs.extend(LocalActivityAdapter, null, [ActivityAdapter]
     prototype.initializeToc = function(data) {
         var self = this;
         this.storage.getToc(this.userManager.getUser(), this.currentBook, function(toc) {
-            if (toc.length == 0) {
+            if (toc.length == 0 || toc["Section1"] == null || (toc["Section1"])["Section"] == null) {
                 for (var section in data) {
                     var pages = data[section];
                     for (var pageKey in pages) {
@@ -36159,9 +36308,10 @@ XApiGenerator = stjs.extend(XApiGenerator, null, [], function(constructor, proto
         testData["showHideResult"] = showHideResult;
         this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#compatibilityTested", "compatibilityTested"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(testData)));
     };
-    prototype.pushed = function(target, location, card, url, docType, name, externalURL) {
+    prototype.pushed = function(book, target, location, card, url, docType, name, externalURL) {
         var containerPath = "peblThread://user-" + target;
         var pushData = {};
+        pushData["book"] = book;
         pushData["target"] = target;
         pushData["url"] = url;
         pushData["name"] = name;
@@ -36171,9 +36321,10 @@ XApiGenerator = stjs.extend(XApiGenerator, null, [], function(constructor, proto
         pushData["externalURL"] = externalURL;
         this.makeStatement(new ADL.XAPIStatement.Verb("http://www.peblproject.com/definitions.html#pushed", "pushed"), new ADL.XAPIStatement.Activity(containerPath, "", JSON.stringify(pushData)));
     };
-    prototype.pulled = function(target, location, card, url, docType, name, externalURL) {
+    prototype.pulled = function(book, target, location, card, url, docType, name, externalURL) {
         var containerPath = "peblThread://user-" + target;
         var pushData = {};
+        pushData["book"] = book;
         pushData["target"] = target;
         pushData["url"] = url;
         pushData["name"] = name;
@@ -36378,14 +36529,20 @@ XApiGenerator = stjs.extend(XApiGenerator, null, [], function(constructor, proto
 }, {storage: "StorageAdapter", userManager: "UserAdapter", activityManager: "ActivityAdapter"}, {});
 var Voided = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     this.id = o["id"];
     this.timestamp = XApiUtils.getTimestamp(o);
     this.parentActivity = XApiUtils.getParentActivity(o);
+    if ((this.parentActivity != null) && this.parentActivity.startsWith("peblThread://")) 
+        this.thread = this.parentActivity.substring("peblThread://".length);
+     else 
+        this.thread = this.parentActivity;
     this.actorId = XApiUtils.getActorId(o);
     this.target = XApiUtils.getObjectId(o);
 };
 Voided = stjs.extend(Voided, TimeSeriesData, [], function(constructor, prototype) {
     prototype.target = null;
+    prototype.thread = null;
     prototype.toObject = function() {
         var result = TimeSeriesData.prototype.toObject.call(this);
         result[TimeSeriesData.KEY_TARGET] = this.target;
@@ -36395,7 +36552,7 @@ Voided = stjs.extend(Voided, TimeSeriesData, [], function(constructor, prototype
         var verb = XApiUtils.getVerb(record);
         return (verb == "voided");
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 /**
  *  Basic HTML5 session storage or local storage
  *  @author aaron.veden@eduworks.com
@@ -36577,9 +36734,13 @@ InMemoryStorageAdapter = stjs.extend(InMemoryStorageAdapter, null, [StorageAdapt
     prototype.getToc = function(user, containerPath, callback) {};
     prototype.removeToc = function(user, containerPath, section, id) {};
     prototype.addToc = function(user, containerPath, data) {};
+    prototype.saveQueuedReference = function(user, ref) {};
+    prototype.getQueuedReference = function(user, callback) {};
+    prototype.removeQueuedReference = function(user, id) {};
 }, {persistStorage: "Storage", storage: {name: "Map", arguments: [null, null]}}, {});
 var Navigation = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     this.id = o["id"];
     this.timestamp = XApiUtils.getTimestamp(o);
     this.parentActivity = XApiUtils.getParentActivity(o);
@@ -36600,9 +36761,10 @@ Navigation = stjs.extend(Navigation, TimeSeriesData, [], function(constructor, p
         result[TimeSeriesData.KEY_TYPE] = this.type;
         return result;
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var Session = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     this.id = o["id"];
     this.timestamp = XApiUtils.getTimestamp(o);
     this.parentActivity = XApiUtils.getParentActivity(o);
@@ -36634,9 +36796,10 @@ Session = stjs.extend(Session, TimeSeriesData, [], function(constructor, prototy
         result[TimeSeriesData.KEY_TYPE] = this.type;
         return result;
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var Action = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     this.id = o["id"];
     this.timestamp = XApiUtils.getTimestamp(o);
     this.parentActivity = XApiUtils.getParentActivity(o);
@@ -36677,9 +36840,10 @@ Action = stjs.extend(Action, TimeSeriesData, [], function(constructor, prototype
         var verb = XApiUtils.getVerb(record);
         return (verb == "preferred") || (verb == "morphed") || (verb == "interacted");
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var Quiz = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     this.id = o["id"];
     this.timestamp = XApiUtils.getTimestamp(o);
     this.parentActivity = XApiUtils.getParentActivity(o);
@@ -36708,15 +36872,16 @@ Quiz = stjs.extend(Quiz, TimeSeriesData, [], function(constructor, prototype) {
         var verb = XApiUtils.getVerb(record);
         return (verb == "failed") || (verb == "passed");
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var Message = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     var messageData;
     if (o["object"] != null) {
         messageData = JSON.parse(XApiUtils.getObjectDescription(o));
         var temp = XApiUtils.getObjectId(o);
-        if (temp.lastIndexOf("/") != -1) 
-            this.thread = temp.substring(temp.lastIndexOf("/") + 1);
+        if (temp.startsWith("peblThread://")) 
+            this.thread = temp.substring("peblThread://".length);
          else 
             this.thread = temp;
         this.prompt = XApiUtils.getObjectName(o);
@@ -36771,17 +36936,29 @@ Message = stjs.extend(Message, TimeSeriesData, [], function(constructor, prototy
         var verb = XApiUtils.getVerb(record);
         return (verb == "responded");
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var Reference = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     var messageData;
     if (o["object"] != null) {
         messageData = JSON.parse(XApiUtils.getObjectDescription(o));
         this.actorId = XApiUtils.getActorId(o);
+        var temp = XApiUtils.getObjectId(o);
+        if ((temp != null) && temp.startsWith("peblThread://")) 
+            this.thread = temp.substring("peblThread://".length);
+         else 
+            this.thread = temp;
     } else {
         messageData = o;
         this.actorId = o[TimeSeriesData.KEY_ACTOR_ID];
+        var temp = o[Reference.KEY_THREAD];
+        if ((temp != null) && temp.startsWith("peblThread://")) 
+            this.thread = temp.substring("peblThread://".length);
+         else 
+            this.thread = temp;
     }
+    this.book = messageData[Reference.KEY_BOOK];
     this.docType = messageData[TimeSeriesData.KEY_DOCTYPE];
     this.location = messageData[Reference.KEY_LOCATION];
     this.card = messageData[Reference.KEY_CARD];
@@ -36798,6 +36975,8 @@ Reference = stjs.extend(Reference, TimeSeriesData, [], function(constructor, pro
     constructor.KEY_URL = "url";
     constructor.KEY_NAME = "name";
     constructor.KEY_EXTERNAL_URL = "externalURL";
+    constructor.KEY_BOOK = "book";
+    constructor.KEY_THREAD = "thread";
     prototype.name = null;
     prototype.location = null;
     prototype.card = null;
@@ -36805,8 +36984,11 @@ Reference = stjs.extend(Reference, TimeSeriesData, [], function(constructor, pro
     prototype.url = null;
     prototype.docType = null;
     prototype.externalURL = null;
+    prototype.book = null;
+    prototype.thread = null;
     prototype.pack = function() {
         var result = {};
+        result[Reference.KEY_BOOK] = this.book;
         result[Reference.KEY_LOCATION] = this.location;
         result[Reference.KEY_CARD] = this.card;
         result[TimeSeriesData.KEY_TARGET] = this.target;
@@ -36819,6 +37001,7 @@ Reference = stjs.extend(Reference, TimeSeriesData, [], function(constructor, pro
     prototype.toObject = function() {
         var result = {};
         result[TimeSeriesData.KEY_XID] = this.id;
+        result[Reference.KEY_BOOK] = this.book;
         result[Reference.KEY_URL] = this.url;
         result[TimeSeriesData.KEY_ACTOR_ID] = this.actorId;
         result[Reference.KEY_LOCATION] = this.location;
@@ -36837,7 +37020,7 @@ Reference = stjs.extend(Reference, TimeSeriesData, [], function(constructor, pro
         var verb = XApiUtils.getVerb(record);
         return (verb == "pushed") || (verb == "pulled");
     };
-}, {timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 /**
  *  Basic HTML5 session storage or local storage
  *  @author aaron.veden@eduworks.com
@@ -37017,9 +37200,13 @@ KeyValueStorageAdapter = stjs.extend(KeyValueStorageAdapter, null, [StorageAdapt
     prototype.getToc = function(user, containerPath, callback) {};
     prototype.removeToc = function(user, containerPath, section, id) {};
     prototype.addToc = function(user, containerPath, data) {};
+    prototype.saveQueuedReference = function(user, ref) {};
+    prototype.getQueuedReference = function(user, callback) {};
+    prototype.removeQueuedReference = function(user, id) {};
 }, {storage: "Storage"}, {});
 var Question = function(o) {
     TimeSeriesData.call(this);
+    this.stmt = o;
     this.id = o["id"];
     this.timestamp = XApiUtils.getTimestamp(o);
     this.parentActivity = XApiUtils.getParentActivity(o);
@@ -37062,7 +37249,7 @@ Question = stjs.extend(Question, TimeSeriesData, [], function(constructor, proto
         var verb = XApiUtils.getVerb(record);
         return verb == "answered";
     };
-}, {answers: {name: "Array", arguments: [null]}, timestamp: "Date"}, {});
+}, {answers: {name: "Array", arguments: [null]}, timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var SharedAnnotation = function(o) {
     TimeSeriesData.call(this);
     this.stmt = o;
@@ -37126,7 +37313,6 @@ SharedAnnotation = stjs.extend(SharedAnnotation, TimeSeriesData, [], function(co
     prototype.style = 0;
     prototype.text = null;
     prototype.owner = null;
-    prototype.stmt = null;
     prototype.pack = function() {
         var result = {};
         result[SharedAnnotation.KEY_ID] = this.annId;
@@ -37159,7 +37345,7 @@ SharedAnnotation = stjs.extend(SharedAnnotation, TimeSeriesData, [], function(co
         var verb = XApiUtils.getVerb(record);
         return (verb == "shared");
     };
-}, {stmt: {name: "Map", arguments: [null, "Object"]}, timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var Annotation = function(o) {
     TimeSeriesData.call(this);
     this.stmt = o;
@@ -37223,7 +37409,6 @@ Annotation = stjs.extend(Annotation, TimeSeriesData, [], function(constructor, p
     prototype.style = 0;
     prototype.text = null;
     prototype.owner = null;
-    prototype.stmt = null;
     prototype.pack = function() {
         var result = {};
         result[Annotation.KEY_ID] = this.annId;
@@ -37256,23 +37441,25 @@ Annotation = stjs.extend(Annotation, TimeSeriesData, [], function(constructor, p
         var verb = XApiUtils.getVerb(record);
         return (verb == "commented");
     };
-}, {stmt: {name: "Map", arguments: [null, "Object"]}, timestamp: "Date"}, {});
+}, {timestamp: "Date", stmt: {name: "Map", arguments: [null, "Object"]}}, {});
 var LocalAssetAdapter = function(userManager, storageManager, activityManager) {
-    this.queuedResources = new Array();
     this.userManager = userManager;
     this.storageManager = storageManager;
     this.activityManager = activityManager;
     var self = this;
     this.syncAssets = function() {
-        if (self.queuedResources.length > 0) 
-            self.pull(self.queuedResources.pop());
-         else if (self.running) 
-            self.pending = setTimeout(self.syncAssets, 500);
+        self.storageManager.getQueuedReference(self.userManager.getUser(), function(r) {
+            if (r != null) 
+                self.pull(r, function() {
+                    self.storageManager.removeQueuedReference(self.userManager.getUser(), r.id);
+                });
+             else if (self.running) 
+                self.pending = setTimeout(self.syncAssets, 1000);
+        });
     };
     this.startSync();
 };
 LocalAssetAdapter = stjs.extend(LocalAssetAdapter, null, [AssetAdapter], function(constructor, prototype) {
-    prototype.queuedResources = null;
     prototype.userManager = null;
     prototype.storageManager = null;
     prototype.activityManager = null;
@@ -37295,9 +37482,9 @@ LocalAssetAdapter = stjs.extend(LocalAssetAdapter, null, [AssetAdapter], functio
         this.notificationHook = callback;
     };
     prototype.queue = function(ref) {
-        this.queuedResources.push(ref);
+        this.storageManager.saveQueuedReference(this.userManager.getUser(), ref);
     };
-    prototype.pull = function(ref) {
+    prototype.pull = function(ref, finished) {
         var xmr = new XMLHttpRequest();
         var self = this;
         xmr.onreadystatechange = function() {
@@ -37312,11 +37499,13 @@ LocalAssetAdapter = stjs.extend(LocalAssetAdapter, null, [AssetAdapter], functio
                     tocEntry["docType"] = ref.docType;
                     tocEntry["card"] = ref.card;
                     tocEntry["externalURL"] = ref.externalURL;
-                    self.storageManager.addToc(self.userManager.getUser(), self.activityManager.getBook(), tocEntry);
+                    self.storageManager.addToc(self.userManager.getUser(), ref.book, tocEntry);
                     if (self.notificationHook != null) 
                         self.notificationHook(ref);
                 } else 
                     self.storageManager.addNotification(self.userManager.getUser(), new Notification("Failed", ref));
+                if (finished != null) 
+                    finished();
                 if (self.running) 
                     self.pending = setTimeout(self.syncAssets, 500);
             }
@@ -37324,7 +37513,7 @@ LocalAssetAdapter = stjs.extend(LocalAssetAdapter, null, [AssetAdapter], functio
         xmr.open("GET", "https://peblproject.com/registry/api/downloadContent?guid=" + ref.url, true);
         xmr.send();
     };
-}, {queuedResources: {name: "Array", arguments: ["Reference"]}, userManager: "UserAdapter", storageManager: "StorageAdapter", activityManager: "ActivityAdapter", pending: "TimeoutHandler", notificationHook: {name: "Callback1", arguments: ["TimeSeriesData"]}, syncAssets: "Callback0"}, {});
+}, {userManager: "UserAdapter", storageManager: "StorageAdapter", activityManager: "ActivityAdapter", pending: "TimeoutHandler", notificationHook: {name: "Callback1", arguments: ["TimeSeriesData"]}, syncAssets: "Callback0"}, {});
 var SyncAction = function(endpoint, repeat, userManager, storage, activityManager, assetManager, teacher) {
     this.endpoint = endpoint;
     this.repeat = repeat;
@@ -37372,7 +37561,7 @@ var SyncAction = function(endpoint, repeat, userManager, storage, activityManage
     };
     this.pull();
 };
-SyncAction = stjs.extend(SyncAction, null, [], function(constructor, prototype) {
+SyncAction = stjs.extend(SyncAction, null, [SyncProcess], function(constructor, prototype) {
     prototype.bookMinePoll = null;
     prototype.bookSharedPoll = null;
     prototype.chatPoll = null;
@@ -37412,7 +37601,7 @@ SyncAction = stjs.extend(SyncAction, null, [], function(constructor, prototype) 
     };
     prototype.pullHelper = function(searchParams, callback) {
         var sa = this;
-        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject());
+        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject("data/xapi/"));
         ADL.XAPIWrapper.getStatements(searchParams, "", function(xhr) {
             if (xhr.readyState == 4) {
                 var results = [];
@@ -37584,7 +37773,7 @@ SyncAction = stjs.extend(SyncAction, null, [], function(constructor, prototype) 
         var sa = this;
         if (outgoing == null) 
             outgoing = [];
-        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject());
+        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject("data/xapi/"));
         ADL.XAPIWrapper.sendStatements(outgoing, function(xhr) {
             if (xhr.readyState == 4) {
                 var success = xhr.status == 200;
@@ -37605,52 +37794,42 @@ var LLSyncAction = function(endpoint, repeat, userManager, storage, activityMana
     this.assetManager = assetManager;
     this.teacher = teacher;
     var sa = this;
-    this.bookMinePollingCallback = function() {
+    this.bookPollingCallback = function() {
         var containerPath = sa.activityManager.getBook();
         if (containerPath != null) {
             var lastSynced = sa.endpoint.lastSyncedBooksMine[containerPath];
             if (lastSynced == null) 
                 lastSynced = "2017-06-05T21:07:49-07:00";
-            sa.pullBookMine(lastSynced, containerPath, sa.teacher);
+            sa.pullBook(lastSynced, containerPath, sa.teacher);
         } else if (sa.repeat) 
-            sa.bookMinePoll = setTimeout(sa.bookMinePollingCallback, 5000);
-    };
-    this.bookSharedPollingCallback = function() {
-        var containerPath = sa.activityManager.getBook();
-        if (containerPath != null) {
-            var lastSynced = sa.endpoint.lastSyncedBooksShared[containerPath];
-            if (lastSynced == null) 
-                lastSynced = "2017-06-05T21:07:49-07:00";
-            sa.pullBookShared(lastSynced, containerPath);
-        } else if (sa.repeat) 
-            sa.bookSharedPoll = setTimeout(sa.bookSharedPollingCallback, 5000);
+            sa.bookMinePoll = setTimeout(sa.bookPollingCallback, 5000);
     };
     this.chatPollingCallback = function() {
-        var threads = sa.activityManager.getThreads();
-        sa.pulledThread = {};
-        for (var thread in threads) 
-            sa.pulledThread[thread] = false;
-        var i = 0;
-        for (var thread in threads) {
-            i++;
-            var lastSynced = sa.endpoint.lastSyncedThreads[thread];
-            if (lastSynced == null) 
-                lastSynced = "2017-06-05T21:07:49-07:00";
-            sa.pullMessages(lastSynced, thread, threads[thread]);
+        var threadCallbacks = sa.activityManager.getThreads();
+        var threadPairs = [];
+        for (var thread in threadCallbacks) {
+            var timeStr = sa.endpoint.lastSyncedThreads[thread];
+            var timestamp = timeStr == null ? "2017-06-05T21:07:49-07:00" : timeStr;
+            sa.endpoint.lastSyncedThreads[thread] = timestamp;
+            var record = {};
+            record["statement.stored"] = {"$gt": timestamp};
+            record["statement.object.id"] = "peblThread://" + thread;
+            threadPairs.push(record);
         }
-        if ((i == 0) && sa.repeat) 
+        var params = {"$or": threadPairs};
+        if ((threadPairs.length == 0) && sa.repeat) 
             sa.chatPoll = setTimeout(sa.chatPollingCallback, 2000);
+         else 
+            sa.pullMessages(params, threadCallbacks);
     };
+    this.llAPI = new LearningLockerAPI();
     this.pull();
 };
-LLSyncAction = stjs.extend(LLSyncAction, null, [], function(constructor, prototype) {
+LLSyncAction = stjs.extend(LLSyncAction, null, [SyncProcess], function(constructor, prototype) {
     prototype.bookMinePoll = null;
-    prototype.bookSharedPoll = null;
     prototype.chatPoll = null;
-    prototype.bookMinePollingCallback = null;
-    prototype.bookSharedPollingCallback = null;
+    prototype.bookPollingCallback = null;
     prototype.chatPollingCallback = null;
-    prototype.pulledThread = null;
     prototype.endpoint = null;
     prototype.terminated = false;
     prototype.repeat = false;
@@ -37658,14 +37837,12 @@ LLSyncAction = stjs.extend(LLSyncAction, null, [], function(constructor, prototy
     prototype.storage = null;
     prototype.activityManager = null;
     prototype.assetManager = null;
+    prototype.llAPI = null;
     prototype.teacher = false;
     prototype.clearTimeouts = function() {
         if (this.bookMinePoll != null) 
             clearTimeout(this.bookMinePoll);
         this.bookMinePoll = null;
-        if (this.bookSharedPoll != null) 
-            clearTimeout(this.bookSharedPoll);
-        this.bookSharedPoll = null;
         if (this.chatPoll != null) 
             clearTimeout(this.chatPoll);
         this.chatPoll = null;
@@ -37673,8 +37850,7 @@ LLSyncAction = stjs.extend(LLSyncAction, null, [], function(constructor, prototy
     prototype.pull = function() {
         this.terminated = false;
         this.clearTimeouts();
-        this.bookMinePollingCallback();
-        this.bookSharedPollingCallback();
+        this.bookPollingCallback();
         this.chatPollingCallback();
     };
     prototype.terminate = function() {
@@ -37682,180 +37858,155 @@ LLSyncAction = stjs.extend(LLSyncAction, null, [], function(constructor, prototy
         this.clearTimeouts();
     };
     prototype.pullHelper = function(searchParams, callback) {
-        var sa = this;
-        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject());
-        ADL.XAPIWrapper.getStatements(searchParams, "", function(xhr) {
-            if (xhr.readyState == 4) {
-                var results = [];
-                if (xhr.status == 200) {
-                    if (!sa.terminated) {
-                        var response = JSON.parse(xhr.responseText);
-                        results = (response["statements"]);
-                    }
-                }
-                callback(results);
-            }
-        });
+        this.llAPI.pull(this.endpoint, searchParams, callback);
     };
-    prototype.pullMessages = function(lastSynced, thread, callback) {
+    prototype.pullMessages = function(matchParams, callbacks) {
         var sa = this;
-        var params = ADL.XAPIWrapper.searchParams();
-        params["activity"] = "peblThread://" + thread;
-        params["ascending"] = "true";
-        params["since"] = lastSynced;
-        params["limit"] = 1500;
-        this.pullHelper(params, function(items) {
-            var lastSyncedDate = new Date(lastSynced);
+        var pipeline = [];
+        var query = {};
+        var projection = {"statement": 1, "_id": 0, "voided": 1};
+        query["$match"] = matchParams;
+        pipeline.push({"$sort": {"stored": -1, "_id": 1}});
+        pipeline.push(query);
+        pipeline.push({"$limit": 1500});
+        pipeline.push({"$project": projection});
+        this.pullHelper(pipeline, function(items) {
+            var buckets = {};
             var deleteIds = [];
-            var messages = {};
             for (var i = 0; i < items.length; i++) {
                 var xapi = items[i];
                 var id = xapi["id"];
-                if (Message.is(xapi)) 
-                    messages[id] = new Message(xapi);
-                 else if (Reference.is(xapi)) {
+                var thread = null;
+                var tsd = null;
+                if (Message.is(xapi)) {
+                    var m = new Message(xapi);
+                    thread = m.thread;
+                    tsd = m;
+                } else if (Reference.is(xapi)) {
                     var r = new Reference(xapi);
                     sa.assetManager.queue(r);
-                    messages[id] = r;
+                    tsd = r;
+                    thread = r.thread;
                 } else if (Voided.is(xapi)) {
                     var v = new Voided(xapi);
-                    deleteIds.push(v.target);
+                    deleteIds.push(v);
+                    thread = v.thread;
                 }
-                var temp = new Date(xapi["stored"]);
-                if (lastSyncedDate.getTime() < temp.getTime()) 
-                    lastSyncedDate = temp;
-            }
-            sa.storage.postMessages(sa.userManager.getUser(), thread, items);
-            for (var x = 0; x < deleteIds.length; x++) {
-                var id = deleteIds[x];
-                var up = sa.userManager.getUser();
-                delete messages[id];
-                sa.storage.removeMessage(up, id, thread);
-            }
-            var cleanMessages = [];
-            for (var key in messages) 
-                cleanMessages.push(messages[key]);
-            XApiUtils.sortNewestTimeSeries(cleanMessages);
-            if (lastSyncedDate.getTime() > new Date(lastSynced).getTime()) {
-                lastSyncedDate.setMilliseconds(stjs.trunc(lastSyncedDate.getMilliseconds()) + 1);
-                sa.endpoint.lastSyncedThreads[thread] = EcDate.toISOString(lastSyncedDate);
-                sa.storage.saveUserProfile(sa.userManager.getUser());
-            }
-            sa.pulledThread[thread] = true;
-            if (sa.repeat) {
-                var finished = true;
-                for (var key in sa.pulledThread) 
-                    if (!sa.pulledThread[key]) {
-                        finished = false;
-                        break;
+                if (thread != null) {
+                    if (tsd != null) {
+                        var stmts = buckets[thread];
+                        if (stmts == null) {
+                            stmts = {};
+                            buckets[thread] = stmts;
+                        }
+                        stmts[tsd.id] = tsd;
                     }
-                if (finished) 
-                    sa.chatPoll = setTimeout(sa.chatPollingCallback, 2000);
+                    var temp = new Date(xapi["stored"]);
+                    var lastSyncedDate = new Date(sa.endpoint.lastSyncedThreads[thread]);
+                    if (lastSyncedDate.getTime() < temp.getTime()) 
+                        sa.endpoint.lastSyncedThreads[thread] = EcDate.toISOString(temp);
+                }
             }
-            if (callback != null) 
-                callback(cleanMessages);
+            for (var i = 0; i < deleteIds.length; i++) {
+                var v = deleteIds[i];
+                var thread = v.thread;
+                var bucket = buckets[thread];
+                if (bucket != null) {
+                    delete bucket[v.target];
+                }
+                sa.storage.removeMessage(sa.userManager.getUser(), v.target, thread);
+            }
+            var up = sa.userManager.getUser();
+            for (var thread in buckets) {
+                var bucket = buckets[thread];
+                var cleanMessages = [];
+                var cleanXAPIMessages = [];
+                for (var messageId in bucket) {
+                    cleanMessages.push(bucket[messageId]);
+                    cleanXAPIMessages.push(bucket[messageId].stmt);
+                }
+                TimeSeriesData.sort(cleanMessages, false);
+                sa.storage.postMessages(up, thread, cleanXAPIMessages);
+                var callback = callbacks[thread];
+                if (callback != null) 
+                    callback(cleanMessages);
+            }
+            sa.storage.saveUserProfile(sa.userManager.getUser());
+            if (sa.repeat) 
+                sa.chatPoll = setTimeout(sa.chatPollingCallback, 2000);
         });
     };
-    prototype.pullBookMine = function(lastSynced, containerPath, teacher) {
+    prototype.pullBook = function(lastSynced, containerPath, teacher) {
         var sa = this;
-        var params = ADL.XAPIWrapper.searchParams();
-        params["activity"] = "pebl://" + containerPath;
-        params["since"] = lastSynced;
-        params["limit"] = 1500;
-        params["ascending"] = "true";
-        if (!teacher) 
-            params["agent"] = JSON.stringify(sa.userManager.getUser().generateAgent());
-        this.pullHelper(params, function(items) {
+        var pipeline = [];
+        var query = {};
+        var projection = {"statement": 1, "_id": 0, "voided": 1};
+        var teacherPack = {"statement.object.id": "pebl://" + containerPath, "statement.stored": {"$gt": lastSynced}};
+        var pairs = [teacherPack, {"statement.object.id": "pebl://" + containerPath, "statement.stored": {"$gt": lastSynced}, "statement.verb.id": "http://adlnet.gov/expapi/verbs/shared"}];
+        if (!teacher) {
+            teacherPack["agents"] = sa.userManager.getUser().getHomePage() + "|" + sa.userManager.getUser().getIdentity();
+        }
+        query["$match"] = {"$or": pairs};
+        pipeline.push({"$sort": {"stored": -1, "_id": 1}});
+        pipeline.push(query);
+        pipeline.push({"$limit": 1500});
+        pipeline.push({"$project": projection});
+        this.pullHelper(pipeline, function(items) {
+            Debugger.debug("s");
             var lastSyncedDate = new Date(lastSynced);
-            var annotations = [];
-            var generalAnnotations = [];
-            var events = [];
+            var annotations = {};
+            var generalAnnotations = {};
+            var events = {};
             var deleteIds = [];
             for (var i = 0; i < items.length; i++) {
                 var xapi = items[i];
-                if (Annotation.is(xapi)) 
-                    annotations.push(xapi);
-                 else if (SharedAnnotation.is(xapi)) 
-                    generalAnnotations.push(xapi);
+                if (Annotation.is(xapi)) {
+                    annotations[xapi["id"]] = xapi;
+                } else if (SharedAnnotation.is(xapi)) 
+                    generalAnnotations[xapi["id"]] = xapi;
                  else if (Voided.is(xapi)) {
                     var v = new Voided(xapi);
-                    deleteIds.push(v.target);
+                    deleteIds.push(v);
                 } else 
-                    events.push(xapi);
+                    events[xapi["id"]] = xapi;
                 var temp = new Date(xapi["stored"]);
                 if (lastSyncedDate.getTime() < temp.getTime()) 
                     lastSyncedDate = temp;
             }
-            sa.storage.saveAnnotations(sa.userManager.getUser(), containerPath, annotations);
-            sa.storage.saveGeneralAnnotations(sa.userManager.getUser(), containerPath, generalAnnotations);
-            sa.storage.saveEvents(sa.userManager.getUser(), containerPath, events);
             for (var x = 0; x < deleteIds.length; x++) {
-                var id = deleteIds[x];
+                var v = deleteIds[x];
+                var id = v.id;
                 var up = sa.userManager.getUser();
                 sa.storage.removeSharedAnnotation(up, id);
                 sa.storage.removeAnnotation(up, id, containerPath);
+                delete annotations[v.target];
+                delete generalAnnotations[v.target];
             }
+            var cleanAnnotations = [];
+            var cleanGeneralAnnotations = [];
+            var cleanEvents = [];
+            for (var key in annotations) 
+                cleanAnnotations.push(annotations[key]);
+            for (var key in generalAnnotations) 
+                cleanGeneralAnnotations.push(generalAnnotations[key]);
+            for (var key in events) 
+                cleanEvents.push(events[key]);
+            sa.storage.saveAnnotations(sa.userManager.getUser(), containerPath, cleanAnnotations);
+            sa.storage.saveGeneralAnnotations(sa.userManager.getUser(), containerPath, cleanGeneralAnnotations);
+            sa.storage.saveEvents(sa.userManager.getUser(), containerPath, cleanEvents);
             if (lastSyncedDate.getTime() > new Date(lastSynced).getTime()) {
-                lastSyncedDate.setMilliseconds(stjs.trunc(lastSyncedDate.getMilliseconds()) + 1);
                 sa.endpoint.lastSyncedBooksMine[containerPath] = EcDate.toISOString(lastSyncedDate);
                 sa.storage.saveUserProfile(sa.userManager.getUser());
             }
             if (sa.repeat) 
-                sa.bookMinePoll = setTimeout(sa.bookMinePollingCallback, 5000);
-        });
-    };
-    prototype.pullBookShared = function(lastSynced, containerPath) {
-        var sa = this;
-        var params = ADL.XAPIWrapper.searchParams();
-        params["limit"] = 1500;
-        params["since"] = lastSynced;
-        params["ascending"] = "true";
-        params["verb"] = "http://adlnet.gov/expapi/verbs/shared";
-        this.pullHelper(params, function(items) {
-            var lastSyncedDate = new Date(lastSynced);
-            var deleteIds = [];
-            var gaMap = {};
-            for (var i = 0; i < items.length; i++) {
-                var xapi = items[i];
-                if (SharedAnnotation.is(xapi)) {
-                    var tempCp = XApiUtils.getObjectId(xapi);
-                    var cp;
-                    if (tempCp.lastIndexOf("/") != -1) 
-                        cp = tempCp.substring(tempCp.lastIndexOf("/") + 1);
-                     else 
-                        cp = tempCp;
-                    if (gaMap[cp] == null) 
-                        gaMap[cp] = [];
-                    gaMap[cp].push(xapi);
-                } else if (Voided.is(xapi)) {
-                    var v = new Voided(xapi);
-                    deleteIds.push(v.target);
-                }
-                var temp = new Date(xapi["stored"]);
-                if (lastSyncedDate.getTime() < temp.getTime()) 
-                    lastSyncedDate = temp;
-            }
-            for (var cp in gaMap) 
-                sa.storage.saveGeneralAnnotations(sa.userManager.getUser(), cp, gaMap[cp]);
-            for (var x = 0; x < deleteIds.length; x++) {
-                var id = deleteIds[x];
-                var up = sa.userManager.getUser();
-                sa.storage.removeSharedAnnotation(up, id);
-            }
-            if (lastSyncedDate.getTime() > new Date(lastSynced).getTime()) {
-                lastSyncedDate.setMilliseconds(stjs.trunc(lastSyncedDate.getMilliseconds()) + 1);
-                sa.endpoint.lastSyncedBooksShared[containerPath] = EcDate.toISOString(lastSyncedDate);
-                sa.storage.saveUserProfile(sa.userManager.getUser());
-            }
-            if (sa.repeat) 
-                sa.bookSharedPoll = setTimeout(sa.bookSharedPollingCallback, 5000);
+                sa.bookMinePoll = setTimeout(sa.bookPollingCallback, 5000);
         });
     };
     prototype.push = function(outgoing, callback) {
         var sa = this;
         if (outgoing == null) 
             outgoing = [];
-        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject());
+        ADL.XAPIWrapper.changeConfig(this.endpoint.toConfigObject("data/xapi/"));
         ADL.XAPIWrapper.sendStatements(outgoing, function(xhr) {
             if (xhr.readyState == 4) {
                 var success = xhr.status == 200;
@@ -37866,7 +38017,7 @@ LLSyncAction = stjs.extend(LLSyncAction, null, [], function(constructor, prototy
             }
         });
     };
-}, {bookMinePoll: "TimeoutHandler", bookSharedPoll: "TimeoutHandler", chatPoll: "TimeoutHandler", bookMinePollingCallback: "Callback0", bookSharedPollingCallback: "Callback0", chatPollingCallback: "Callback0", pulledThread: {name: "Map", arguments: [null, null]}, endpoint: "Endpoint", userManager: "UserAdapter", storage: "StorageAdapter", activityManager: "ActivityAdapter", assetManager: "AssetAdapter"}, {});
+}, {bookMinePoll: "TimeoutHandler", chatPoll: "TimeoutHandler", bookPollingCallback: "Callback0", chatPollingCallback: "Callback0", endpoint: "Endpoint", userManager: "UserAdapter", storage: "StorageAdapter", activityManager: "ActivityAdapter", assetManager: "AssetAdapter", llAPI: "LearningLockerAPI"}, {});
 var LocalNetworkAdapter = function(userManager, storage, activityManager, assetManager, TLAEnabled) {
     this.TLAEnabled = TLAEnabled;
     this.userManager = userManager;
@@ -37889,8 +38040,13 @@ var LocalNetworkAdapter = function(userManager, storage, activityManager, assetM
                 lna.storage.clearOutgoing(lna.userManager.getUser(), toDelete);
             }
         }
-        if (callback != null) 
-            callback(xhr);
+        if (lna.errorHandle != null) {
+            clearTimeout(lna.errorHandle);
+        }
+        lna.errorHandle = setTimeout(function() {
+            if (callback != null) 
+                callback(xhr);
+        }, 3000);
     };
 };
 LocalNetworkAdapter = stjs.extend(LocalNetworkAdapter, null, [NetworkAdapter], function(constructor, prototype) {
@@ -37906,6 +38062,7 @@ LocalNetworkAdapter = stjs.extend(LocalNetworkAdapter, null, [NetworkAdapter], f
     prototype.repeat = false;
     prototype.TLAEnabled = false;
     prototype.teacher = false;
+    prototype.errorHandle = null;
     prototype.pullCompetencies = function() {
         var lna = this;
         this.competencyRequest = new XMLHttpRequest();
@@ -37976,9 +38133,10 @@ LocalNetworkAdapter = stjs.extend(LocalNetworkAdapter, null, [NetworkAdapter], f
             this.pushPolling = null;
         }
         this.repeat = true;
+        this.assetManager.startSync();
         var endpoints = this.userManager.getUser().getLrsUrls();
         for (var key in endpoints) 
-            this.endpointHandlers.push(new SyncAction(endpoints[key], true, this.userManager, this.storage, this.activityManager, this.assetManager, teacher));
+            this.endpointHandlers.push(new LLSyncAction(endpoints[key], true, this.userManager, this.storage, this.activityManager, this.assetManager, teacher));
         if (false) 
             this.pullCompetencies();
         this.push(null);
@@ -38007,7 +38165,7 @@ LocalNetworkAdapter = stjs.extend(LocalNetworkAdapter, null, [NetworkAdapter], f
                 finished();
         });
     };
-}, {competencyPolling: "TimeoutHandler", pushPolling: "TimeoutHandler", recoveryPolling: "TimeoutHandler", competencyRequest: "XMLHttpRequest", userManager: "UserAdapter", storage: "StorageAdapter", activityManager: "ActivityAdapter", assetManager: "AssetAdapter", endpointHandlers: {name: "Array", arguments: ["SyncAction"]}}, {});
+}, {competencyPolling: "TimeoutHandler", pushPolling: "TimeoutHandler", recoveryPolling: "TimeoutHandler", competencyRequest: "XMLHttpRequest", userManager: "UserAdapter", storage: "StorageAdapter", activityManager: "ActivityAdapter", assetManager: "AssetAdapter", endpointHandlers: {name: "Array", arguments: ["SyncProcess"]}, errorHandle: "TimeoutHandler"}, {});
 /**
  *  @author aaron.veden@eduworks.com
  */
@@ -38162,8 +38320,8 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
             });
         }
     };
-    prototype.eventPulled = function(target, location, card, url, docType, name, externalURL) {
-        this.xapiGenerator.pulled(target, location, card, url, docType, name, externalURL);
+    prototype.eventPulled = function(book, target, location, card, url, docType, name, externalURL) {
+        this.xapiGenerator.pulled(book, target, location, card, url, docType, name, externalURL);
     };
     prototype.eventChecklisted = function(checklistId, checklistUser, checklistPrompts, checklistResponses) {
         this.xapiGenerator.checklisted(checklistId, checklistUser, checklistPrompts, checklistResponses);
@@ -38440,6 +38598,425 @@ PEBL = stjs.extend(PEBL, null, [], function(constructor, prototype) {
         return Debugger.logs;
     };
 }, {storage: "StorageAdapter", userManager: "UserAdapter", activityManager: "ActivityAdapter", networkManager: "NetworkAdapter", launcherManager: "LauncherAdapter", xapiGenerator: "XApiGenerator", assetManager: "AssetAdapter", onReadyCallbacks: {name: "Array", arguments: [{name: "Callback1", arguments: ["PEBL"]}]}, directMessageHandler: {name: "Callback1", arguments: [{name: "Array", arguments: [{name: "Map", arguments: [null, "Object"]}]}]}, instance: "PEBL"}, {});
+
+if (!window.PEBLPreventAutoLogin) {
+    PEBL.registerReadyCallback(function() {
+	var e = document.getElementById("top-menu");
+	if (e != null) {
+	    
+	    var li = $('<li id="loginTopMenu" class="menu-item menu-item-type-post_type menu-item-object-page"></li>');
+	    $(e).append(li[0]);
+	    pebl.loginStoredUser(function () {
+		Lightbox.createLoginButton("loginTopMenu");
+	    });
+	    
+	} else {
+	    if (!window.PEBLbuttonLogin)
+		pebl.login(function() {
+		    dosomething();
+		});
+	}
+    });
+}
+
+window.Lightbox = {
+    close : function() {
+	var lightBox = document.getElementById('lightBox');
+	var dimOverlay = document.getElementById('dimOverlay');
+	lightBox.parentNode.removeChild(lightBox);
+	dimOverlay.parentNode.removeChild(dimOverlay);
+    },
+
+    addElement : function (element) {
+	var lightBoxContent = document.getElementById('lightBoxContent');
+	if (lightBoxContent != null)
+	    lightBoxContent.appendChild(element);
+    },
+
+    clear : function () {
+	var lightBoxContent = document.getElementById('lightBoxContent');
+	if (lightBoxContent != null)
+	    lightBoxContent.innerHTML = "";
+    },
+
+    displayLRSSettings : function() {
+    	document.getElementById('lightBoxContent').style.display = 'none';
+    	document.getElementById('lightBoxContentSecondary').style.display = 'block';
+    	var settingsObject = window.Lightbox.getLRSSettings();
+    	$('#lrsURLInput').val(settingsObject.lrsURL);
+    	$('#lrsPasswordInput').val(settingsObject.lrsPassword);
+    	$('#lrsTokenInput').val(settingsObject.lrsToken);
+	$('#lrsUsernameInput').val(settingsObject.lrsUsername);
+    },
+
+    closeLRSSettings : function() {
+    	document.getElementById('lightBoxContentSecondary').style.display = 'none';
+    	document.getElementById('lightBoxContent').style.display = 'block';
+    },
+
+    saveLRSSettings : function() {
+    	var lrsURL = $('#lrsURLInput').val();
+    	var lrsPassword = $('#lrsPasswordInput').val();
+    	var lrsToken = $('#lrsTokenInput').val();
+	var lrsUsername = $('#lrsUsernameInput').val();
+
+    	var settingsObject = {
+    	    "lrsURL": lrsURL,
+    	    "lrsPassword": lrsPassword,
+    	    "lrsToken": lrsToken,
+            "lrsUsername": lrsUsername
+    	};
+    	localStorage.setItem("LRSAuth", JSON.stringify(settingsObject));
+    },
+
+    initDefaultLRSSettings : function(reset) {
+    	var lrsURL = "https://lrs.peblproject.com/";
+    	var lrsPassword = null;
+    	var lrsToken = "ZmI0YmRkZmM5Yzc2NzM2Mjg5MmUzOWI2NjUyZmM3YzgwZDcxMGMzZDowNGNiNDJmNTgzODZkN2ZkMDgzNGJmMDcwMmRjMDFjY2I0YzVkNWRi";
+	var lrsUsername = null;
+    	var currentSettings = window.Lightbox.getLRSSettings();
+
+    	var settingsObject = {
+    	    "lrsURL": lrsURL,
+    	    "lrsPassword": lrsPassword,
+    	    "lrsToken": lrsToken,
+            "lrsUsername": lrsUsername
+    	};
+    	if (reset || currentSettings == null)
+    	    localStorage.setItem("LRSAuth", JSON.stringify(settingsObject));
+    },
+
+    getLRSSettings : function() {
+    	var settingsObject = localStorage.getItem("LRSAuth");
+    	return JSON.parse(settingsObject);
+    },
+
+    getLRSURL : function(callback) {
+    	var settingsObject = window.Lightbox.getLRSSettings();
+    	callback(settingsObject.lrsURL);
+    },
+
+    getLRSPassword : function(callback) {
+    	var settingsObject = window.Lightbox.getLRSSettings();
+    	var lrsPassword;
+    	if (settingsObject.lrsPassword != null && settingsObject.lrsPassword.length > 0)
+    	    lrsPassword = settingsObject.lrsPassword;
+    	else
+    	    lrsPassword = null;
+    	callback(lrsPassword);
+    },
+
+    getLRSToken : function(callback) {
+    	var settingsObject = window.Lightbox.getLRSSettings();
+    	var lrsToken;
+    	if (settingsObject.lrsToken != null && settingsObject.lrsToken.length > 0)
+    	    lrsToken = settingsObject.lrsToken;
+    	else
+    	    lrsToken = null;
+    	callback(lrsToken);
+    },
+
+    getLRSUsername : function(callback) {
+	var settingsObject = window.Lightbox.getLRSSettings();
+	var lrsUsername;
+	if (settingsObject.lrsUsername != null && settingsObject.lrsUsername.length > 0)
+            lrsUsername = settingsObject.lrsUsername;
+	else
+            lrsUsername = null;
+	callback(lrsUsername);
+    },
+
+    createLoginForm : function () {
+	window.Lightbox.create("login", false);
+
+	var lightBoxContent = document.getElementById('lightBoxContent');
+	var lightBoxContentSecondary = document.getElementById('lightBoxContentSecondary');
+	
+	var selects = $('<br/>Select your username:<br/><br/><select id="loginUserNameSelector"><option>Learner</option><option>Learner1</option><option>Learner2</option><option>Learner3</option><option>Learner5</option><option>Learner7</option></select>');
+	lightBoxContent.appendChild(selects[0]);
+	lightBoxContent.appendChild(selects[1]);
+	lightBoxContent.appendChild(selects[2]);
+	lightBoxContent.appendChild(selects[3]);
+	lightBoxContent.appendChild(selects[4]);
+
+	var login = $('<br/><br/><input type="button" value="Login" id="loginUserNameSubmit" />');
+	lightBoxContent.appendChild(login[0]);
+	lightBoxContent.appendChild(login[1]);
+	lightBoxContent.appendChild(login[2]);
+
+	var lrsSettingsButton = $('<button id="lrsSettingsButton" onclick="window.Lightbox.displayLRSSettings();">LRS Settings</button>');
+	lightBoxContent.appendChild(lrsSettingsButton[0]);
+
+	var lrsSettingsHeader = $('<h4>Enter either a username and password, or a token.</h4>');
+	var lrsURLInput = $('<p>LRS URL: <textarea id="lrsURLInput" rows="1" cols="50"></textarea></p>');
+	var lrsUsernameInput = $('<p>LRS Username: <input type="text" id="lrsUsernameInput" size="30" /></p>');
+	var lrsPasswordInput = $('<p>LRS Password: <input type="password" id="lrsPasswordInput" size="30" /></p><p>OR</p>');
+	var lrsTokenInput = $('<p>LRS Token: <textarea type="text" rows="5" cols="50" id="lrsTokenInput"></textarea></p>');
+	var lrsCancelButton = $('<button id="lrsCancelButton" onclick="window.Lightbox.closeLRSSettings();">Cancel</button>');
+	var lrsSaveButton = $('<button id="lrsSaveButton" onclick="window.Lightbox.saveLRSSettings();window.Lightbox.closeLRSSettings();">Save</button>');
+	var lrsDefaultButton = $('<button id="lrsDefaultButton" onclick="window.Lightbox.initDefaultLRSSettings(true);window.Lightbox.displayLRSSettings();">Load Defaults</button>');
+
+	lightBoxContentSecondary.appendChild(lrsSettingsHeader[0]);
+	lightBoxContentSecondary.appendChild(lrsURLInput[0]);
+	lightBoxContentSecondary.appendChild(lrsUsernameInput[0]);
+	lightBoxContentSecondary.appendChild(lrsPasswordInput[0]);
+	lightBoxContentSecondary.appendChild(lrsPasswordInput[1]);
+	lightBoxContentSecondary.appendChild(lrsTokenInput[0]);
+	lightBoxContentSecondary.appendChild(lrsCancelButton[0]);
+	lightBoxContentSecondary.appendChild(lrsSaveButton[0]);
+	lightBoxContentSecondary.appendChild(lrsDefaultButton[0]);
+    },
+
+    openIDLogin : function () {
+
+	var loginButton = $('<input type="submit" value="Login" />');
+	
+	var loginFrame = $('#loginIFrame');
+	if (loginFrame.length == 0) {
+	    loginFrame = $('<iframe id="loginIFrame" src="about:blank" style="width:100%;margin-bottom:20px;margin-top:30px;height:550px"></iframe>');
+
+	    lf = loginFrame;
+
+	    loginFrame.off();
+	    loginFrame.on("load", function (x) {
+		var src = window.top.location.protocol + "//" + window.top.location.host;
+		var iFrameLocation = loginFrame[0].contentWindow.location;
+
+		if ((iFrameLocation.protocol + "//" + iFrameLocation.host) == src) {		    
+		    var query = iFrameLocation.toString();
+
+		    $(document.body).append(loginFrame);
+		    
+		    window.Lightbox.close($(document.getElementById('lightBoxContent')));		    
+		    var username = null;
+		    
+		    if (query.indexOf("?") != -1) {
+			var keyValues = query.substring(query.indexOf("?")+1).split("&");			   
+			
+			for (var i = 0; i < keyValues.length; i++) {
+			    var kv = keyValues[i].split("=");
+			    if ((kv[0] == "openid.identity") || (kv[0] == "openid_identity")) {
+				username = decodeURIComponent(kv[1]);
+			    }
+			}	   
+		    }
+		    pebl.loginAsUser(username, "", function (x) {
+
+		    });
+		}
+	    });
+	    
+	    $(document.body).append(loginFrame);
+	} else {
+	    loginFrame[0].src = "";
+	}
+
+	var lightBoxContent = $(document.getElementById('lightBoxContent'));
+	if (lightBoxContent.length == 0) {
+	    window.Lightbox.create("login", false);
+	    lightBoxContent = $(document.getElementById('lightBoxContent'));
+	}
+	
+	var loginStart = $("#loginRefresh");
+	if (loginStart.length == 0)
+	    loginStart = $('<input id="loginRefresh" type="button" style="margin-top:20px" value="Return To Login Screen" />');
+	loginStart.off();
+	loginStart.on("click", function () {
+	    Lightbox.openIDLogin();
+	});
+
+	lightBoxContent.append(loginStart);	
+	lightBoxContent.append(loginFrame);
+	var loginForm = $('#loginFormSubmit');
+	if (loginForm.length == 0) {
+	    loginForm = $('<form id="loginFormSubmit" action="https://people.extension.org/opie" method="GET">' +
+ 			  '<input type="hidden" name="openid.identity" value="http://specs.openid.net/auth/2.0/identifier_select"/>' +
+			  '<input type="hidden" name="openid.claimed_id" value="http://specs.openid.net/auth/2.0/identifier_select"/>' +  
+			  '<input type="hidden" name="openid.mode" value="checkid_setup"/>' +
+			  '<input type="hidden" name="openid.ns" value="http://specs.openid.net/auth/2.0" />' +
+			  '<input type="hidden" name="openid.return_to" id="returnValue" value="" />' +
+			  '</form>');
+	    
+	    $(loginFrame[0].contentDocument.body).append(loginForm);
+	    loginFrame[0].contentDocument.getElementById("returnValue").value = window.top.location.protocol + "//" + window.top.location.host;
+	}
+	
+	loginFrame[0].contentDocument.getElementById("loginFormSubmit").submit();	   
+    },
+    
+    createLoginButton : function (element) {
+	var loginButton = $('<input type="submit" value="Login" />');
+	
+	var loginFrame = $('#loginIFrame');
+	var loginFunction;
+	var logoutFunction;
+	if (loginFrame.length == 0) {
+	    loginFrame = $('<iframe id="loginIFrame" src="about:blank" style="width:100%;margin-bottom:20px;margin-top:30px;height:550px"></iframe>');
+
+	    lf = loginFrame;	   
+	    
+	    $(document.body).append(loginFrame);
+	} else {
+	    loginFrame[0].src = "";
+	}
+
+	loginFrame.off();
+	loginFrame.on("load", function (x) {
+	    var src = window.top.location.protocol + "//" + window.top.location.host;
+	    var iFrameLocation = loginFrame[0].contentWindow.location;
+
+	    if ((iFrameLocation.protocol + "//" + iFrameLocation.host) == src) {		    
+		var query = iFrameLocation.toString();
+
+		$(document.body).append(loginFrame);
+		
+		window.Lightbox.close($(document.getElementById('lightBoxContent')));		    
+
+		var username = null;
+		
+		if (query.indexOf("?") != -1) {
+		    var keyValues = query.substring(query.indexOf("?")+1).split("&");			   		   
+		    
+		    for (var i = 0; i < keyValues.length; i++) {
+			var kv = keyValues[i].split("=");
+			if ((kv[0] == "openid.identity") || (kv[0] == "openid_identity")) {
+			    username = decodeURIComponent(kv[1]);
+			}
+		    }	   
+		}
+		pebl.loginAsUser(username, "", logoutFunction);
+	    }
+	});
+
+	logoutFunction = function () {
+	    loginButton.off();
+	    loginButton.val("Logout");
+	    loginButton.on("click", function () {
+		loginButton.val("Login");
+		loginButton.off();
+		loginButton.on("click", loginFunction);
+		pebl.logout();
+	    });
+	}
+	
+	loginFunction = function (){
+	    var lightBoxContent = $(document.getElementById('lightBoxContent'));
+	    if (lightBoxContent.length == 0) {
+		window.Lightbox.create("login", true);
+		lightBoxContent = $(document.getElementById('lightBoxContent'));
+	    }
+	    var loginStart = $('#loginRefresh');
+	    if (loginStart.length == 0)
+		loginStart = $('<input id="loginRefresh" type="button" style="margin-top:20px" value="Return To Login Screen" />');
+	    loginStart.off();
+	    loginStart.on("click", function () {
+		Lightbox.openIDLogin();
+	    });
+
+	    lightBoxContent.append(loginStart);
+	    lightBoxContent.append(loginFrame);
+	    var loginForm = $('#loginFormSubmit');
+	    if (loginForm.length == 0) {
+		loginForm = $('<form id="loginFormSubmit" action="https://people.extension.org/opie" method="GET">' +
+ 			      '<input type="hidden" name="openid.identity" value="http://specs.openid.net/auth/2.0/identifier_select"/>' +
+			      '<input type="hidden" name="openid.claimed_id" value="http://specs.openid.net/auth/2.0/identifier_select"/>' +  
+			      '<input type="hidden" name="openid.mode" value="checkid_setup"/>' +
+			      '<input type="hidden" name="openid.ns" value="http://specs.openid.net/auth/2.0" />' +
+			      '<input type="hidden" name="openid.return_to" id="returnValue" value="" />' +
+			      '</form>');
+		
+		$(loginFrame[0].contentDocument.body).append(loginForm);
+		loginFrame[0].contentDocument.getElementById("returnValue").value = window.top.location.protocol + "//" + window.top.location.host;
+	    }
+
+	    loginFrame[0].contentDocument.getElementById("loginFormSubmit").submit();
+	};
+
+	loginButton.off();
+	if (window.pebl && !pebl.userManager.loggedIn()) {	
+	    loginButton.on("click", loginFunction);
+	    
+	    $('#' + element).append(loginButton);
+	} else {
+	    logoutFunction()
+	    
+	    $('#' + element).append(loginButton);
+	}
+    },
+
+    createLoginFormWithFields : function () {
+	window.Lightbox.create("login", false);
+
+	var lightBoxContent = $(document.getElementById('lightBoxContent'));
+	
+	var username = $('<br/><span>Moodle Login Form</span><br/><input type="text" id="loginUserName" placeholder="Username" />');
+	lightBoxContent.append(username);
+	var password = $('<br/><input type="password" id="loginPassword" placeholder="Password" />');
+	lightBoxContent.append(password);
+	var error = $('<br/><span id="loginError" style="color:red;display:none;">Invalid username or password.</span>');
+	lightBoxContent.append(error);
+	
+	var login = $('<br/><br/><input type="button" value="Login" id="loginUserNameSubmit" /><br/>');
+	lightBoxContent.append(login);
+    },
+    
+    create : function (lightBoxType, allowClickOut) {
+	var lightBox,
+            lightBoxContent,
+            lightBoxContentSecondary,
+            dimOverlay;
+
+	lightBox = document.createElement('div');
+	lightBox.id = 'lightBox';
+	if (lightBoxType === 'discussion') {
+            lightBox.classList.add('lightBox');
+	} else if (lightBoxType ==='image') {
+            lightBox.classList.add('lightBoxImage');
+	} else if (lightBoxType ==='login') {
+	    lightBox.classList.add('lightBox');
+	    lightBox.classList.add('lightBoxLoginForm');
+	}
+	
+	lightBoxContent = document.createElement('div');
+	lightBoxContent.classList.add('lightBoxContent');
+	lightBoxContentSecondary = document.createElement('div');
+	lightBoxContentSecondary.id = 'lightBoxContentSecondary';
+	lightBoxContentSecondary.style.display = 'none';
+	if (lightBoxType === 'image') {
+            lightBoxContent.classList.add('lightBoxContentImage');
+	}
+	lightBoxContent.id = 'lightBoxContent';
+	lightBox.appendChild(lightBoxContent);
+	lightBox.appendChild(lightBoxContentSecondary);
+
+	dimOverlay = document.createElement('div');
+	dimOverlay.id = 'dimOverlay';
+	dimOverlay.classList.add('dimOverlay');
+
+	document.body.appendChild(dimOverlay);
+	document.body.appendChild(lightBox);
+
+	$('.dimOverlay').on('click', function() {
+            if ($('#lightBox').is(':visible')) {
+		if (allowClickOut)
+		    window.Lightbox.close();
+            }
+	});
+    }
+}
+
+function dosomething() {
+    window.pebl.openBook(window.ReadiumInterop.getEmbeddedBookName(), function() {
+	window.pebl.initializeToc(window.staticTOC);
+    });
+}
+
+function useOpenIDLoginButton(elementName) {
+    window.PEBLbuttonLogin = true;
+    
+    Lightbox.createLoginButton(elementName);
+}
+
 
     
     return PEBL;
