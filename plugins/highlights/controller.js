@@ -363,13 +363,11 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
             } else {
                 visible = true;
             }
-
-            annotationId = annotationId.toString();
-            if (this.annotationHash[annotationId]) {
-                throw new Error("That annotation id already exists; annotation not added");
-            }
-
-            var highlightGroup = new HighlightGroup(this.context, {
+	  
+            if (this.annotationHash[annotationId])
+		this.removeHighlight(annotationId);
+	    
+	    var highlightGroup = new HighlightGroup(this.context, {
                 CFI: CFI,
                 selectedNodes: highlightedNodes,
                 offsetTopAddition: offsetTop,
@@ -381,17 +379,16 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
                 selectionText: range ? range.toString() : "",
                 visible: visible,
                 rangeInfo: range ? {
-                    startNode: startNode,
-                    startOffset: range.startOffset,
-                    endNode: endNode,
-                    endOffset: range.endOffset
+		    startNode: startNode,
+		    startOffset: range.startOffset,
+		    endNode: endNode,
+		    endOffset: range.endOffset
                 } : null
-            });
+	    });
 
-            this.annotationHash[annotationId] = highlightGroup;
-            this.highlights.push(highlightGroup);
-
-
+	    this.annotationHash[annotationId] = highlightGroup;
+	    this.highlights.push(highlightGroup);
+	    
             highlightGroup.renderHighlights(this.readerBoundElement);
         },
 
