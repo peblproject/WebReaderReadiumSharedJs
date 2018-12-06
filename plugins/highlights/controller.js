@@ -543,14 +543,9 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
         },
 
         _getPaginationOffsets: function() {
-            return {
-                top: -70,
-                left: 0
-            }
-
             if (!this.context.paginationInfo) {
                 return {
-                    top: 0,
+                    top: -70,
                     left: 0
                 }
             }
@@ -564,12 +559,12 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
 
             if (this.context.isVerticalWritingMode) {
                 return {
-                    top: offset,
+                    top: offset - 70,
                     left: 0
                 };
             }
             return {
-                top: 0,
+                top: -70,
                 left: offset
             };
         },
