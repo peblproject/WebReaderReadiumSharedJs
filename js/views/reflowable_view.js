@@ -376,7 +376,7 @@ var ReflowableView = function(options, reader){
         _$iframe.css("opacity", "1");
 
         updateViewportSize();
-        _$epubHtml.css("height", _lastViewPortSize.height + "px");
+        _$epubHtml.css("height", _lastViewPortSize.height - 70 + "px");
 
         _$epubHtml.css("position", "relative");
         _$epubHtml.css("margin", "0");
@@ -561,7 +561,7 @@ var ReflowableView = function(options, reader){
 
         if (_htmlBodyIsVerticalWritingMode)
         {
-            _$epubHtml.css("top", offsetVal);
+            _$epubHtml.css("top", parseInt(offsetVal) + 70 + "px");
         }
         else
         {
@@ -782,11 +782,11 @@ var ReflowableView = function(options, reader){
         _$iframe.css("width", _lastViewPortSize.width + "px");
         _$iframe.css("height", _lastViewPortSize.height + "px");
 
-        _$epubHtml.css("height", _lastViewPortSize.height + "px");
+        _$epubHtml.css("height", _lastViewPortSize.height - 70 + "px");
 
         // below min- max- are required in vertical writing mode (height is not enough, in some cases...weird!)
-        _$epubHtml.css("min-height", _lastViewPortSize.height + "px");
-        _$epubHtml.css("max-height", _lastViewPortSize.height + "px");
+        _$epubHtml.css("min-height", _lastViewPortSize.height - 70 + "px");
+        _$epubHtml.css("max-height", _lastViewPortSize.height - 70 + "px");
 
         //normalise spacing to avoid interference with column-isation
         _$epubHtml.css('margin', 0);
@@ -817,7 +817,7 @@ var ReflowableView = function(options, reader){
 
         _$epubHtml.css("column-fill", "auto");
 
-        _$epubHtml.css({left: "0", right: "0", top: "0"});
+        _$epubHtml.css({left: "0", right: "0", top: "70px"});
 
         Helpers.triggerLayout(_$iframe);
 
