@@ -229,6 +229,10 @@ var CfiNavigationLogic = function (options) {
                 return options.$iframe.width();
             }
 
+            if (options.paginationInfo.columnWidth === undefined) {
+                return options.paginationInfo.columnMinWidth + options.paginationInfo.columnGap;
+            }
+
             return options.paginationInfo.columnWidth + options.paginationInfo.columnGap;
         }
 
