@@ -1428,6 +1428,18 @@ var CfiNavigationLogic = function (options) {
             }
         }
 
+        function isElementFixed(node) {
+            do {
+                try {
+                    if (getComputedStyle(node).position == 'fixed')
+                        return true;
+                } catch (e) {
+                    return false;
+                }
+            } while (node = node.offsetParent);
+            return false;
+        }
+
         function isValidTextNode(node) {
             if (!node) {
                 return false;
@@ -1629,6 +1641,9 @@ var CfiNavigationLogic = function (options) {
                     if (node.nodeType === Node.TEXT_NODE && !isValidTextNode(node))
                         return NodeFilter.FILTER_REJECT;
 
+                    if (node.nodeType === Node.ELEMENT_NODE && isElementFixed(node))
+                        return NodeFilter.FILTER_REJECT;
+
                     var visibilityResult = checkVisibilityByRectangles($(node), true, visibleContentOffsets, frameDimensions);
                     return visibilityResult ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
                 },
@@ -1710,6 +1725,9 @@ var CfiNavigationLogic = function (options) {
                         return NodeFilter.FILTER_REJECT;
 
                     if (node.nodeType === Node.TEXT_NODE && !isValidTextNode(node))
+                        return NodeFilter.FILTER_REJECT;
+
+                    if (node.nodeType === Node.ELEMENT_NODE && isElementFixed(node))
                         return NodeFilter.FILTER_REJECT;
 
                     var visibilityResult = checkVisibilityByRectangles($(node), true, visibleContentOffsets, frameDimensions);
