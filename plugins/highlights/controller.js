@@ -436,6 +436,9 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
             var startNode = selectedRange.startContainer;
             var endNode = selectedRange.endContainer;
             var commonAncestor = selectedRange.commonAncestorContainer;
+            // Skip highlighting fixed position text since it floats.
+            if (this._isElementFixed(startNode.parentNode) || this._isElementFixed(endNode.parentNode))
+                return;
             var startOffset;
             var endOffset;
             var rangeCFIComponent;
@@ -467,9 +470,26 @@ define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "r
             return charOffsetCFI;
         },
 
+        _isElementFixed: function(node) {
+            do {
+                try {
+                    if (getComputedStyle(node).position == 'fixed')
+                        return true;
+                } catch (e) {
+                    return false;
+                }
+            } while (node = node.parentNode);
+            return false;
+        },
+
         // REFACTORING CANDIDATE: Convert this to jquery
         _findSelectedElements: function(
             currElement, startElement, endElement, intervalState, selectedElements, elementTypes) {
+
+            // Skip highlighting fixed position text since it floats.
+            if (this._isElementFixed(startElement.parentNode) || this._isElementFixed(endElement.parentNode)) {
+                return;
+            }
 
             if (currElement === startElement) {
                 intervalState.startElementFound = true;
