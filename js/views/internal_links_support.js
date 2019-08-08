@@ -200,9 +200,11 @@ var InternalLinksSupport = function(reader) {
 
                 // Check for dynamic return link
 
-                if (clickEvent.currentTarget.hasAttribute('data-dynamicReturnLink')) {
+                if (clickEvent.currentTarget.hasAttribute('data-dynamicReturnLink') && clickEvent.currentTarget.hasAttribute('data-dynamicReturnLinkText')) {
                     var link = clickEvent.currentTarget.getAttribute('data-dynamicReturnLink');
+                    var linkText = clickEvent.currentTarget.getAttribute('data-dynamicReturnLinkText');
                     localStorage.setItem('dynamicReturnLink', link);
+                    localStorage.setItem('dynamicReturnLinkText', linkText);
                 }
 
                 if(isDeepLikHref(hrefUri)) {
