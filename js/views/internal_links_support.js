@@ -198,6 +198,13 @@ var InternalLinksSupport = function(reader) {
 
             if (hrefIsRelative) {
 
+                // Check for dynamic return link
+
+                if (clickEvent.currentTarget.hasAttribute('data-dynamicReturnLink')) {
+                    var link = clickEvent.currentTarget.getAttribute('data-dynamicReturnLink');
+                    localStorage.setItem('dynamicReturnLink', link);
+                }
+
                 if(isDeepLikHref(hrefUri)) {
                     processDeepLink(hrefUri, spineItem);
                     overrideClickEvent = true;
