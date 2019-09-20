@@ -486,8 +486,8 @@ var ReflowableView = function(options, reader){
                 lastPageIndex = 0;
                 console.error(e);
             }
-            // Go to the page in the middle of the two elements
-            pageIndex = _paginationInfo.currentPageIndex + Math.round((firstPageIndex + lastPageIndex) / 2);
+            // Go to the page with the first element
+            pageIndex = _paginationInfo.currentPageIndex + firstPageIndex;
         }
         else if(pageRequest.elementCfi) {
             try
