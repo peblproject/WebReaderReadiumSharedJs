@@ -259,6 +259,17 @@ var CfiNavigationLogic = function (options) {
             };
         }
 
+        function getPageIndexDeltaOffsets() {
+            if (options.pageIndexDeltaOffsetsGetter) {
+                return options.pageIndexDeltaOffsetsGetter();
+            }
+
+            return {
+                top: 0,
+                left: 0
+            }
+        }
+
         function getPaginationOffsets() {
             if (options.paginationOffsetsGetter) {
                 return options.paginationOffsetsGetter();
@@ -351,9 +362,9 @@ var CfiNavigationLogic = function (options) {
          */
         function findPageIndexDeltaByRectangles($element) {
 
-            var visibleContentOffsets = getVisibleContentOffsets();
+            var pageIndexDeltaOffsets = getPageIndexDeltaOffsets();
 
-            var clientRectangles = getNormalizedRectangles($element, visibleContentOffsets);
+            var clientRectangles = getNormalizedRectangles($element, pageIndexDeltaOffsets);
             if (clientRectangles.length === 0) { // elements with display:none, etc.
                 return null;
             }
@@ -407,7 +418,7 @@ var CfiNavigationLogic = function (options) {
          * @returns {number|null}
          */
         function findPageIndexDeltaBySingleRectangle(clientRectangle, visibleContentOffsets, frameDimensions) {
-            visibleContentOffsets = visibleContentOffsets || getVisibleContentOffsets();
+            visibleContentOffsets = visibleContentOffsets || getPageIndexDeltaOffsets();
             frameDimensions = frameDimensions || getFrameDimensions();
 
             var normalizedRectangle = normalizeRectangle(

@@ -223,6 +223,7 @@ var ReflowableView = function(options, reader){
             frameDimensionsGetter: getFrameDimensions,
             paginationInfo: _paginationInfo,
             paginationOffsetsGetter: getPaginationOffsets,
+            pageIndexDeltaOffsetsGetter: getPaginationOffsets,
             classBlacklist: _cfiClassBlacklist,
             elementBlacklist: _cfiElementBlacklist,
             idBlacklist: _cfiIdBlacklist
@@ -457,7 +458,7 @@ var ReflowableView = function(options, reader){
             pageIndex = pageRequest.spineItemPageIndex;
         }
         else if(pageRequest.elementId) {
-            pageIndex = _paginationInfo.currentPageIndex + _navigationLogic.getPageIndexDeltaForElementId(pageRequest.elementId);
+            pageIndex = _navigationLogic.getPageIndexDeltaForElementId(pageRequest.elementId);
         }
         else if(pageRequest.firstVisibleCfi && pageRequest.lastVisibleCfi) {
             var firstPageIndex;
@@ -487,12 +488,12 @@ var ReflowableView = function(options, reader){
                 console.error(e);
             }
             // Go to the page with the first element
-            pageIndex = _paginationInfo.currentPageIndex + firstPageIndex;
+            pageIndex = firstPageIndex;
         }
         else if(pageRequest.elementCfi) {
             try
             {
-                pageIndex = _paginationInfo.currentPageIndex + _navigationLogic.getPageIndexDeltaForCfi(pageRequest.elementCfi,
+                pageIndex = _navigationLogic.getPageIndexDeltaForCfi(pageRequest.elementCfi,
                     _cfiClassBlacklist,
                     _cfiElementBlacklist,
                     _cfiIdBlacklist);
@@ -602,10 +603,7 @@ var ReflowableView = function(options, reader){
         redraw();
 
         _.defer(function () {
-
-            if (_lastPageRequest == undefined) {
-                self.saveCurrentPosition();
-            }
+            self.saveCurrentPosition();
             
             Globals.logEvent("InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED", "EMIT", "reflowable_view.js");
             self.emit(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED, {
@@ -704,7 +702,7 @@ var ReflowableView = function(options, reader){
             return;
         }
 
-        hideBook(); // shiftBookOfScreen();
+        //hideBook(); // shiftBookOfScreen();
 
         // "borderLeft" is the blank vertical strip (e.g. 40px wide) where the left-arrow button resides, i.e. previous page command
         var borderLeft = parseInt(_$viewport.css("border-left-width"));
@@ -817,11 +815,19 @@ var ReflowableView = function(options, reader){
 
         _$epubHtml.css("column-fill", "auto");
 
-        _$epubHtml.css({left: "0", right: "0", top: "70px"});
+        _$epubHtml.css({top: "70px"});
+
+        var columnCount = Math.ceil(_$htmlBody[0].scrollHeight / _$epubHtml[0].offsetHeight);
+        var scrollWidth = (columnCount * _paginationInfo.columnWidth) + ((columnCount - 1) * _paginationInfo.columnGap);
+
+        if (scrollWidth < 0) {
+            _$epubHtml.css({left: "0", right: "0"});
+            scrollWidth = _$epubHtml[0].scrollWidth;
+        }
 
         Helpers.triggerLayout(_$iframe);
 
-        var dim = (_htmlBodyIsVerticalWritingMode ? _$epubHtml[0].scrollHeight : _$epubHtml[0].scrollWidth);
+        var dim = (_htmlBodyIsVerticalWritingMode ?  _$epubHtml[0].scrollHeight : scrollWidth);
         if (dim == 0) {
             console.error("Document dimensions zero?!");
         }
