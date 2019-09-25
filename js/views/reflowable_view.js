@@ -829,7 +829,7 @@ var ReflowableView = function(options, reader){
             columnCount = Math.floor(_$htmlBody[0].offsetWidth / _paginationInfo.columnWidth);
         } else if (_$htmlBody[0].scrollHeight === _$epubHtml[0].clientHeight) {
             // iOS Safari
-            columnCount = Math.ceil(_$htmlBody[0].clientHeight / _paginationInfo.columnWidth);
+            columnCount = Math.ceil(_$htmlBody[0].clientHeight / _$epubHtml[0].offsetHeight);
         } else {
             // Chrome
             columnCount = Math.ceil(_$htmlBody[0].scrollHeight / _$epubHtml[0].offsetHeight);
