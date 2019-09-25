@@ -702,6 +702,11 @@ var ReflowableView = function(options, reader){
             return;
         }
 
+
+        // if (_$epubHtml[0].scrollHeight === 0) {
+        //     return updatePagination();
+        // }
+
         //hideBook(); // shiftBookOfScreen();
 
         // "borderLeft" is the blank vertical strip (e.g. 40px wide) where the left-arrow button resides, i.e. previous page command
@@ -817,13 +822,25 @@ var ReflowableView = function(options, reader){
 
         _$epubHtml.css({top: "70px"});
 
-        var columnCount = Math.ceil(_$htmlBody[0].scrollHeight / _$epubHtml[0].offsetHeight);
+        var columnCount;
+        // Some browsers render columns differently
+        if (_$htmlBody[0].scrollHeight === _$epubHtml[0].offsetHeight) {
+            // Firefox
+            columnCount = Math.floor(_$htmlBody[0].offsetWidth / _paginationInfo.columnWidth);
+        } else {
+            // Chrome
+            columnCount = Math.ceil(_$htmlBody[0].scrollHeight / _$epubHtml[0].offsetHeight);
+        }
+
+        
         var scrollWidth = (columnCount * _paginationInfo.columnWidth) + ((columnCount - 1) * _paginationInfo.columnGap);
 
         if (scrollWidth < 0) {
             _$epubHtml.css({left: "0", right: "0"});
             scrollWidth = _$epubHtml[0].scrollWidth;
         }
+
+
 
         Helpers.triggerLayout(_$iframe);
 
