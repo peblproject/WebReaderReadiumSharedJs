@@ -222,6 +222,14 @@ var InternalLinksSupport = function(reader) {
                 overrideClickEvent = true;
             }
 
+            if (window.PeBL) {
+                window.PeBL.emitEvent(PeBL.events.eventAccessed, {
+                    name: clickEvent.currentTarget.textContent,
+                    type: 'link',
+                    target: href
+                });
+            }
+
             if (overrideClickEvent) {
                 clickEvent.preventDefault();
                 clickEvent.stopPropagation();
