@@ -824,6 +824,13 @@ var ReflowableView = function(options, reader){
 
         var columnCount;
         // Some browsers render columns differently
+        var bodyAttrs = _$htmlBody[0].attributes;
+        var htmlAttrs = _$epubHtml[0].attributes;
+        var bodyScrollHeight = _$htmlBody[0].scrollHeight;
+        var htmlOffsetHeight = _$epubHtml[0].offsetHeight;
+        var bodyOffsetWidth = _$htmlBody[0].offsetWidth;
+        var htmlClientHeight = _$epubHtml[0].clientHeight;
+        var bodyClientHeight = _$htmlBody[0].clientHeight;
         if (_$htmlBody[0].scrollHeight === _$epubHtml[0].offsetHeight) {
             // Firefox
             columnCount = Math.floor(_$htmlBody[0].offsetWidth / _paginationInfo.columnWidth);
