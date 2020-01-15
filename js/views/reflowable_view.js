@@ -837,9 +837,12 @@ var ReflowableView = function(options, reader){
         } else if (_$htmlBody[0].scrollHeight === _$epubHtml[0].clientHeight) {
             // iOS Safari
             columnCount = Math.ceil(_$htmlBody[0].clientHeight / _$epubHtml[0].offsetHeight);
-        } else {
+        } else if (_$htmlBody[0].offsetWidth === _paginationInfo.columnWidth) {
             // Chrome
             columnCount = Math.ceil(_$htmlBody[0].scrollHeight / _$epubHtml[0].offsetHeight);
+        } else {
+            // Also firefox ?
+            columnCount = Math.floor(_$htmlBody[0].offsetWidth / _paginationInfo.columnWidth);
         }
 
         
