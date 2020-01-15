@@ -83,6 +83,8 @@ var ReflowableView = function(options, reader){
         height: undefined
     };
 
+    var _intervalResize = false;
+
     var _paginationInfo = {
 
         visibleColumnCount : 2,
@@ -926,24 +928,14 @@ var ReflowableView = function(options, reader){
 
     function initResizeSensor() {
         var bodyElement = _$htmlBody[0];
-        if (bodyElement.resizeSensor) {
-            return;
-        }
 
-        // We need to make sure the content has indeed be resized, especially
-        // the first time it is triggered
-        _lastBodySize.width = $(bodyElement).width();
-        _lastBodySize.height = $(bodyElement).height();
-
-        bodyElement.resizeSensor = new ResizeSensor(bodyElement, function() {
-            
+        function resizeFunction() {
+            var bodyElement = _$htmlBody[0];
             var newBodySize = {
                 width: $(bodyElement).width(),
                 height: $(bodyElement).height()
             };
 
-            console.debug("ReflowableView content resized ...", newBodySize.width, newBodySize.height, _currentSpineItem.idref);
-            
             if (newBodySize.width != _lastBodySize.width || newBodySize.height != _lastBodySize.height) {
                 _lastBodySize.width = newBodySize.width;
                 _lastBodySize.height = newBodySize.height;
@@ -954,7 +946,32 @@ var ReflowableView = function(options, reader){
             } else {
                 console.debug("... ignored (identical dimensions).");
             }
-        });
+        }
+
+        function intervalResize() {
+            resizeFunction();
+            setTimeout(intervalResize, 1000);
+        }
+
+        // We need to make sure the content has indeed be resized, especially
+        // the first time it is triggered
+        _lastBodySize.width = $(bodyElement).width();
+        _lastBodySize.height = $(bodyElement).height();
+
+        if (window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+            if (!_intervalResize) {
+                _intervalResize = true;
+                intervalResize();
+            }
+        } else {
+            if (bodyElement.resizeSensor) {
+                return;
+            }
+
+            bodyElement.resizeSensor = new ResizeSensor(bodyElement, function() {
+                resizeFunction();
+            });
+        }
     }
     
 //    function shiftBookOfScreen() {
