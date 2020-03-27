@@ -409,6 +409,29 @@ var ReaderView = function (options) {
         _spine = _package.spine;
         _spine.handleLinear(true);
 
+        // Set up documents for search
+
+        var fetcher = window.READIUM.getCurrentPublicationFetcher();
+
+        window.SpineDocuments = [];
+
+        function createSearchDocumentObjects(spine) {
+            for (var i = 0; i < spine.items.length; i++) {
+                var spineItem = spine.items[i];
+                (function(spineItem, i) {
+                    fetcher.fetchContentDocumentWithoutResolvingDom({spineItem: spineItem}, spine.package.resolveRelativeUrl(spineItem.href), function(resolvedContentDocumentDom) {
+                        var searchDocumentObject = {
+                            spineItem: spineItem,
+                            htmlDocument: resolvedContentDocumentDom
+                        }
+                        window.SpineDocuments[i] = searchDocumentObject;
+                    }, function(err) {
+                        console.log(err);
+                    });
+                })(spineItem, i);
+            }
+        }
+
         if (_mediaOverlayPlayer) {
             _mediaOverlayPlayer.reset();
         }
@@ -487,6 +510,7 @@ var ReaderView = function (options) {
 
         }
 
+        createSearchDocumentObjects(_spine);
     };
 
     function onMediaPlayerStatusChanged(status) {
