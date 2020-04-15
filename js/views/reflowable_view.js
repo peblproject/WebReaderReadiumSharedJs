@@ -612,6 +612,7 @@ var ReflowableView = function(options, reader){
     }
 
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
+        this.lastTouchedElement = null;
         _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
         _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
         
@@ -910,12 +911,23 @@ var ReflowableView = function(options, reader){
         else {
 
             // we get here on resizing the viewport
-            if (_lastPageRequest) {
+            var cfi;
+            if (window.lastTouchedElement && $(window.lastTouchedElement).is(':visible')) {
+                cfi = reader.getCfiForElement(window.lastTouchedElement);
+                window.lastTouchedElement = null;
+                try {
+                    reader.openSpineItemElementCfi(cfi.idref, cfi.contentCFI);
+                } catch (e) {
+                    cfi = null;
+                }
+            }
+
+            if (_lastPageRequest && !cfi) {
                 // Make sure we stay on the same page after the content or the viewport 
                 // has been resized
                 _paginationInfo.currentPageIndex = 0; // current page index is not stable, reset it
                 self.restoreCurrentPosition();
-            } else {
+            } else if (!cfi) {
                 onPaginationChanged(self, _currentSpineItem); // => redraw() => showBook(), so the trick below is not needed                
             }
 
