@@ -612,8 +612,7 @@ var ReflowableView = function(options, reader){
     }
 
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
-        var win = this;
-        this.lastTouchedElement = null; // Clear last touched element on pagination changes
+        _$iframe[0].contentWindow.lastTouchedElement = null; // Clear last touched element on pagination changes
         _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
         _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
         
@@ -629,9 +628,9 @@ var ReflowableView = function(options, reader){
                 spineItem: paginationRequest_spineItem,
                 elementId: paginationRequest_elementId
             });
-            if (win.disabledTextInput) { // If previously disabled a text input, re-enable it
-                win.disabledTextInput.removeAttribute('maxlength');
-                win.disabledTextInput = null;
+            if (_$iframe[0].contentWindow.disabledTextInput) { // If previously disabled a text input, re-enable it
+                _$iframe[0].contentWindow.disabledTextInput.removeAttribute('maxlength');
+                _$iframe[0].contentWindow.disabledTextInput = null;
             }
         });
     }
@@ -917,9 +916,9 @@ var ReflowableView = function(options, reader){
 
             // we get here on resizing the viewport
             var cfi;
-            if (window.lastTouchedElement && $(window.lastTouchedElement).is(':visible')) {
-                cfi = reader.getCfiForElement(window.lastTouchedElement);
-                window.lastTouchedElement = null;
+            if (_$iframe[0].contentWindow.lastTouchedElement && $(_$iframe[0].contentWindow.lastTouchedElement).is(':visible')) {
+                cfi = reader.getCfiForElement(_$iframe[0].contentWindow.lastTouchedElement);
+                _$iframe[0].contentWindow.lastTouchedElement = null;
                 try {
                     reader.openSpineItemElementCfi(cfi.idref, cfi.contentCFI);
                 } catch (e) {

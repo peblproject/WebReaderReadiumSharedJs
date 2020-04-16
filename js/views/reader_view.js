@@ -1274,9 +1274,10 @@ var ReaderView = function (options) {
 
     function handleViewportResizeStart() {
         //When resize starts, if currently using a text input, disable it until resize finishes to prevent render errors
-        if (($(window.lastTouchedElement).is('textarea') || $(window.lastTouchedElement).is('input'))) {
-            window.lastTouchedElement.setAttribute('maxlength', 0);
-            window.disabledTextInput = window.lastTouchedElement;
+        var iframeWindow = window.document.activeElement && window.document.activeElement.contentWindow && window.document.activeElement.contentWindow;
+        if (iframeWindow && ($(iframeWindow.lastTouchedElement).is('textarea') || $(iframeWindow.lastTouchedElement).is('input'))) {
+            iframeWindow.lastTouchedElement.setAttribute('maxlength', 0);
+            iframeWindow.disabledTextInput = iframeWindow.lastTouchedElement;
         }
 
         _resizeBookmark = null;
