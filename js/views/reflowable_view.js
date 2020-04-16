@@ -612,7 +612,7 @@ var ReflowableView = function(options, reader){
     }
 
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
-        _$iframe[0].contentWindow.lastTouchedElement = null; // Clear last touched element on pagination changes
+        this.lastTouchedElement = null;
         _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
         _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
         
@@ -628,10 +628,7 @@ var ReflowableView = function(options, reader){
                 spineItem: paginationRequest_spineItem,
                 elementId: paginationRequest_elementId
             });
-            if (_$iframe[0].contentWindow.disabledTextInput) { // If previously disabled a text input, re-enable it
-                _$iframe[0].contentWindow.disabledTextInput.removeAttribute('maxlength');
-                _$iframe[0].contentWindow.disabledTextInput = null;
-            }
+            $('meta[name=viewport]').attr('content', 'width=device-width,height='+window.innerHeight+', initial-scale=1.0');
         });
     }
     var onPaginationChanged = _.debounce(onPaginationChanged_, 100);
@@ -916,9 +913,9 @@ var ReflowableView = function(options, reader){
 
             // we get here on resizing the viewport
             var cfi;
-            if (_$iframe[0].contentWindow.lastTouchedElement && $(_$iframe[0].contentWindow.lastTouchedElement).is(':visible')) {
-                cfi = reader.getCfiForElement(_$iframe[0].contentWindow.lastTouchedElement);
-                _$iframe[0].contentWindow.lastTouchedElement = null;
+            if (window.lastTouchedElement && $(window.lastTouchedElement).is(':visible')) {
+                cfi = reader.getCfiForElement(window.lastTouchedElement);
+                window.lastTouchedElement = null;
                 try {
                     reader.openSpineItemElementCfi(cfi.idref, cfi.contentCFI);
                 } catch (e) {
