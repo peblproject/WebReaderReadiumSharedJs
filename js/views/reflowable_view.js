@@ -612,7 +612,8 @@ var ReflowableView = function(options, reader){
     }
 
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
-        this.lastTouchedElement = null;
+        var win = this;
+        this.lastTouchedElement = null; // Clear last touched element on pagination changes
         _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
         _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
         
@@ -628,6 +629,10 @@ var ReflowableView = function(options, reader){
                 spineItem: paginationRequest_spineItem,
                 elementId: paginationRequest_elementId
             });
+            if (win.disabledTextInput) { // If previously disabled a text input, re-enable it
+                win.disabledTextInput.removeAttribute('maxlength');
+                win.disabledTextInput = null;
+            }
         });
     }
     var onPaginationChanged = _.debounce(onPaginationChanged_, 100);
@@ -913,6 +918,11 @@ var ReflowableView = function(options, reader){
             // we get here on resizing the viewport
             var cfi;
             if (window.lastTouchedElement && $(window.lastTouchedElement).is(':visible')) {
+                //When resize starts, if currently using a text input, disable it until resize finishes to prevent render errors
+                if (($(window.lastTouchedElement).is('textarea') || $(window.lastTouchedElement).is('input'))) {
+                    window.lastTouchedElement.setAttribute('maxlength', 0);
+                    window.disabledTextInput = window.lastTouchedElement;
+                }
                 cfi = reader.getCfiForElement(window.lastTouchedElement);
                 window.lastTouchedElement = null;
                 try {
