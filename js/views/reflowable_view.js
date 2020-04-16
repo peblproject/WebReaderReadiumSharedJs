@@ -918,11 +918,6 @@ var ReflowableView = function(options, reader){
             // we get here on resizing the viewport
             var cfi;
             if (window.lastTouchedElement && $(window.lastTouchedElement).is(':visible')) {
-                //When resize starts, if currently using a text input, disable it until resize finishes to prevent render errors
-                if (($(window.lastTouchedElement).is('textarea') || $(window.lastTouchedElement).is('input'))) {
-                    window.lastTouchedElement.setAttribute('maxlength', 0);
-                    window.disabledTextInput = window.lastTouchedElement;
-                }
                 cfi = reader.getCfiForElement(window.lastTouchedElement);
                 window.lastTouchedElement = null;
                 try {
