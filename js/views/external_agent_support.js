@@ -135,14 +135,16 @@ define(["../globals", "underscore"], function(Globals, _) {
             //
             // The workaround is to clear the position property when a selection is active.
             // Then restore the position property to 'relative' when the selection clears.
-            contentDocument.addEventListener('selectionchange', function () {
-                var selection = contentDocument.getSelection();
-                if (selection && selection.isCollapsed) {
-                    contentDocument.body.style.position = 'relative';
-                } else {
-                    contentDocument.body.style.position = '';
-                }
-            });
+
+            //DISABLED DUE TO NOT USING HYPOTHES.IS
+            // contentDocument.addEventListener('selectionchange', function () {
+            //     var selection = contentDocument.getSelection();
+            //     if (selection && selection.isCollapsed) {
+            //         contentDocument.body.style.position = 'relative';
+            //     } else {
+            //         contentDocument.body.style.position = '';
+            //     }
+            // });
         }
 
         /***
