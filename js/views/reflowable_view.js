@@ -549,7 +549,12 @@ var ReflowableView = function(options, reader){
     };
 
     this.resetCurrentPosition = function() {
-        _lastPageRequest = undefined;
+        var unRenderedPeblExtensions = _$epubHtml.find('i.peblExtension');
+        if (unRenderedPeblExtensions.length > 0) {
+            setTimeout(this.resetCurrentPosition, 1000);
+        } else {
+            _lastPageRequest = undefined;
+        }
     };
 
     this.saveCurrentPosition = function() {
