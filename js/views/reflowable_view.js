@@ -621,7 +621,8 @@ var ReflowableView = function(options, reader){
         redraw();
 
         _.defer(function () {
-            self.saveCurrentPosition();
+            if (_lastPageRequest && !_lastPageRequest.lastPage)
+                self.saveCurrentPosition();
             
             Globals.logEvent("InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED", "EMIT", "reflowable_view.js");
             self.emit(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED, {
