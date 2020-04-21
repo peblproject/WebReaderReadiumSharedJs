@@ -549,17 +549,13 @@ var ReflowableView = function(options, reader){
     };
 
     this.resetCurrentPosition = function() {
-        if (_$epubHtml) {
-            var unRenderedPeblExtensions = _$epubHtml.find('i.peblExtension');
-            if (unRenderedPeblExtensions.length > 0) {
-                setTimeout(this.resetCurrentPosition, 1000);
-            } else {
-                _lastPageRequest = undefined;
-            }
-        } else {
-            _lastPageRequest = undefined;
-        }
-        
+        _deferredPageRequest = undefined;
+    };
+
+    this.resetCurrentPositionDelayed = function() {
+        setTimeout(function() {
+            _deferredPageRequest = undefined;
+        }, 2000);
     };
 
     this.saveCurrentPosition = function() {
