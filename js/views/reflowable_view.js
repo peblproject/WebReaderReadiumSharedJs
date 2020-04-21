@@ -447,7 +447,9 @@ var ReflowableView = function(options, reader){
         }
 
         var deferredData = _deferredPageRequest;
-        _deferredPageRequest = undefined;
+        setTimeout(function() {
+            _deferredPageRequest = undefined;
+        }, 1000);
         self.openPage(deferredData);
 
     }
@@ -549,13 +551,7 @@ var ReflowableView = function(options, reader){
     };
 
     this.resetCurrentPosition = function() {
-        _deferredPageRequest = undefined;
-    };
-
-    this.resetCurrentPositionDelayed = function() {
-        setTimeout(function() {
-            _deferredPageRequest = undefined;
-        }, 2000);
+        _lastPageRequest = undefined;
     };
 
     this.saveCurrentPosition = function() {
