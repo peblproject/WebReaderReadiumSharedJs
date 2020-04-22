@@ -417,6 +417,10 @@ var ReflowableView = function(options, reader){
         updateColumnGap();
 
         updateHtmlFontInfo();
+
+        setTimeout(function() {
+            _deferredPageRequest = undefined;
+        }, 1000);
     }
 
     this.applyStyles = function() {
@@ -447,11 +451,7 @@ var ReflowableView = function(options, reader){
         }
 
         var deferredData = _deferredPageRequest;
-        setTimeout(function() {
-            _deferredPageRequest = undefined;
-        }, 1000);
         self.openPage(deferredData);
-
     }
 
     function _openPageInternal(pageRequest) {
