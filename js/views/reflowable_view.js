@@ -631,7 +631,10 @@ var ReflowableView = function(options, reader){
                 spineItem: paginationRequest_spineItem,
                 elementId: paginationRequest_elementId
             });
-            $('meta[name=viewport]').attr('content', 'width=device-width,height='+window.innerHeight+', initial-scale=1.0');
+            var isAndroid = navigator.userAgent.toLowerCase().indexOf("android") > -1; //&& ua.indexOf("mobile");
+            if(isAndroid) {
+                $('meta[name=viewport]').attr('content', 'width=device-width,height='+window.innerHeight+', initial-scale=1.0');
+            }
         });
     }
     var onPaginationChanged = _.debounce(onPaginationChanged_, 100);
