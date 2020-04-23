@@ -4,7 +4,7 @@ function($, _, Class, TextLineInferrer, HighlightView, HighlightBorderView, High
     var debouncedTrigger = _.debounce(
         function(fn, eventName) {
             fn(eventName);
-        }, 10);
+        }, 100);
 
     var HighlightGroup = Class.extend({
 
