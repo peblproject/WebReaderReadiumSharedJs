@@ -239,8 +239,9 @@ var InternalLinksSupport = function(reader) {
             if (window.PeBL) {
                 window.PeBL.emitEvent(PeBL.events.eventAccessed, {
                     name: clickEvent.currentTarget.textContent,
+                    description: href,
                     type: 'link',
-                    target: href
+                    target: clickEvent.currentTarget.getAttribute('id') ? 'http://www.peblproject.com/activities/reader-text-link?id=' + clickEvent.currentTarget.getAttribute('id') : 'http://www.peblproject.com/activities/reader-text-link'
                 });
             }
 
