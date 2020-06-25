@@ -241,7 +241,8 @@ var InternalLinksSupport = function(reader) {
                     name: clickEvent.currentTarget.textContent,
                     description: href,
                     type: 'link',
-                    target: clickEvent.currentTarget.getAttribute('id') ? 'http://www.peblproject.com/activities/reader-text-link?id=' + clickEvent.currentTarget.getAttribute('id') : 'http://www.peblproject.com/activities/reader-text-link'
+                    activityType: 'reader-text-link',
+                    activityId: clickEvent.currentTarget.getAttribute('id')
                 });
             }
 
