@@ -164,7 +164,7 @@ var CfiNavigationLogic = function (options) {
             return options.frameDimensionsGetter();
         }
 
-        console.error('CfiNavigationLogic: No frame dimensions specified!');
+        consoleError('CfiNavigationLogic: No frame dimensions specified!');
         return null;
     }
 
@@ -670,7 +670,7 @@ var CfiNavigationLogic = function (options) {
 
             if (!firstVisibleCaretRange) {
                 if (invalidElementFromPoint) {
-                    console.error("Could not generate CFI no visible element on page");
+                    consoleError("Could not generate CFI no visible element on page");
                     return null;
                 }
                 firstVisibleCaretRange = createRange();
@@ -733,7 +733,7 @@ var CfiNavigationLogic = function (options) {
 
             //This should not happen but if it does print some output, just in case
             if (cfi && cfi.indexOf('NaN') !== -1) {
-                console.log('Did not generate a valid CFI:' + cfi);
+                consoleLog('Did not generate a valid CFI:' + cfi);
                 return undefined;
             }
             return cfi;
@@ -852,7 +852,7 @@ var CfiNavigationLogic = function (options) {
                 }
             }
             if (_DEBUG) {
-                console.debug('getVisibleTextRangeOffsets:getTextRangeOffset:runCount', runCount);
+                consoleLog('getVisibleTextRangeOffsets:getTextRangeOffset:runCount', runCount);
                 window.top._DEBUG_visibleTextRangeOffsetsRuns.push(runCount);
             }
             var resultRange = currRange[0];
@@ -879,7 +879,7 @@ var CfiNavigationLogic = function (options) {
             if (textNode && isValidTextNode(textNode)) {
                 var visibleRange = getVisibleTextRangeOffsets(textNode, pickerFunc, visibleContentOffsets, frameDimensions);
                 if (!visibleRange) {
-                    if (_DEBUG) console.warn("findVisibleLeafNodeCfi: failed to find text range offset");
+                    if (_DEBUG) consoleError("findVisibleLeafNodeCfi: failed to find text range offset");
                     return null;
                 }
                 return generateCfiFromDomRange(visibleRange);
@@ -1014,7 +1014,7 @@ var CfiNavigationLogic = function (options) {
             }
 
             if (!$element || $element.length == 0) {
-                console.log("Can't find element for CFI: " + cfi);
+                consoleLog("Can't find element for CFI: " + cfi);
                 return undefined;
             }
 
@@ -1041,14 +1041,14 @@ var CfiNavigationLogic = function (options) {
                         this.getIdBlacklist());
 
                     if (_DEBUG) {
-                        console.log(nodeResult);
+                        consoleLog(nodeResult);
                     }
                 } catch (ex) {
                     //EPUBcfi.Interpreter can throw a SyntaxError
                 }
 
                 if (!nodeResult) {
-                    console.log("Can't find nodes for range CFI: " + cfi);
+                    consoleLog("Can't find nodes for range CFI: " + cfi);
                     return undefined;
                 }
 
@@ -1064,7 +1064,7 @@ var CfiNavigationLogic = function (options) {
                         : null;
 
                 if (_DEBUG) {
-                    console.log(nodeRangeClientRect);
+                    consoleLog(nodeRangeClientRect);
                     addOverlayRect(nodeRangeClientRect, 'purple', contentDoc);
                 }
 
@@ -1079,14 +1079,14 @@ var CfiNavigationLogic = function (options) {
                         this.getIdBlacklist());
 
                     if (_DEBUG) {
-                        console.log(textTerminusResult);
+                        consoleLog(textTerminusResult);
                     }
                 } catch (ex) {
                     //EPUBcfi.Interpreter can throw a SyntaxError
                 }
 
                 if (!textTerminusResult) {
-                    console.log("Can't find node for text term CFI: " + cfi);
+                    consoleLog("Can't find node for text term CFI: " + cfi);
                     return undefined;
                 }
 
@@ -1098,7 +1098,7 @@ var CfiNavigationLogic = function (options) {
                         textTermRangeInfo.node,
                         textTermRangeInfo.offset);
                 if (_DEBUG) {
-                    console.log(textTermClientRect);
+                    consoleLog(textTermClientRect);
                     addOverlayRect(textTermClientRect, 'purple', contentDoc);
                 }
 
@@ -1623,15 +1623,15 @@ var CfiNavigationLogic = function (options) {
             drawDebugOverlayFromDomRange: drawDebugOverlayFromDomRange,
             drawDebugOverlayFromNode: drawDebugOverlayFromNode,
             debugVisibleCfis: function () {
-                console.log(JSON.stringify(ReadiumSDK.reader.getPaginationInfo().openPages));
+                consoleLog(JSON.stringify(ReadiumSDK.reader.getPaginationInfo().openPages));
 
                 var cfi1 = ReadiumSDK.reader.getFirstVisibleCfi();
                 var range1 = ReadiumSDK.reader.getDomRangeFromRangeCfi(cfi1);
-                console.log(cfi1, range1, drawDebugOverlayFromDomRange(range1));
+                consoleLog(cfi1, range1, drawDebugOverlayFromDomRange(range1));
 
                 var cfi2 = ReadiumSDK.reader.getLastVisibleCfi();
                 var range2 = ReadiumSDK.reader.getDomRangeFromRangeCfi(cfi2);
-                console.log(cfi2, range2, drawDebugOverlayFromDomRange(range2));
+                consoleLog(cfi2, range2, drawDebugOverlayFromDomRange(range2));
             },
             visibleTextRangeOffsetsRunsAvg: function () {
                 var arr = window.top._DEBUG_visibleTextRangeOffsetsRuns;

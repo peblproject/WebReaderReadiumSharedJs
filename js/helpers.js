@@ -145,7 +145,7 @@ Helpers.buildUrlQueryParameters = function(initialUrl, queryStringOverrides) {
             overrideEntry = encodeURIComponent(overrideEntry);
         }
 
-        console.debug("URL QUERY PARAM OVERRIDE: " + overrideKey + " = " + overrideEntry);
+        consoleLog("URL QUERY PARAM OVERRIDE: " + overrideKey + " = " + overrideEntry);
 
         newQueryString += (overrideKey + "=" + overrideEntry);
         newQueryString += "&";
@@ -163,7 +163,7 @@ Helpers.buildUrlQueryParameters = function(initialUrl, queryStringOverrides) {
         var parsedValue = parsedQueryString[parsedKey].trim();
         if (!parsedValue) continue;
 
-        console.debug("URL QUERY PARAM PRESERVED: " + parsedKey + " = " + parsedValue);
+        consoleLog("URL QUERY PARAM PRESERVED: " + parsedKey + " = " + parsedValue);
 
         newQueryString += (parsedKey + "=" + encodeURIComponent(parsedValue));
         newQueryString += "&";
@@ -313,7 +313,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
         var factor = fontSize / 100;
         var win = $epubHtml[0].ownerDocument.defaultView;
         if (!win) {
-            console.log("NIL $epubHtml[0].ownerDocument.defaultView");
+            consoleLog("NIL $epubHtml[0].ownerDocument.defaultView");
             return;
         }
 
@@ -399,7 +399,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
             // https://readium.firebase.com/?epub=..%2Fepub_content%2Faccessible_epub_3&goto=%7B%22idref%22%3A%22id-id2635343%22%2C%22elementCfi%22%3A%22%2F4%2F2%5Bbuilding_a_better_epub%5D%2F10%2F44%2F6%2C%2F1%3A334%2C%2F1%3A335%22%7D
             
             var diff = time2-time1;
-            console.log(diff);
+            consoleLog(diff);
             
             // setTimeout(function(){
             //     alert(diff);
@@ -589,7 +589,7 @@ Helpers.triggerLayout = function ($iframe) {
         }
     }
     catch (ex) {
-        console.error(ex);
+        consoleError(ex);
     }
 
     try {
@@ -607,7 +607,7 @@ Helpers.triggerLayout = function ($iframe) {
         }
     }
     catch (ex) {
-        console.error(ex);
+        consoleError(ex);
     }
 
     if (doc.body) {
@@ -682,7 +682,7 @@ Helpers.deduceSyntheticSpread = function ($viewport, spineItem, settings) {
         //"Reading Systems may use synthetic spreads in specific or all device orientations as part of a display area utilization optimization process."
     }
 
-    console.warn("Helpers.deduceSyntheticSpread: spread properties?!");
+    consoleError("Helpers.deduceSyntheticSpread: spread properties?!");
     return 0; // non-forced
 };
 
@@ -846,7 +846,7 @@ Helpers.isIframeAlive = function (iframe) {
         d = iframe.contentDocument;
     }
     catch (ex) {
-        console.error(ex);
+        consoleError(ex);
         return false;
     }
 
@@ -990,13 +990,13 @@ Helpers.escapeJQuerySelector = function (sel) {
 
     // if (selector !== sel)
     // {
-    //     console.debug("---- SELECTOR ESCAPED");
-    //     console.debug("1: " + sel);
-    //     console.debug("2: " + selector);
+    //     consoleLog("---- SELECTOR ESCAPED");
+    //     consoleLog("1: " + sel);
+    //     consoleLog("2: " + selector);
     // }
     // else
     // {
-    //     console.debug("---- SELECTOR OKAY: " + sel);
+    //     consoleLog("---- SELECTOR OKAY: " + sel);
     // }
 
     return selector;

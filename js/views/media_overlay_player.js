@@ -87,7 +87,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
 
     this.onSettingsApplied = function() {
-//console.debug(_settings);
+//consoleLog(_settings);
         _audioPlayer.setRate(_settings.mediaOverlaysRate);
         _audioPlayer.setVolume(_settings.mediaOverlaysVolume / 100.0);
     };
@@ -185,7 +185,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                     {
                         partial = partial.substr(fakeOpfRoot.length, partial.length - fakeOpfRoot.length);
                     }
-//console.log(partial);
+//consoleLog(partial);
                     var parts = partial.split(",");
                     if (parts && parts.length === 3)
                     {
@@ -209,7 +209,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                         }
                         catch (error)
                         {
-                            console.error(error);
+                            consoleError(error);
                         }
                     }
                     else
@@ -235,7 +235,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                         }
                         catch (error)
                         {
-                            console.error(error);
+                            consoleError(error);
                         }
                     }
                 }
@@ -257,7 +257,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                     if (element)
                     {
                         /*
-                        console.error("GREEN: " + paginationData.elementId);
+                        consoleError("GREEN: " + paginationData.elementId);
                         lastElement = element;
                         lastElementColor = $(element).css("background-color");
                         $(element).css("background-color", "green");
@@ -269,7 +269,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
             if (!element)
             {
-                console.error("paginationData.elementId BUT !element: " + paginationData.elementId);
+                consoleError("paginationData.elementId BUT !element: " + paginationData.elementId);
             }
         }
 
@@ -299,21 +299,21 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 //
 //            if (!paginationData.elementId)
 //            {
-//                console.error("!paginationData.elementId");
+//                consoleError("!paginationData.elementId");
 //                clipBeginOffset = 0.0;
 //                return;
 //            }
 
             if(!element)
             {
-                console.error("!element: " + paginationData.elementId);
+                consoleError("!element: " + paginationData.elementId);
                 clipBeginOffset = 0.0;
                 return;
             }
 
             var moData = $(element).data("mediaOverlayData");
             if(!moData) {
-                console.error("!moData: " + paginationData.elementId);
+                consoleError("!moData: " + paginationData.elementId);
                 clipBeginOffset = 0.0;
                 return;
             }
@@ -340,10 +340,10 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
         var noReverseData = !_smilIterator.currentPar.element && !_smilIterator.currentPar.cfi;
         if(noReverseData) {
-            console.error("!! _smilIterator.currentPar.element ??");
+            consoleError("!! _smilIterator.currentPar.element ??");
         }
 
-//console.debug("+++> paginationData.elementId: " + paginationData.elementId + " /// " + _smilIterator.currentPar.text.srcFile + " # " + _smilIterator.currentPar.text.srcFragmentId); //PageOpenRequest.elementId
+//consoleLog("+++> paginationData.elementId: " + paginationData.elementId + " /// " + _smilIterator.currentPar.text.srcFile + " # " + _smilIterator.currentPar.text.srcFragmentId); //PageOpenRequest.elementId
 
 
         if(paginationData.initiator == self)
@@ -351,7 +351,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
             var notSameTargetID = paginationData.elementId && paginationData.elementId !== _smilIterator.currentPar.text.srcFragmentId;
 
             if(notSameTargetID) {
-                console.error("!! paginationData.elementId !== _smilIterator.currentPar.text.srcFragmentId");
+                consoleError("!! paginationData.elementId !== _smilIterator.currentPar.text.srcFragmentId");
             }
 
             if(notSameTargetID || noReverseData) {
@@ -410,7 +410,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
         _smilIterator.goToPar(par);
 
         if(!_smilIterator.currentPar) {
-            console.error("playPar !_smilIterator.currentPar");
+            consoleError("playPar !_smilIterator.currentPar");
             return;
         }
 
@@ -441,7 +441,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
             }
 
             audioCurrentTime = 0.0;
-//console.log("BLANK END.");
+//consoleLog("BLANK END.");
             //nextSmil(true);
             onAudioPositionChanged(_smilIterator.currentPar.audio.clipEnd + 0.1, 2);
 
@@ -455,7 +455,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
         
         if (!_smilIterator || !_smilIterator.currentPar)
         {
-            console.error("playCurrentPar !_smilIterator || !_smilIterator.currentPar ???");
+            consoleError("playCurrentPar !_smilIterator || !_smilIterator.currentPar ???");
             return;
         }
 
@@ -559,14 +559,14 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                 ["cfi-marker", "mo-cfi-highlight"],
                 [],
                 ["MathJax_Message"]);
-//console.log(infoStart);
+//consoleLog(infoStart);
 
                 var endCFI = "epubcfi(" + cfi.partialEndCfi + ")";
                 var infoEnd = EPUBcfi.getTextTerminusInfoWithPartialCFI(endCFI, doc,
                 ["cfi-marker", "mo-cfi-highlight"],
                 [],
                 ["MathJax_Message"]);
-//console.log(infoEnd);
+//consoleLog(infoEnd);
 
                 // TODO: get string range to speak
                 _currentTTS = undefined;
@@ -590,12 +590,12 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
             var dur = _smilIterator.currentPar.audio.clipEnd - _smilIterator.currentPar.audio.clipBegin;
             if (dur <= 0 || clipBeginOffset > dur)
             {
-                console.error("### MO XXX PAR OFFSET: " + clipBeginOffset + " / " + dur);
+                consoleError("### MO XXX PAR OFFSET: " + clipBeginOffset + " / " + dur);
                 clipBeginOffset = 0.0;
             }
             else
             {
-//console.debug("### MO PAR OFFSET: " + clipBeginOffset);
+//consoleLog("### MO PAR OFFSET: " + clipBeginOffset);
             }
 
             var audioContentRef = Helpers.ResolveContentRef(_smilIterator.currentPar.audio.src, _smilIterator.smil.href);
@@ -604,7 +604,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
             var startTime = _smilIterator.currentPar.audio.clipBegin + clipBeginOffset;
 
-//console.debug("PLAY START TIME: " + startTime + "("+_smilIterator.currentPar.audio.clipBegin+" + "+clipBeginOffset+")");
+//consoleLog("PLAY START TIME: " + startTime + "("+_smilIterator.currentPar.audio.clipBegin+" + "+clipBeginOffset+")");
 
             _audioPlayer.playFile(_smilIterator.currentPar.audio.src, audioSource, startTime); //_smilIterator.currentPar.element ? _smilIterator.currentPar.element : _smilIterator.currentPar.cfi.cfiTextParent
         }
@@ -618,12 +618,12 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
     {
         self.pause();
 
-//console.debug("current Smil: " + _smilIterator.smil.href + " /// " + _smilIterator.smil.id);
+//consoleLog("current Smil: " + _smilIterator.smil.href + " /// " + _smilIterator.smil.id);
 
         var nextSmil = goNext ? _package.media_overlay.getNextSmil(_smilIterator.smil) : _package.media_overlay.getPreviousSmil(_smilIterator.smil);
         if(nextSmil) {
 
-//console.debug("nextSmil: " + nextSmil.href + " /// " + nextSmil.id);
+//consoleLog("nextSmil: " + nextSmil.href + " /// " + nextSmil.id);
 
             _smilIterator = new SmilIterator(nextSmil);
             if(_smilIterator.currentPar) {
@@ -635,14 +635,14 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                     }
                 }
 
-//console.debug("openContentUrl (nextSmil): " + _smilIterator.currentPar.text.src + " -- " + _smilIterator.smil.href);
+//consoleLog("openContentUrl (nextSmil): " + _smilIterator.currentPar.text.src + " -- " + _smilIterator.smil.href);
 
                 reader.openContentUrl(_smilIterator.currentPar.text.src, _smilIterator.smil.href, self);
             }
         }
         else
         {
-            console.log("No more SMIL");
+            consoleLog("No more SMIL");
             self.reset();
         }
     }
@@ -691,19 +691,19 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
         position > DIRECTION_MARK &&
             position <= audio.clipEnd) {
 
-//console.debug("onAudioPositionChanged: " + position);
+//consoleLog("onAudioPositionChanged: " + position);
             return;
         }
 
         _skipAudioEnded = true;
 
-//console.debug("PLAY NEXT: " + "(" + audio.clipBegin + " -- " + audio.clipEnd + ") [" + from + "] " +  position);
-//console.debug(_smilIterator.currentPar.text.srcFragmentId);
+//consoleLog("PLAY NEXT: " + "(" + audio.clipBegin + " -- " + audio.clipEnd + ") [" + from + "] " +  position);
+//consoleLog(_smilIterator.currentPar.text.srcFragmentId);
 
         var isPlaying = _audioPlayer.isPlaying();
         if (isPlaying && from === 6)
         {
-            console.debug("from userNav _audioPlayer.isPlaying() ???");
+            consoleLog("from userNav _audioPlayer.isPlaying() ???");
         }
 
         var goNext = position > audio.clipEnd;
@@ -749,7 +749,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
             //            nextSmil(goNext);
             //        }
 
-//console.debug("NEXT SMIL ON AUDIO POS");
+//consoleLog("NEXT SMIL ON AUDIO POS");
         
             if (doNotNextSmil)
             {
@@ -764,7 +764,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
             return;
         }
 
-//console.debug("ITER: " + _smilIterator.currentPar.text.srcFragmentId);
+//consoleLog("ITER: " + _smilIterator.currentPar.text.srcFragmentId);
 
         if(!_smilIterator.currentPar.audio) {
             self.pause();
@@ -787,7 +787,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
             if (skip)
             {
-                console.log("MO SKIP: " + parent.epubtype);
+                consoleLog("MO SKIP: " + parent.epubtype);
 
                 self.pause();
 
@@ -817,7 +817,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
                         if (!_smilIterator.currentPar)
                         {
-    //console.debug("adjustParToSeqSyncGranularity nextSmil(goNext)");
+    //consoleLog("adjustParToSeqSyncGranularity nextSmil(goNext)");
 
                             if (doNotNextSmil)
                             {
@@ -834,7 +834,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                         }
                     }
                     
-//console.debug("ADJUSTED: " + _smilIterator.currentPar.text.srcFragmentId);
+//consoleLog("ADJUSTED: " + _smilIterator.currentPar.text.srcFragmentId);
                     if (!goNext)
                     {
                         var landed = _elementHighlighter.adjustParToSeqSyncGranularity(_smilIterator.currentPar);
@@ -856,29 +856,29 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                                 
                                 if (!_smilIterator.currentPar.hasAncestor(landed))
                                 {
-                                    console.error("adjustParToSeqSyncGranularity !_smilIterator.currentPar.hasAncestor(landed) ???");
+                                    consoleError("adjustParToSeqSyncGranularity !_smilIterator.currentPar.hasAncestor(landed) ???");
                                 }
                                 //assert 
                             }
                             else
                             {
-//console.debug("adjustParToSeqSyncGranularity reached begin");
+//consoleLog("adjustParToSeqSyncGranularity reached begin");
 
                                 _smilIterator.reset();
                                 
                                 if (_smilIterator.currentPar !== innerPar)
                                 {
-                                    console.error("adjustParToSeqSyncGranularity _smilIterator.currentPar !=== innerPar???");
+                                    consoleError("adjustParToSeqSyncGranularity _smilIterator.currentPar !=== innerPar???");
                                 }
                             }
 
                             if (!_smilIterator.currentPar)
                             {
-                                console.error("adjustParToSeqSyncGranularity !_smilIterator.currentPar ?????");
+                                consoleError("adjustParToSeqSyncGranularity !_smilIterator.currentPar ?????");
                                 _smilIterator.goToPar(backup);
                             }
                             
-//console.debug("ADJUSTED PREV: " + _smilIterator.currentPar.text.srcFragmentId);
+//consoleLog("ADJUSTED PREV: " + _smilIterator.currentPar.text.srcFragmentId);
                         }
                     }
                 }
@@ -891,7 +891,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                 && position >= _smilIterator.currentPar.audio.clipBegin
                 && position <= _smilIterator.currentPar.audio.clipEnd)
         {
-//console.debug("ONLY highlightCurrentElement");
+//consoleLog("ONLY highlightCurrentElement");
             highlightCurrentElement();
             return;
         }
@@ -1031,9 +1031,9 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
             i++;
         }
 //
-//console.debug(t.text);
-//        console.debug("----");
-//console.debug(t.markup);
+//consoleLog(t.text);
+//        consoleLog("----");
+//consoleLog(t.markup);
 
         r.text = t.text;
         r.innerHTML_tts = t.markup;
@@ -1099,7 +1099,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 
         if (!txt && window.speechSynthesis.paused)
         {
-//console.debug("TTS resume");
+//consoleLog("TTS resume");
             window.speechSynthesis.resume();
 
             return;
@@ -1111,7 +1111,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
         {
             if (_SpeechSynthesisUtterance)
             {
-//console.debug("_SpeechSynthesisUtterance nullify");
+//consoleLog("_SpeechSynthesisUtterance nullify");
 
                 if (TOKENIZE_TTS)
                 {
@@ -1125,7 +1125,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                     _SpeechSynthesisUtterance.onboundary = undefined;
     //                 _SpeechSynthesisUtterance.onboundary = function(event)
     //                 {
-    // console.debug("OLD TTS boundary");
+    // consoleLog("OLD TTS boundary");
     //                 
     //                         event.target.tokenData = undefined;
     //  
@@ -1135,7 +1135,7 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                 _SpeechSynthesisUtterance.onend = undefined;
 //                 _SpeechSynthesisUtterance.onend = function(event)
 //                 {
-// console.debug("OLD TTS ended");
+// consoleLog("OLD TTS ended");
 //                     if (TOKENIZE_TTS)
 //                     {
 //                         event.target.tokenData = undefined;
@@ -1145,8 +1145,8 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
                 _SpeechSynthesisUtterance.onerror = undefined;
 //                 _SpeechSynthesisUtterance.onerror = function(event)
 //                 {
-// console.debug("OLD TTS error");
-// //console.debug(event);
+// consoleLog("OLD TTS error");
+// //consoleLog(event);
 //                     if (TOKENIZE_TTS)
 //                     {
 //                         event.target.tokenData = undefined;
@@ -1162,13 +1162,13 @@ var MediaOverlayPlayer = function(reader, onStatusChanged) {
 //                _skipTTSEndEvent = true;
 //            }
             
-console.debug("paused: "+window.speechSynthesis.paused);
-console.debug("speaking: "+window.speechSynthesis.speaking);
-console.debug("pending: "+window.speechSynthesis.pending);
+consoleLog("paused: "+window.speechSynthesis.paused);
+consoleLog("speaking: "+window.speechSynthesis.speaking);
+consoleLog("pending: "+window.speechSynthesis.pending);
 
 //             if (!window.speechSynthesis.paused)
 //             {
-// console.debug("TTS pause before speak");
+// consoleLog("TTS pause before speak");
 //                 window.speechSynthesis.pause();
 //             }
             
@@ -1176,7 +1176,7 @@ console.debug("pending: "+window.speechSynthesis.pending);
             {
                 if (first || window.speechSynthesis.pending)
                 {
-    console.debug("TTS cancel before speak");
+    consoleLog("TTS cancel before speak");
                     window.speechSynthesis.cancel();
 
                     setTimeout(function()
@@ -1210,8 +1210,8 @@ console.debug("pending: "+window.speechSynthesis.pending);
                             return;
                         }
 
-        console.debug("TTS boundary: " + event.name + " / " + event.charIndex);
-        //console.debug(event);
+        consoleLog("TTS boundary: " + event.name + " / " + event.charIndex);
+        //consoleLog(event);
 
                         var tokenised = event.target.tokenData;
                         if (!tokenised || !tokenised.spanMap.hasOwnProperty(event.charIndex))
@@ -1221,13 +1221,13 @@ console.debug("pending: "+window.speechSynthesis.pending);
 
                         if (false && tokenised.lastCharIndex)
                         {
-        //console.debug("TTS lastCharIndex: " + tokenised.lastCharIndex);
+        //consoleLog("TTS lastCharIndex: " + tokenised.lastCharIndex);
                             var id = 'tts_' + tokenised.spanMap[tokenised.lastCharIndex];
-        //console.debug("TTS lastCharIndex ID: " + id);
+        //consoleLog("TTS lastCharIndex ID: " + id);
                             var spanPrevious = tokenised.element.querySelector("#"+id);
                             if (spanPrevious)
                             {
-        //console.debug("TTS OFF");
+        //consoleLog("TTS OFF");
                                 spanPrevious.className = 'tts_off';
                                 //spanPrevious.style.backgroundColor = "white";
                             }
@@ -1238,18 +1238,18 @@ console.debug("pending: "+window.speechSynthesis.pending);
                                 tokenised.element.querySelectorAll(".tts_on"),
                                 function(el)
                                 {
-        console.debug("TTS OFF " + el.id);
+        consoleLog("TTS OFF " + el.id);
                                     el.className = 'tts_off';
                                 }
                             );
                         }
 
                         var id = 'tts_' + tokenised.spanMap[event.charIndex];
-        console.debug("TTS charIndex ID: " + id);
+        consoleLog("TTS charIndex ID: " + id);
                         var spanNew = tokenised.element.querySelector("#"+id);
                         if (spanNew)
                         {
-        console.debug("TTS ON");
+        consoleLog("TTS ON");
                             spanNew.className = 'tts_on';
                             //spanNew.style.backgroundColor = "transparent";
                         }
@@ -1273,8 +1273,8 @@ console.debug("pending: "+window.speechSynthesis.pending);
     //                    return;
     //                }
 
-console.debug("TTS ended");
-    //console.debug(event);
+consoleLog("TTS ended");
+    //consoleLog(event);
 
                     if (TOKENIZE_TTS)
                     {
@@ -1294,7 +1294,7 @@ console.debug("TTS ended");
                                     tokenised.element.querySelectorAll(".tts_on"),
                                     function(el)
                                     {
-        console.debug("TTS OFF (end)" + el.id);
+        consoleLog("TTS OFF (end)" + el.id);
                                         el.className = 'tts_off';
                                     }
                                 );
@@ -1310,7 +1310,7 @@ console.debug("TTS ended");
                         }
                         else
                         {
-    console.debug("TTS end SKIPPED");
+    consoleLog("TTS end SKIPPED");
                         }
                     }
                     else
@@ -1327,12 +1327,12 @@ console.debug("TTS ended");
                         return;
                     }
 
-console.error("TTS error");
-//console.debug(event);
-console.debug(_SpeechSynthesisUtterance.text);
-console.debug(window.speechSynthesis.paused);
-console.debug(window.speechSynthesis.pending);
-console.debug(window.speechSynthesis.speaking);
+consoleError("TTS error");
+//consoleLog(event);
+consoleLog(_SpeechSynthesisUtterance.text);
+consoleLog(window.speechSynthesis.paused);
+consoleLog(window.speechSynthesis.pending);
+consoleLog(window.speechSynthesis.speaking);
 
                     if (TOKENIZE_TTS)
                     {
@@ -1349,7 +1349,7 @@ console.debug(window.speechSynthesis.speaking);
                                     tokenised.element.ownerDocument.querySelectorAll(".tts_on"),
                                     function(el)
                                     {
-        console.debug("TTS OFF (error)" + el.id);
+        consoleLog("TTS OFF (error)" + el.id);
                                         el.className = 'tts_off';
                                     }
                                 );
@@ -1369,12 +1369,12 @@ console.debug(window.speechSynthesis.speaking);
 
                 _SpeechSynthesisUtterance.text = text;
 
-    //console.debug("TTS speak: " + text);
+    //consoleLog("TTS speak: " + text);
                 window.speechSynthesis.speak(_SpeechSynthesisUtterance);
 
                 if (window.speechSynthesis.paused)
                 {
-console.debug("TTS resume");
+consoleLog("TTS resume");
                     window.speechSynthesis.resume();
                 }
 
@@ -1402,7 +1402,7 @@ console.debug("TTS resume");
             return;
         }
 
-//console.debug("TTS pause");
+//consoleLog("TTS pause");
         window.speechSynthesis.pause();
     };
 
@@ -1543,7 +1543,7 @@ console.debug("TTS resume");
         if (_smilIterator.currentPar.text.srcFragmentId && _smilIterator.currentPar.text.srcFragmentId.length > 0)
         {
             if (_smilIterator.currentPar.element) {
-    //console.error(_smilIterator.currentPar.element.id + ": " + _smilIterator.currentPar.audio.clipBegin + " / " + _smilIterator.currentPar.audio.clipEnd);
+    //consoleError(_smilIterator.currentPar.element.id + ": " + _smilIterator.currentPar.audio.clipBegin + " / " + _smilIterator.currentPar.audio.clipEnd);
 
                 if (!_elementHighlighter.isElementHighlighted(_smilIterator.currentPar))
                 {
@@ -1582,11 +1582,11 @@ console.debug("TTS resume");
         
         /*
         var textRelativeRef = Globals.Helpers.ResolveContentRef(_smilIterator.currentPar.text.srcFile, _smilIterator.smil.href);
-console.debug("textRelativeRef: " + textRelativeRef);
+consoleLog("textRelativeRef: " + textRelativeRef);
         if (textRelativeRef)
         {
             var textAbsoluteRef = _package.resolveRelativeUrl(textRelativeRef);
-console.debug("textAbsoluteRef: " + textAbsoluteRef);
+consoleLog("textAbsoluteRef: " + textAbsoluteRef);
         }
         */
 
@@ -1750,7 +1750,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
         {
             if (!_audioPlayer.play())
             {
-                console.log("Audio player was dead, reactivating...");
+                consoleLog("Audio player was dead, reactivating...");
 
                 this.reset();
                 this.toggleMediaOverlay();
@@ -1792,7 +1792,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
 
     this.isMediaOverlayAvailable = function() {
 
-//        console.debug("isMediaOverlayAvailable()");
+//        consoleLog("isMediaOverlayAvailable()");
 //
 //        var now1 = window.performance && window.performance.now ? window.performance.now() : Date.now();
 //
@@ -1810,7 +1810,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
 //
 //        var now2 = window.performance && window.performance.now ? window.performance.now() : Date.now();
 //
-//        console.debug(now2 - now1);
+//        consoleLog(now2 - now1);
 
         return typeof visibleMediaElement !== "undefined";
     };
@@ -1930,7 +1930,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
 
     this.toggleMediaOverlayRefresh = function(paginationData)
     {
-//console.debug("moData SMIL: " + moData.par.getSmil().href + " // " + + moData.par.getSmil().id);
+//consoleLog("moData SMIL: " + moData.par.getSmil().href + " // " + + moData.par.getSmil().id);
 
         var spineItems = reader.getLoadedSpineItems();
 
@@ -1971,7 +1971,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
         {
             if (id)
             {
-                console.error("[WARN] id did not resolve to element?");
+                consoleError("[WARN] id did not resolve to element?");
             }
             
             for(var i = (rtl ? (spineItems.length - 1) : 0); (rtl && i >=0) || (!rtl && i < spineItems.length); i += (rtl ? -1: 1))
@@ -1979,7 +1979,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
                 var spineItem = spineItems[i];
                 if (!spineItem)
                 {
-                    console.error("spineItems[i] is undefined??");
+                    consoleError("spineItems[i] is undefined??");
                     continue;
                 }
             

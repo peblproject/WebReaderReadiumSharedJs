@@ -54,85 +54,85 @@ define(['jquery'],function($) {
         {
             _audioElement.addEventListener("load", function()
                 {
-                    console.debug("0) load");
+                    consoleLog("0) load");
                 }
             );
 
             _audioElement.addEventListener("loadstart", function()
                 {
-                    console.debug("1) loadstart");
+                    consoleLog("1) loadstart");
                 }
             );
 
             _audioElement.addEventListener("durationchange", function()
                 {
-                    console.debug("2) durationchange");
+                    consoleLog("2) durationchange");
                 }
             );
 
             _audioElement.addEventListener("loadedmetadata", function()
                 {
-                    console.debug("3) loadedmetadata");
+                    consoleLog("3) loadedmetadata");
                 }
             );
 
             _audioElement.addEventListener("loadeddata", function()
                 {
-                    console.debug("4) loadeddata");
+                    consoleLog("4) loadeddata");
                 }
             );
 
             _audioElement.addEventListener("progress", function()
                 {
-                    console.debug("5) progress");
+                    consoleLog("5) progress");
                 }
             );
 
             _audioElement.addEventListener("canplay", function()
                 {
-                    console.debug("6) canplay");
+                    consoleLog("6) canplay");
                 }
             );
 
             _audioElement.addEventListener("canplaythrough", function()
                 {
-                    console.debug("7) canplaythrough");
+                    consoleLog("7) canplaythrough");
                 }
             );
 
             _audioElement.addEventListener("play", function()
                 {
-                    console.debug("8) play");
+                    consoleLog("8) play");
                 }
             );
 
             _audioElement.addEventListener("pause", function()
                 {
-                    console.debug("9) pause");
+                    consoleLog("9) pause");
                 }
             );
 
             _audioElement.addEventListener("ended", function()
                 {
-                    console.debug("10) ended");
+                    consoleLog("10) ended");
                 }
             );
 
             _audioElement.addEventListener("seeked", function()
                 {
-                    console.debug("X) seeked");
+                    consoleLog("X) seeked");
                 }
             );
 
             _audioElement.addEventListener("timeupdate", function()
                 {
-                    console.debug("Y) timeupdate");
+                    consoleLog("Y) timeupdate");
                 }
             );
 
             _audioElement.addEventListener("seeking", function()
                 {
-                    console.debug("Z) seeking");
+                    consoleLog("Z) seeking");
                 }
             );
         }
@@ -194,7 +194,7 @@ define(['jquery'],function($) {
         {
             if (DEBUG)
             {
-                console.error("this.play()");
+                consoleError("this.play()");
             }
     
             if(!_currentEpubSrc)
@@ -216,7 +216,7 @@ define(['jquery'],function($) {
         {
             if (DEBUG)
             {
-                console.error("this.pause()");
+                consoleError("this.pause()");
             }
     
             stopTimer();
@@ -246,7 +246,7 @@ define(['jquery'],function($) {
             {
                 if (DEBUG)
                 {
-                    console.debug("onEnded() skipped (still seeking...)");
+                    consoleLog("onEnded() skipped (still seeking...)");
                 }
     
                 return;
@@ -275,7 +275,7 @@ define(['jquery'],function($) {
                     {
                         if (DEBUG)
                         {
-//console.debug("interval timer skipped (still seeking...)");
+//consoleLog("interval timer skipped (still seeking...)");
                         }
                                          
                         _intervalTimerSkips++;
@@ -294,12 +294,12 @@ define(['jquery'],function($) {
                     }
                     catch (ex)
                     {
-                        console.error(ex.message);
+                        consoleError(ex.message);
                     }
     
     //                if (DEBUG)
     //                {
-    //                    console.debug("currentTime: " + currentTime);
+    //                    consoleLog("currentTime: " + currentTime);
     //                }
     
                     if (currentTime)
@@ -327,7 +327,7 @@ define(['jquery'],function($) {
         {
             if (DEBUG)
             {
-                console.error("this.reset()");
+                consoleError("this.reset()");
             }
     
             this.pause();
@@ -395,7 +395,7 @@ define(['jquery'],function($) {
                 
                 if (DEBUG)
                 {
-                    console.debug("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " (POSTPONE, SEEKING...)");
+                    consoleLog("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " (POSTPONE, SEEKING...)");
                 }
     
                 setTimeout(function()
@@ -410,7 +410,7 @@ define(['jquery'],function($) {
     
             if (DEBUG)
             {
-                console.debug("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " #" + playId);
+                consoleLog("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " #" + playId);
             }
     
             var audioNeedsNewSrc = !_currentEpubSrc || _currentEpubSrc !== epubSrc;
@@ -419,7 +419,7 @@ define(['jquery'],function($) {
             {
                 if (DEBUG)
                 {
-                    console.debug("this.playFile() SAME SRC");
+                    consoleLog("this.playFile() SAME SRC");
                 }
     
                 this.pause();
@@ -434,9 +434,9 @@ define(['jquery'],function($) {
     
             if (DEBUG)
             {
-                console.debug("this.playFile() NEW SRC");
-                console.debug("_currentEpubSrc: " + _currentEpubSrc);
-                console.debug("epubSrc: " + epubSrc);
+                consoleLog("this.playFile() NEW SRC");
+                consoleLog("_currentEpubSrc: " + _currentEpubSrc);
+                consoleLog("epubSrc: " + epubSrc);
             }
     
             this.reset();
@@ -480,7 +480,7 @@ define(['jquery'],function($) {
         //     
         //     if (DEBUG)
         //     {
-        //         console.debug("onReadyToPlayToForcePreload");
+        //         consoleLog("onReadyToPlayToForcePreload");
         //     }
         //     
         //     playToForcePreload();
@@ -490,7 +490,7 @@ define(['jquery'],function($) {
         {
             if (DEBUG)
             {
-                console.debug("playToForcePreload");
+                consoleLog("playToForcePreload");
             }
             
             //_audioElement.volume = 0;
@@ -507,7 +507,7 @@ define(['jquery'],function($) {
             
             if (DEBUG)
             {
-                console.debug("onPlayToForcePreload");
+                consoleLog("onPlayToForcePreload");
             }
             _audioElement.pause(); // note: interval timer continues (immediately follows self.play())
         };
@@ -517,7 +517,7 @@ define(['jquery'],function($) {
         {
             if (DEBUG)
             {
-                console.debug("onReadyToSeek #" + event.data.playId);
+                consoleLog("onReadyToSeek #" + event.data.playId);
             }
             playSeekCurrentTime(event.data.seekBegin, event.data.playId, true);
         }
@@ -533,7 +533,7 @@ define(['jquery'],function($) {
             {
                 if (DEBUG)
                 {
-                    console.debug("onReadyToSeek ANDROID ... waiting a bit ... #" + event.data.playId);
+                    consoleLog("onReadyToSeek ANDROID ... waiting a bit ... #" + event.data.playId);
                 }
                 
                 //self.play();
@@ -549,7 +549,7 @@ define(['jquery'],function($) {
         {
             if (DEBUG)
             {
-                console.debug("playSeekCurrentTime() #" + playId);
+                consoleLog("playSeekCurrentTime() #" + playId);
             }
     
             if (newCurrentTime == 0)
@@ -561,7 +561,7 @@ define(['jquery'],function($) {
             {
                 if (DEBUG)
                 {
-                    console.debug("playSeekCurrentTime() CONTINUE");
+                    consoleLog("playSeekCurrentTime() CONTINUE");
                 }
     
                 _audioElement.moSeeking = undefined;
@@ -573,7 +573,7 @@ define(['jquery'],function($) {
     
             if (DEBUG)
             {
-                console.debug("playSeekCurrentTime() NEED SEEK, EV: " + ev);
+                consoleLog("playSeekCurrentTime() NEED SEEK, EV: " + ev);
             }
     
             self.pause();
@@ -586,7 +586,7 @@ define(['jquery'],function($) {
             }
             catch (ex)
             {
-                console.error(ex.message);
+                consoleError(ex.message);
     
                 setTimeout(function()
                 {
@@ -596,7 +596,7 @@ define(['jquery'],function($) {
                     }
                     catch (ex)
                     {
-                        console.error(ex.message);
+                        consoleError(ex.message);
                     }
                 }, 5);
             }
@@ -618,7 +618,7 @@ define(['jquery'],function($) {
     
             if (DEBUG)
             {
-                console.debug("onSeeked() #" + event.data.playId + " FIRST? " + notRetry + " EV: " + ev);
+                consoleLog("onSeeked() #" + event.data.playId + " FIRST? " + notRetry + " EV: " + ev);
             }
     
             var curTime = _audioElement.currentTime;
@@ -629,7 +629,7 @@ define(['jquery'],function($) {
             {
                 if (DEBUG)
                 {
-                    console.debug("onSeeked() time diff: " + event.data.newCurrentTime + " vs. " + curTime + " ("+diff+")");
+                    consoleLog("onSeeked() time diff: " + event.data.newCurrentTime + " vs. " + curTime + " ("+diff+")");
                 }
                 
                 if (notRetry)
@@ -638,7 +638,7 @@ define(['jquery'],function($) {
     
                     // if (DEBUG)
                     // {
-                    //     console.debug("onSeeked() fail => first retry, EV: " + _seekedEvent2);
+                    //     consoleLog("onSeeked() fail => first retry, EV: " + _seekedEvent2);
                     // }
     
                     event.data.isNewSrc = false;
@@ -651,7 +651,7 @@ define(['jquery'],function($) {
     
                     if (DEBUG)
                     {
-                        console.debug("onSeeked() FAIL => retry again (timeout)");
+                        consoleLog("onSeeked() FAIL => retry again (timeout)");
                     }
     
                     setTimeout(function()
@@ -669,7 +669,7 @@ define(['jquery'],function($) {
                     }
                     catch (ex)
                     {
-                        console.error(ex.message);
+                        consoleError(ex.message);
     
                         setTimeout(function()
                         {
@@ -679,7 +679,7 @@ define(['jquery'],function($) {
                             }
                             catch (ex)
                             {
-                                console.error(ex.message);
+                                consoleError(ex.message);
                             }
                         }, 4);
                     }
@@ -689,17 +689,17 @@ define(['jquery'],function($) {
             {
                 if (DEBUG)
                 {
-                    console.debug("onSeeked() STATE:");
-                    console.debug(notRetry);
-                    console.debug(event.data.seekRetries);
-                    console.debug(diff);
+                    consoleLog("onSeeked() STATE:");
+                    consoleLog(notRetry);
+                    consoleLog(event.data.seekRetries);
+                    consoleLog(diff);
                 }
     
                 if (diff >= 1)
                 {
                     if (DEBUG)
                     {
-                        console.debug("onSeeked() ABORT, TRY AGAIN FROM SCRATCH!");
+                        consoleLog("onSeeked() ABORT, TRY AGAIN FROM SCRATCH!");
                     }
                     
                     var smilSrc = _currentSmilSrc;
@@ -718,7 +718,7 @@ define(['jquery'],function($) {
 
                 if (DEBUG)
                 {
-                    console.debug("onSeeked() OKAY => play!");
+                    consoleLog("onSeeked() OKAY => play!");
                 }
                 
                 event.data.seekRetries = undefined;

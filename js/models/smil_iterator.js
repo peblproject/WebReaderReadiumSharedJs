@@ -77,7 +77,7 @@ var SmilIterator = function(smil) {
 //    {
 //        if (!this.currentPar)
 //        {
-//            console.debug("Par iterator is out of range");
+//            consoleLog("Par iterator is out of range");
 //            return;
 //        }
 //
@@ -99,7 +99,7 @@ var SmilIterator = function(smil) {
     {
         if (!this.currentPar)
         {
-            console.debug("Par iterator is out of range");
+            consoleLog("Par iterator is out of range");
             return;
         }
 
@@ -128,7 +128,7 @@ var SmilIterator = function(smil) {
 
                     parent = parent.parentNode;
                 }
-                //console.log(parent);
+                //consoleLog(parent);
 
                 // INNER match
                 //var inside = this.currentPar.element.ownerDocument.getElementById(id);
@@ -154,7 +154,7 @@ var SmilIterator = function(smil) {
     this.next = function() {
 
         if(!this.currentPar) {
-            console.debug("Par iterator is out of range");
+            consoleLog("Par iterator is out of range");
             return;
         }
 
@@ -170,7 +170,7 @@ var SmilIterator = function(smil) {
     this.previous = function() {
 
         if(!this.currentPar) {
-            console.debug("Par iterator is out of range");
+            consoleLog("Par iterator is out of range");
             return;
         }
 
@@ -187,7 +187,7 @@ var SmilIterator = function(smil) {
     this.isLast = function() {
 
         if(!this.currentPar) {
-            console.debug("Par iterator is out of range");
+            consoleLog("Par iterator is out of range");
             return;
         }
 

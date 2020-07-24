@@ -48,7 +48,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
             _jQueryPositionNeedsFix = true;
         }
     } catch(err) {
-        console.error(err);
+        consoleError(err);
     }
     
     $.extend(this, new EventEmitter());
@@ -235,7 +235,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
                 var diff = scrollPosAfter - scrollPosBefore;
                 if (Math.abs(diff) > 1)
                 {
-                    console.debug("@@@@@@@@@@@@@@@ SCROLL ADJUST (" + msg + ") " + diff + " -- " + pageView.currentSpineItem().href);
+                    consoleLog("@@@@@@@@@@@@@@@ SCROLL ADJUST (" + msg + ") " + diff + " -- " + pageView.currentSpineItem().href);
                     //_$contentFrame[0].scrollTop = _$contentFrame[0].scrollTop + diff;
                 }
             }
@@ -328,7 +328,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
         {
             if (_DEBUG)
             {
-                console.debug("IMMEDIATE SCROLL ADJUST: " + pageView.currentSpineItem().href + " == " + delta);
+                consoleLog("IMMEDIATE SCROLL ADJUST: " + pageView.currentSpineItem().href + " == " + delta);
             }
             scrollTo(scrollPos + delta);
         }
@@ -385,7 +385,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
                         //reachStableContentHeight(0, newView, $iframe[0], spineItem.href, spineItem.isFixedLayout(), spineItem.isFixedLayout() ? newView.meta_width() : 0, "addToTopOf", continueCallback); // //onIFrameLoad called before this callback, so okay.
                     }
                     else {
-                        console.error("Unable to open 2 " + prevSpineItem.href);
+                        consoleError("Unable to open 2 " + prevSpineItem.href);
                         removePageView(newView);
                         callback(false);
                     }
@@ -393,7 +393,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
                 });
             }
             else {
-                console.error("Unable to open 1 " + prevSpineItem.href);
+                consoleError("Unable to open 1 " + prevSpineItem.href);
                 removePageView(tmpView);
                 callback(false);
             }
@@ -434,7 +434,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
                 //reachStableContentHeight(2, newView, $iframe[0], spineItem.href, spineItem.isFixedLayout(), spineItem.isFixedLayout() ? newView.meta_width() : 0, "addToBottomOf", continueCallback); // //onIFrameLoad called before this callback, so okay.
             }
             else {
-                console.error("Unable to load " + nexSpineItem.href);
+                consoleError("Unable to load " + nexSpineItem.href);
                 callback(false);
             }
 
@@ -689,7 +689,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
                 //reachStableContentHeight(1, loadedView, $iframe[0], spineItem.href, spineItem.isFixedLayout(), spineItem.isFixedLayout() ? loadedView.meta_width() : 0, "openPage", continueCallback); // //onIFrameLoad called before this callback, so okay.
             }
             else {
-                console.error("Unable to load " + spineItem.href);
+                consoleError("Unable to load " + spineItem.href);
 
                 removePageView(loadedView);
                 loadedView = undefined;
@@ -811,7 +811,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
             $element = sfiNav.getElementById(pageRequest.elementId);
 
             if (!$element || !$element.length) {
-                console.warn("Element id=" + pageRequest.elementId + " not found!");
+                consoleError("Element id=" + pageRequest.elementId + " not found!");
                 return;
             }
 
@@ -833,7 +833,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
 
             var domRange = sfiNav.getDomRangeFromRangeCfi(pageRequest.elementCfi);            
             if (!domRange) {
-                console.warn("Range for cfi=" + pageRequest.elementCfi + " not found!");
+                consoleError("Range for cfi=" + pageRequest.elementCfi + " not found!");
                 return;
             }
             
@@ -1087,7 +1087,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
         }, false);
 
         if (!found) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1109,7 +1109,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
         }, false);
 
         if (!found) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1282,7 +1282,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
         }, false);
 
         if (!pageView) {
-            console.warn("Page for element " + element + " not found");
+            consoleError("Page for element " + element + " not found");
             return;
         }
 
@@ -1315,12 +1315,12 @@ var ScrollView = function (options, isContinuousScroll, reader) {
 
     this.getVisibleElementsWithFilter = function(filterFunction) {
 
-        console.warn('getVisibleElementsWithFilter: Not implemented yet for scroll_view');
+        consoleError('getVisibleElementsWithFilter: Not implemented yet for scroll_view');
     };
 
     this.isElementVisible = function($element){
 
-        console.warn('isElementVisible: Not implemented yet for scroll_view');
+        consoleError('isElementVisible: Not implemented yet for scroll_view');
     };
 
     this.getElements = function(spineItemIdref, selector) {
@@ -1393,7 +1393,7 @@ var ScrollView = function (options, isContinuousScroll, reader) {
 
     this.getDomRangeFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
         if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
-            console.error("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
+            consoleError("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
             return undefined;
         }
 

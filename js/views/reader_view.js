@@ -79,10 +79,10 @@ var ReaderView = function (options) {
 
     if (options.el instanceof $) {
         _$el = options.el;
-        console.log("** EL is a jQuery selector:" + options.el.attr('id'));
+        consoleLog("** EL is a jQuery selector:" + options.el.attr('id'));
     } else {
         _$el = $(options.el);
-        console.log("** EL is a string:" + _$el.attr('id'));
+        consoleLog("** EL is a string:" + _$el.attr('id'));
     }
 
     if (options.iframeLoader) {
@@ -160,7 +160,7 @@ var ReaderView = function (options) {
             return ReaderView.VIEW_TYPE_SCROLLED_DOC;
         }
 
-        console.error("Unrecognized view type");
+        consoleError("Unrecognized view type");
         return undefined;
     };
 
@@ -426,7 +426,7 @@ var ReaderView = function (options) {
                         }
                         window.SpineDocuments[i] = searchDocumentObject;
                     }, function(err) {
-                        console.log(err);
+                        consoleLog(err);
                     });
                 })(spineItem, i);
             }
@@ -464,7 +464,7 @@ var ReaderView = function (options) {
                 pageRequestData = openBookData.openPageRequest;
             }
             else {
-                console.log("Invalid page request data: idref required!");
+                consoleLog("Invalid page request data: idref required!");
             }
         }
 
@@ -490,8 +490,8 @@ var ReaderView = function (options) {
                     fallback = !self.openContentUrl(pageRequestData.contentRefUrl, pageRequestData.sourceFileHref, self);
                 }
             } catch (err) {
-                console.error("openPageRequest fail: fallback to first page!")
-                console.log(err);
+                consoleError("openPageRequest fail: fallback to first page!")
+                consoleLog(err);
                 fallback = true;
             }
         }
@@ -611,7 +611,7 @@ var ReaderView = function (options) {
      */
     this.updateSettings = function (settingsData) {
 
-//console.debug("UpdateSettings: " + JSON.stringify(settingsData));
+//consoleLog("UpdateSettings: " + JSON.stringify(settingsData));
 
         _viewerSettings.update(settingsData);
 
@@ -747,13 +747,13 @@ var ReaderView = function (options) {
 
         if (!idref) {
 
-            console.log("idref parameter value missing!");
+            consoleLog("idref parameter value missing!");
             return undefined;
         }
 
         var spineItem = _spine.getItemById(idref);
         if (!spineItem) {
-            console.log("Spine item with id " + idref + " not found!");
+            consoleLog("Spine item with id " + idref + " not found!");
             return undefined;
         }
 
@@ -1015,14 +1015,14 @@ var ReaderView = function (options) {
 
         var spineItem = _spine.getItemByHref(hrefPart);
         if (!spineItem) {
-            console.warn('spineItem ' + hrefPart + ' not found');
+            consoleError('spineItem ' + hrefPart + ' not found');
             // sometimes that happens because spine item's URI gets encoded,
             // yet it's compared with raw strings by `getItemByHref()` -
             // so we try to search with decoded link as well
             var decodedHrefPart = decodeURIComponent(hrefPart);
             spineItem = _spine.getItemByHref(decodedHrefPart);
             if (!spineItem) {
-                console.warn('decoded spineItem ' + decodedHrefPart + ' missing as well');
+                consoleError('decoded spineItem ' + decodedHrefPart + ' missing as well');
                 return false;
             }
         }
@@ -1065,7 +1065,7 @@ var ReaderView = function (options) {
         if (!DEBUG) return;
             
         var paginationInfo = this.getPaginationInfo();
-        console.log(JSON.stringify(paginationInfo));
+        consoleLog(JSON.stringify(paginationInfo));
         
         if (paginationInfo.isFixedLayout) return;
     
@@ -1077,19 +1077,19 @@ var ReaderView = function (options) {
         }
         
         try {
-            console.log(cfi);
+            consoleLog(cfi);
             
             var range = this.getDomRangeFromRangeCfi(cfi);
-            console.log(range);
+            consoleLog(range);
             
             var res = ReadiumSDK._DEBUG_CfiNavigationLogic.drawDebugOverlayFromDomRange(range);
-            console.log(res);
+            consoleLog(res);
         
             var cfiFirst = ReadiumSDK.reader.getFirstVisibleCfi();
-            console.log(cfiFirst);
+            consoleLog(cfiFirst);
             
             var cfiLast  = ReadiumSDK.reader.getLastVisibleCfi();
-            console.log(cfiLast);
+            consoleLog(cfiLast);
             
         } catch (error) {
             //ignore
@@ -1352,7 +1352,7 @@ var ReaderView = function (options) {
                     var data = _spineItemIframeMap[prop];
                     if (!data || !data.active) continue;
 
-                    if ($iframe) console.error("More than one active iframe?? (pagination)");
+                    if ($iframe) consoleError("More than one active iframe?? (pagination)");
 
                     $iframe = data["$iframe"];
                     if (!$iframe) continue;
@@ -1379,7 +1379,7 @@ var ReaderView = function (options) {
                 }
             }
             catch (err) {
-                console.error(err);
+                consoleError(err);
             }
         };
 
@@ -1392,39 +1392,39 @@ var ReaderView = function (options) {
             
             try {
                 if (spineItem && spineItem.idref && $iframe && $iframe[0]) {
-                    // console.log("CONTENT_DOCUMENT_LOADED");
-                    // console.debug(spineItem.href);
-                    // console.debug(spineItem.idref);
+                    // consoleLog("CONTENT_DOCUMENT_LOADED");
+                    // consoleLog(spineItem.href);
+                    // consoleLog(spineItem.idref);
 
                     _spineItemIframeMap[spineItem.idref] = {"$iframe": $iframe, href: spineItem.href};
                 }
             }
             catch (err) {
-                console.error(err);
+                consoleError(err);
             }
         });
 
         readerView.on(Globals.Events.PAGINATION_CHANGED, function (pageChangeData) {
             Globals.logEvent("PAGINATION_CHANGED", "ON", "reader_view.js (via BackgroundAudioTrackManager)");
             
-            // console.log("PAGINATION_CHANGED");
-            // console.debug(pageChangeData);
+            // consoleLog("PAGINATION_CHANGED");
+            // consoleLog(pageChangeData);
             //
             // if (pageChangeData.spineItem)
             // {
-            //     console.debug(pageChangeData.spineItem.href);
-            //     console.debug(pageChangeData.spineItem.idref);
+            //     consoleLog(pageChangeData.spineItem.href);
+            //     consoleLog(pageChangeData.spineItem.idref);
             // }
             // else
             // {
-            //     //console.error(pageChangeData);
+            //     //consoleError(pageChangeData);
             // }
             //
             // if (pageChangeData.paginationInfo && pageChangeData.paginationInfo.openPages && pageChangeData.paginationInfo.openPages.length)
             // {
             //     for (var i = 0; i < pageChangeData.paginationInfo.openPages.length; i++)
             //     {
-            //         console.log(pageChangeData.paginationInfo.openPages[i].idref);
+            //         consoleLog(pageChangeData.paginationInfo.openPages[i].idref);
             //     }
             // }
 
@@ -1502,7 +1502,7 @@ var ReaderView = function (options) {
                 }
             }
             catch (err) {
-                console.error(err);
+                consoleError(err);
             }
 
             if (_callback_isAvailable) {

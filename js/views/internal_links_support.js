@@ -81,7 +81,7 @@ var InternalLinksSupport = function(reader) {
         var absoluteOpfUri = getAbsoluteUriRelativeToSpineItem(hrefUri, spineItem);
 
         if(!absoluteOpfUri) {
-            console.error("Unable to resolve " + hrefUri.href())
+            consoleError("Unable to resolve " + hrefUri.href())
             return;
         }
 
@@ -102,7 +102,7 @@ var InternalLinksSupport = function(reader) {
             var cfi = splitCfi(fullCfi);
 
             if(!cfi) {
-                console.warn("Unable to split cfi:" + fullCfi);
+                consoleError("Unable to split cfi:" + fullCfi);
                 return;
             }
 
@@ -116,12 +116,12 @@ var InternalLinksSupport = function(reader) {
                     reader.openSpineItemElementCfi(newSpineItem.idref, cfi.elementCfi, self);
                 }
                 else {
-                    console.warn("Unable to find spineItem with href=" + contentDocRef);
+                    consoleError("Unable to find spineItem with href=" + contentDocRef);
                 }
 
             }
             else {
-                console.warn("Unable to find document ref from " +  fullCfi +" cfi");
+                consoleError("Unable to find document ref from " +  fullCfi +" cfi");
             }
 
         });
@@ -145,9 +145,9 @@ var InternalLinksSupport = function(reader) {
                 callback(result);
             },
             error: function (xhr, status, errorThrown) {
-                console.error('Error when AJAX fetching ' + path);
-                console.error(status);
-                console.error(errorThrown);
+                consoleError('Error when AJAX fetching ' + path);
+                consoleError(status);
+                consoleError(errorThrown);
                 callback();
             }
         });
@@ -175,7 +175,7 @@ var InternalLinksSupport = function(reader) {
             var newSpineItem = reader.spine().getItemByHref(pathname);
 
             if(!newSpineItem) {
-                console.error("spine item with href=" + pathname + " not found");
+                consoleError("spine item with href=" + pathname + " not found");
                 return;
             }
 

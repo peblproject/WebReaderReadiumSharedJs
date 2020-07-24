@@ -490,7 +490,7 @@ var ReflowableView = function(options, reader){
             catch (e)
             {
                 firstPageIndex = 0;
-                console.error(e);
+                consoleError(e);
             }
             try
             {
@@ -502,7 +502,7 @@ var ReflowableView = function(options, reader){
             catch (e)
             {
                 lastPageIndex = 0;
-                console.error(e);
+                consoleError(e);
             }
             // Go to the page with the first element
             pageIndex = firstPageIndex;
@@ -518,7 +518,7 @@ var ReflowableView = function(options, reader){
             catch (e)
             {
                 pageIndex = 0;
-                console.error(e);
+                consoleError(e);
             }
         }
         else if(pageRequest.firstPage) {
@@ -528,12 +528,12 @@ var ReflowableView = function(options, reader){
             pageIndex = _paginationInfo.columnCount - 1;
         }
         else {
-            console.debug("No criteria in pageRequest");
+            consoleLog("No criteria in pageRequest");
             pageIndex = 0;
         }
 
         if (pageIndex < 0 || pageIndex > _paginationInfo.columnCount) {
-            console.log('Illegal pageIndex value: ', pageIndex, 'column count is ', _paginationInfo.columnCount);
+            consoleLog('Illegal pageIndex value: ', pageIndex, 'column count is ', _paginationInfo.columnCount);
             pageIndex = pageIndex < 0 ? 0 : _paginationInfo.columnCount;
         }
 
@@ -701,13 +701,13 @@ var ReflowableView = function(options, reader){
         var forced = (isDoublePageSyntheticSpread === false) || (isDoublePageSyntheticSpread === true);
         // excludes 0 and 1 falsy/truthy values which denote non-forced result
 
-// console.debug("isDoublePageSyntheticSpread: " + isDoublePageSyntheticSpread);
-// console.debug("forced: " + forced);
+// consoleLog("isDoublePageSyntheticSpread: " + isDoublePageSyntheticSpread);
+// consoleLog("forced: " + forced);
 //
         if (isDoublePageSyntheticSpread === 0)
         {
             isDoublePageSyntheticSpread = 1; // try double page, will shrink if doesn't fit
-// console.debug("TRYING SPREAD INSTEAD OF SINGLE...");
+// consoleLog("TRYING SPREAD INSTEAD OF SINGLE...");
         }
 
         _paginationInfo.visibleColumnCount = isDoublePageSyntheticSpread ? 2 : 1;
@@ -718,7 +718,7 @@ var ReflowableView = function(options, reader){
             isDoublePageSyntheticSpread = false;
             forced = true;
             _paginationInfo.visibleColumnCount = 1;
-// console.debug("Vertical Writing Mode => single CSS column, but behaves as if two-page spread");
+// consoleLog("Vertical Writing Mode => single CSS column, but behaves as if two-page spread");
         }
 
         if(!_$epubHtml) {
@@ -801,7 +801,7 @@ var ReflowableView = function(options, reader){
         }
         resultingColumnWidth = Math.floor(resultingColumnWidth);
         if ((resultingColumnWidth-1) > MAXW) {
-            console.debug("resultingColumnWidth > MAXW ! " + resultingColumnWidth + " > " + MAXW);
+            consoleLog("resultingColumnWidth > MAXW ! " + resultingColumnWidth + " > " + MAXW);
         }
         
 
@@ -882,13 +882,13 @@ var ReflowableView = function(options, reader){
 
         var dim = (_htmlBodyIsVerticalWritingMode ?  _$epubHtml[0].scrollHeight : scrollWidth);
         if (dim == 0) {
-            console.error("Document dimensions zero?!");
+            consoleError("Document dimensions zero?!");
         }
 
         _paginationInfo.columnCount = (dim + _paginationInfo.columnGap) / (_paginationInfo.columnWidth + _paginationInfo.columnGap);
         _paginationInfo.columnCount = Math.round(_paginationInfo.columnCount);
         if (_paginationInfo.columnCount == 0) {
-            console.error("Column count zero?!");
+            consoleError("Column count zero?!");
         }
 
         var totalGaps = (_paginationInfo.columnCount-1) * _paginationInfo.columnGap;
@@ -897,9 +897,9 @@ var ReflowableView = function(options, reader){
 
         if (colWidthCheck > _paginationInfo.columnWidth)
         {
-            console.debug("ADJUST COLUMN");
-            console.log(_paginationInfo.columnWidth);
-            console.log(colWidthCheck);
+            consoleLog("ADJUST COLUMN");
+            consoleLog(_paginationInfo.columnWidth);
+            consoleLog(colWidthCheck);
 
             _paginationInfo.columnWidth = colWidthCheck;
         }
@@ -972,11 +972,11 @@ var ReflowableView = function(options, reader){
                 _lastBodySize.width = newBodySize.width;
                 _lastBodySize.height = newBodySize.height;
                 
-                console.debug("... updating pagination.");
+                consoleLog("... updating pagination.");
 
                 updatePagination();
             } else {
-                console.debug("... ignored (identical dimensions).");
+                consoleLog("... ignored (identical dimensions).");
             }
         }
 
@@ -1119,7 +1119,7 @@ var ReflowableView = function(options, reader){
     this.getElementByCfi = function(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
 
         if(spineItemIdref != _currentSpineItem.idref) {
-            console.warn("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1129,7 +1129,7 @@ var ReflowableView = function(options, reader){
     this.getElementById = function(spineItemIdref, id) {
 
         if(spineItemIdref != _currentSpineItem.idref) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1139,7 +1139,7 @@ var ReflowableView = function(options, reader){
     this.getElement = function(spineItemIdref, selector) {
 
         if(spineItemIdref != _currentSpineItem.idref) {
-            console.warn("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1216,7 +1216,7 @@ var ReflowableView = function(options, reader){
     this.getElements = function(spineItemIdref, selector) {
 
         if(spineItemIdref != _currentSpineItem.idref) {
-            console.warn("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1240,7 +1240,7 @@ var ReflowableView = function(options, reader){
 
     this.getNodeRangeInfoFromCfi = function (spineIdRef, partialCfi) {
         if (spineIdRef != _currentSpineItem.idref) {
-            console.warn("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1269,7 +1269,7 @@ var ReflowableView = function(options, reader){
 
     this.getDomRangeFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
         if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
-            console.error("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
+            consoleError("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
             return undefined;
         }
         return _navigationLogic.getDomRangeFromRangeCfi(rangeCfi.contentCFI, rangeCfi2? rangeCfi2.contentCFI: null, inclusive);
