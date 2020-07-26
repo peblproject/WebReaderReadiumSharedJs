@@ -216,7 +216,7 @@ var ReflowableView = function(options, reader){
     function renderIframe() {
         if (_$contentFrame) {
             //destroy old contentFrame
-            _$contentFrame.remove();
+            // _$contentFrame.remove();
         }
 
         var template = Helpers.loadTemplate("reflowable_book_page_frame", {});
