@@ -219,9 +219,11 @@ var ReflowableView = function(options, reader){
             // _$contentFrame.remove();
         }
 
-        var template = Helpers.loadTemplate("reflowable_book_page_frame", {});
-        var $bookFrame = $(template);
-        $bookFrame = _$el.append($bookFrame);
+        if (_$el.children().length == 0) {
+            var template = Helpers.loadTemplate("reflowable_book_page_frame", {});
+            var $bookFrame = $(template);
+            $bookFrame = _$el.append($bookFrame);
+        }
 
         _$contentFrame = $("#reflowable-content-frame", $bookFrame);
 
