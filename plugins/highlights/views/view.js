@@ -1,5 +1,5 @@
-define(["jquery", "underscore", "../lib/class", "../lib/length", "../models/text_line_inferrer", "../models/copied_text_styles"],
-function($, _, Class, Length, TextLineInferrer, CopiedTextStyles) {
+define(["underscore", "../lib/class", "../lib/length", "../models/text_line_inferrer", "../models/copied_text_styles"],
+   function(_, Class, Length, TextLineInferrer, CopiedTextStyles) {
     // This is not a backbone view.
 
     var HighlightView = Class.extend({

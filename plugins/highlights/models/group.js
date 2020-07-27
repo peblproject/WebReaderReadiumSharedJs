@@ -1,5 +1,5 @@
-define(["jquery", "underscore", "../lib/class", "./text_line_inferrer", "../views/view", "../views/border_view", "../helpers"],
-function($, _, Class, TextLineInferrer, HighlightView, HighlightBorderView, HighlightHelpers) {
+define(["underscore", "../lib/class", "./text_line_inferrer", "../views/view", "../views/border_view", "../helpers"],
+function(_, Class, TextLineInferrer, HighlightView, HighlightBorderView, HighlightHelpers) {
 
     var debouncedTrigger = _.debounce(
         function(fn, eventName) {

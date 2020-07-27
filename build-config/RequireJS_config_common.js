@@ -35,8 +35,8 @@ require.config({
         "readium_js_plugins":
             process._RJS_rootDir(0) + '/js/plugins_controller',
 
-        jquery:
-            process._RJS_rootDir(0) + '/node_modules/jquery/dist/jquery',
+        // jquery:
+        //     process._RJS_rootDir(0) + '/node_modules/jquery/dist/jquery',
 
         underscore:
             process._RJS_rootDir(0) + '/node_modules/underscore/underscore',
@@ -53,9 +53,6 @@ require.config({
         IPv6:
             process._RJS_rootDir(0) + '/node_modules/urijs/src/IPv6',
 
-        jquerySizes:
-            process._RJS_rootDir(0) + '/node_modules/jquery-sizes/lib/jquery.sizes',
-
         ResizeSensor:
             process._RJS_rootDir(0) + '/node_modules/css-element-queries/src/ResizeSensor',
 
@@ -71,7 +68,7 @@ require.config({
         'cssom':
         process._RJS_rootDir(0) + '/node_modules/cssom/build/CSSOM',
 
-	rangy:
+      	rangy:
         process._RJS_rootDir(0) + '/node_modules/rangy/lib/rangy-core',
 
 

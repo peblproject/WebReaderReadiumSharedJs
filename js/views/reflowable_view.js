@@ -39,10 +39,10 @@ Modified in commit a3b2cb40a46ac90d5f7f8972e74e2cd95b636768
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["../globals", "jquery", "underscore", "eventEmitter", "../models/bookmark_data", "./cfi_navigation_logic",
+define(["../globals", "underscore", "eventEmitter", "../models/bookmark_data", "./cfi_navigation_logic",
     "../models/current_pages_info", "../helpers", "../models/page_open_request",
     "../models/viewer_settings", "ResizeSensor"],
-    function(Globals, $, _, EventEmitter, BookmarkData, CfiNavigationLogic,
+    function(Globals, _, EventEmitter, BookmarkData, CfiNavigationLogic,
              CurrentPagesInfo, Helpers, PageOpenRequest,
              ViewerSettings, ResizeSensor) {
 /**

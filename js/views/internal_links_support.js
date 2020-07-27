@@ -36,7 +36,7 @@ Modified in commit 2bd234647b94a0d9bc00bcee14318d3635ea0701
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(['jquery', '../helpers', 'readium_cfi_js', 'URIjs'], function($, Helpers, EPUBcfi, URI) {
+define(['../helpers', 'readium_cfi_js', 'URIjs'], function(Helpers, EPUBcfi, URI) {
 /**
  *
  * @param reader

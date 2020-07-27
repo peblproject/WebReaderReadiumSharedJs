@@ -26,7 +26,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(['jquery', 'readium_cfi_js'], function($, EPUBcfi) {
+define(['readium_cfi_js'], function(EPUBcfi) {
 /**
  *
  * @param reader

@@ -49,7 +49,7 @@ Modified in commit 5af7ffa58a175bd9f733fe109cd0796ca1df39ba
 *      - $iframe                   Iframe reference, and needs to be set.
 * @constructor
 */
-define(["jquery", "underscore", "../helpers", 'readium_cfi_js'], function($, _, Helpers, EPUBcfi) {
+define(["underscore", "../helpers", 'readium_cfi_js'], function(_, Helpers, EPUBcfi) {
 
 var CfiNavigationLogic = function (options) {
     var self = this;

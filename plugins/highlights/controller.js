@@ -1,5 +1,5 @@
-define(["jquery", "underscore", "./lib/class", "./helpers", "./models/group", "rangy", "readium_cfi_js"],
-       function($, _, Class, HighlightHelpers, HighlightGroup, rangy, EPUBcfi) {
+define(["underscore", "./lib/class", "./helpers", "./models/group", "rangy", "readium_cfi_js"],
+       function(_, Class, HighlightHelpers, HighlightGroup, rangy, EPUBcfi) {
     var HighlightsController = Class.extend({
 
         highlights: [],

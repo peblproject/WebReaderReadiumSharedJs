@@ -27,7 +27,7 @@
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-define(['jquery'],function($) {
+define([],function() {
 
     /**
      *
