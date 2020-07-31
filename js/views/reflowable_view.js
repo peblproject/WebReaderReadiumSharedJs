@@ -859,11 +859,12 @@ var ReflowableView = function(options, reader){
         var userAgent = window.navigator.userAgent.toLowerCase();
         if (userAgent.indexOf("edge") > -1) {
             //Old edge (not chromium)
-            columnCount = Math.floor(_$htmlBody[0].offsetWidth / _paginationInfo.columnWidth);
+            var calculatedColumnWidth = 
+            columnCount = Math.round(_$htmlBody[0].offsetWidth / (_paginationInfo.columnWidth + _paginationInfo.columnGap));
         } else {
             if (_$htmlBody[0].scrollHeight === _$epubHtml[0].offsetHeight) {
                 // Firefox
-                columnCount = Math.floor(_$htmlBody[0].offsetWidth / _paginationInfo.columnWidth);
+                columnCount = Math.round(_$htmlBody[0].offsetWidth / (_paginationInfo.columnWidth + _paginationInfo.columnGap));
             } else if (_$htmlBody[0].scrollHeight === _$epubHtml[0].clientHeight) {
                 // iOS Safari
                 columnCount = Math.ceil(_$htmlBody[0].clientHeight / _$epubHtml[0].offsetHeight);
