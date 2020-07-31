@@ -388,14 +388,14 @@ function(_, Class, TextLineInferrer, HighlightView, HighlightBorderView, Highlig
                     if (pointRectangleIntersection(point, rect)) {
                         mouseIsInside = true;
                         // if event is "click" and there is an active selection
-                        if (e.type === "click") {
-                            var sel = e.target.ownerDocument.getSelection();
-                            // had to add this check to make sure that rangeCount is not 0
-                            if (sel && sel.rangeCount && !sel.getRangeAt(0).collapsed) {
-                                //do not trigger a click when there is an active selection
-                                return;
-                            }
-                        }
+                        // if (e.type === "click") {
+                        //     var sel = e.target.ownerDocument.getSelection();
+                        //     // had to add this check to make sure that rangeCount is not 0
+                        //     if (sel && sel.rangeCount && !sel.getRangeAt(0).collapsed) {
+                        //         //do not trigger a click when there is an active selection
+                        //         return;
+                        //     }
+                        // }
 
                         // var isTouchEvent = e.type.indexOf('touch') !== -1;
 
