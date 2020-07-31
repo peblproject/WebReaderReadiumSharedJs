@@ -24,8 +24,8 @@
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-define(["../globals", "jquery", "underscore", "eventEmitter", "./cfi_navigation_logic", "../helpers", "../models/viewer_settings", "../models/bookmark_data", "ResizeSensor"],
-    function (Globals, $, _, EventEmitter, CfiNavigationLogic, Helpers, ViewerSettings, BookmarkData, ResizeSensor) {
+define(["../globals", "underscore", "eventEmitter", "./cfi_navigation_logic", "../helpers", "../models/viewer_settings", "../models/bookmark_data", "ResizeSensor"],
+    function (Globals, _, EventEmitter, CfiNavigationLogic, Helpers, ViewerSettings, BookmarkData, ResizeSensor) {
 
 /**
  * Renders one page of fixed layout spread
@@ -420,13 +420,13 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                     height: $(bodyElement).height()
                 };
 
-                console.debug("OnePageView content resized ...", newBodySize.width, newBodySize.height, _currentSpineItem.idref);
+                consoleLog("OnePageView content resized ...", newBodySize.width, newBodySize.height, _currentSpineItem.idref);
                 
                 if (newBodySize.width != _lastBodySize.width || newBodySize.height != _lastBodySize.height) {
                     _lastBodySize.width = newBodySize.width;
                     _lastBodySize.height = newBodySize.height;
 
-                    console.debug("... updating pagination.");
+                    consoleLog("... updating pagination.");
 
                     var src = _spine.package.resolveRelativeUrl(_currentSpineItem.href);
 
@@ -436,7 +436,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                     
                     //updatePagination();
                 } else {
-                    console.debug("... ignored (identical dimensions).");
+                    consoleLog("... ignored (identical dimensions).");
                 }
             });
         }
@@ -495,7 +495,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     //this is called by scroll_view for reflowable spine item
     this.resizeIFrameToContent = function () {
         var contHeight = getContentDocHeight();
-        //console.log("resizeIFrameToContent: " + contHeight);
+        //consoleLog("resizeIFrameToContent: " + contHeight);
 
         self.setHeight(contHeight);
 
@@ -576,7 +576,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             return height;
         }
         else if (_$epubHtml) {
-            console.error("getContentDocHeight ??");
+            consoleError("getContentDocHeight ??");
 
             var jqueryHeight = _$epubHtml.height();
             return jqueryHeight;
@@ -606,7 +606,6 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         _$el.css("height", elHeight + "px");
 
         if (!_$epubHtml) {
-//                  debugger;
             return;
         }
 
@@ -748,7 +747,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                     // }
                     //
                     // if (size) {
-                    //     console.warn("Viewport SVG: using viewbox!");
+                    //     consoleError("Viewport SVG: using viewbox!");
                     // }
                 }
             }
@@ -760,7 +759,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             if (content) {
                 size = parseMetaSize(content);
                 if (size) {
-                    console.log("Viewport: using rendition:viewport dimensions");
+                    consoleLog("Viewport: using rendition:viewport dimensions");
                 }
             }
         }
@@ -776,7 +775,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
                 var isImage = _currentSpineItem && _currentSpineItem.media_type && _currentSpineItem.media_type.length && _currentSpineItem.media_type.indexOf("image/") == 0;
                 if (!isImage) {
-                    console.warn("Viewport: using img dimensions!");
+                    consoleError("Viewport: using img dimensions!");
                 }
             }
             else {
@@ -809,7 +808,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
                         isFallbackDimension = true;
 
-                        console.warn("Viewport: using image dimensions!");
+                        consoleError("Viewport: using image dimensions!");
                     }
                 }
             }
@@ -839,7 +838,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
             isFallbackDimension = true;
 
-            console.warn("Viewport: using browser / e-reader viewport dimensions!");
+            consoleError("Viewport: using browser / e-reader viewport dimensions!");
         }
 
         if (size) {
@@ -898,8 +897,8 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                         func();
                     }
                     else {
-                        console.error("onIFrameLoad !! doc && win + TIMEOUT");
-                        console.debug(spineItem.href);
+                        consoleError("onIFrameLoad !! doc && win + TIMEOUT");
+                        consoleLog(spineItem.href);
 
                         onIFrameLoad(success);
 
@@ -924,7 +923,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     //     var parts = viewBoxString.split(' ');
     //
     //     if(parts.length < 4) {
-    //         console.warn(viewBoxString + " value is not valid viewBox size")
+    //         consoleError(viewBoxString + " value is not valid viewBox size")
     //         return undefined;
     //     }
     //
@@ -1005,7 +1004,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     this.getElementByCfi = function (spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
 
         if (spineItemIdref != _currentSpineItem.idref) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1016,7 +1015,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     this.getElementById = function (spineItemIdref, id) {
 
         if (spineItemIdref != _currentSpineItem.idref) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1027,7 +1026,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     this.getElement = function (spineItemIdref, selector) {
 
         if(spineItemIdref != _currentSpineItem.idref) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1069,7 +1068,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     this.getElements = function(spineItemIdref, selector) {
 
         if(spineItemIdref != _currentSpineItem.idref) {
-            console.error("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
 
@@ -1080,7 +1079,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
     this.getNodeRangeInfoFromCfi = function (spineIdRef, partialCfi) {
         if (spineIdRef != _currentSpineItem.idref) {
-            console.warn("spine item is not loaded");
+            consoleError("spine item is not loaded");
             return undefined;
         }
         var navigation = self.getNavigator();

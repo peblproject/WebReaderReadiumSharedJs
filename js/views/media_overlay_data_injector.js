@@ -22,7 +22,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define (["jquery", "underscore", "../helpers", "../models/smil_iterator", 'readium_cfi_js'], function($, _, Helpers, SmilIterator, EPUBcfi) {
+define (["underscore", "../helpers", "../models/smil_iterator", 'readium_cfi_js'], function(_, Helpers, SmilIterator, EPUBcfi) {
 /**
  *
  * @param mediaOverlay
@@ -41,19 +41,19 @@ var MediaOverlayDataInjector = function (mediaOverlay, mediaOverlayPlayer) {
 
         var $body = $("body", contentDocElement);
         if ($body.length == 0) {
-            console.error("! BODY ???");
+            consoleError("! BODY ???");
         }
         else {
             var click = $body.data("mediaOverlayClick");
             if (click) {
-                console.error("[WARN] already mediaOverlayClick");
+                consoleError("[WARN] already mediaOverlayClick");
             }
             else {
                 $body.data("mediaOverlayClick", {ping: "pong"});
 
                 var touchClickMOEventHandler = function (event)
                 {
-                    //console.debug("MO TOUCH-DOWN: "+event.type);
+                    //consoleLog("MO TOUCH-DOWN: "+event.type);
                     
                     var elem = $(this)[0]; // body
                     elem = event.target; // body descendant
@@ -64,7 +64,7 @@ var MediaOverlayDataInjector = function (mediaOverlay, mediaOverlayPlayer) {
                         return true;
                     }
 
-//console.debug("MO CLICK: " + elem.id);
+//consoleLog("MO CLICK: " + elem.id);
 
                     var data = undefined;
                     var el = elem;
@@ -92,19 +92,19 @@ var MediaOverlayDataInjector = function (mediaOverlay, mediaOverlayPlayer) {
                     {
                         if (el !== elem)
                         {
-//console.log("MO CLICK REDIRECT: " + el.id);
+//consoleLog("MO CLICK REDIRECT: " + el.id);
                         }
 
                         if (!mediaOverlaySettings.mediaOverlaysEnableClick)
                         {
-console.log("MO CLICK DISABLED");
+consoleLog("MO CLICK DISABLED");
                             mediaOverlayPlayer.touchInit();
                             return true;
                         }
 
                         if (inLink)
                         {
-console.log("MO CLICKED LINK");
+consoleLog("MO CLICKED LINK");
                             mediaOverlayPlayer.touchInit();
                             return true;
                         }
@@ -113,7 +113,7 @@ console.log("MO CLICKED LINK");
 
                         if (el && el != elem && el.nodeName.toLowerCase() === "body" && par && !par.getSmil().id)
                         {
-//console.debug("MO CLICKED BLANK BODY");
+//consoleLog("MO CLICKED BLANK BODY");
                             mediaOverlayPlayer.touchInit();
                             return true;
                         }
@@ -130,7 +130,7 @@ console.log("MO CLICKED LINK");
                         }
                         if (readaloud)
                         {
-console.debug("MO readaloud attr: " + readaloud);
+consoleLog("MO readaloud attr: " + readaloud);
 
                             var isPlaying = mediaOverlayPlayer.isPlaying();
                             if (readaloud === "start" && !isPlaying ||
@@ -163,7 +163,7 @@ console.debug("MO readaloud attr: " + readaloud);
         var smil = mediaOverlay.getSmilBySpineItem(spineItem);
         if (!smil)
         {
-            console.error("NO SMIL?? " + spineItem.idref + " /// " + spineItem.media_overlay_id);
+            consoleError("NO SMIL?? " + spineItem.idref + " /// " + spineItem.media_overlay_id);
             return;
         }
 
@@ -175,7 +175,7 @@ console.debug("MO readaloud attr: " + readaloud);
             {
                // if (root.element)
                // {
-               //     console.error("WARN: seq.element already set: " + root.textref);
+               //     consoleError("WARN: seq.element already set: " + root.textref);
                // }
                    
                if (root.textref)
@@ -184,21 +184,21 @@ console.debug("MO readaloud attr: " + readaloud);
                    var file = parts[0];
                    var fragmentId = (parts.length === 2) ? parts[1] : "";
                    // 
-                   // console.debug(root.textref);
-                   // console.debug(fragmentId);
-                   // console.log("---- SHOULD BE EQUAL:");
-                   // console.debug(file);
-                   // console.debug(par.text.srcFile);
+                   // consoleLog(root.textref);
+                   // consoleLog(fragmentId);
+                   // consoleLog("---- SHOULD BE EQUAL:");
+                   // consoleLog(file);
+                   // consoleLog(par.text.srcFile);
                    // 
                    // if (file !== par.text.srcFile)
                    // {
-                   //     console.error("adjustParToSeqSyncGranularity textref.file !== par.text.srcFile ???");
+                   //     consoleError("adjustParToSeqSyncGranularity textref.file !== par.text.srcFile ???");
                    //     return par;
                    // }
                    // 
                    // if (!fragmentId)
                    // {
-                   //     console.error("adjustParToSeqSyncGranularity !fragmentId ???");
+                   //     consoleError("adjustParToSeqSyncGranularity !fragmentId ???");
                    //     return par;
                    // }
 
@@ -212,7 +212,7 @@ console.debug("MO readaloud attr: " + readaloud);
                    
                            if (!root.element)
                            {
-                               console.error("seq.textref !element? " + root.textref);
+                               consoleError("seq.textref !element? " + root.textref);
                            }
 
                            // var selector = "#" + Helpers.escapeJQuerySelector(fragmentId);
@@ -237,7 +237,7 @@ console.debug("MO readaloud attr: " + readaloud);
         };
         traverseSmilSeqs(smil);
 
-//console.debug("[[MO ATTACH]] " + spineItem.idref + " /// " + spineItem.media_overlay_id + " === " + smil.id);
+//consoleLog("[[MO ATTACH]] " + spineItem.idref + " /// " + spineItem.media_overlay_id + " === " + smil.id);
 
         var iter = new SmilIterator(smil);
         
@@ -269,7 +269,7 @@ console.debug("MO readaloud attr: " + readaloud);
                             {
                                 partial = partial.substr(fakeOpfRoot.length, partial.length - fakeOpfRoot.length);
                             }
-//console.log(partial);
+//consoleLog(partial);
                             var parts = partial.split(",");
                             if (parts && parts.length === 3)
                             {
@@ -281,7 +281,7 @@ console.debug("MO readaloud attr: " + readaloud);
                 ["cfi-marker", "mo-cfi-highlight"],
                 [],
                 ["MathJax_Message"]);
-//console.log(infoStart);
+//consoleLog(infoStart);
 
                                     var partialEndCfi = parts[0] + parts[2];
                                     var endCFI = "epubcfi(" + partialEndCfi + ")";
@@ -289,7 +289,7 @@ console.debug("MO readaloud attr: " + readaloud);
                 ["cfi-marker", "mo-cfi-highlight"],
                 [],
                 ["MathJax_Message"]);
-//console.log(infoEnd);
+//consoleLog(infoEnd);
 
                                     var cfiTextParent = infoStart.textNode.parentNode;
 
@@ -321,7 +321,7 @@ console.debug("MO readaloud attr: " + readaloud);
                                     {
                                         if (modata.par)
                                         {
-                                            console.error("[WARN] non-CFI MO DATA already exists!");
+                                            consoleError("[WARN] non-CFI MO DATA already exists!");
                                             modata.par = undefined;
                                         }
 
@@ -335,7 +335,7 @@ console.debug("MO readaloud attr: " + readaloud);
                                                 if (par === iter.currentPar)
                                                 {
                                                     found = true;
-                                                    console.error("[WARN] mediaOverlayData CFI PAR already registered!");
+                                                    consoleError("[WARN] mediaOverlayData CFI PAR already registered!");
                                                 }
                                             }
                                         }
@@ -353,7 +353,7 @@ console.debug("MO readaloud attr: " + readaloud);
                                 }
                                 catch (error)
                                 {
-                                    console.error(error);
+                                    consoleError(error);
                                 }
                             }
                             else
@@ -368,13 +368,13 @@ console.debug("MO readaloud attr: " + readaloud);
                                 }
                                 catch (error)
                                 {
-                                    console.error(error);
+                                    consoleError(error);
                                 }
                             }
                         }
                         else 
                         {
-                            console.error("SMIL text@src CFI fragment identifier scheme not supported: " + iter.currentPar.text.srcFragmentId);
+                            consoleError("SMIL text@src CFI fragment identifier scheme not supported: " + iter.currentPar.text.srcFragmentId);
                         }
                     }
                     else
@@ -395,7 +395,7 @@ console.debug("MO readaloud attr: " + readaloud);
                         if (!isCfiTextRange)
                         {
                             if (iter.currentPar.element && iter.currentPar.element !== $element[0]) {
-                                console.error("DIFFERENT ELEMENTS??! " + iter.currentPar.text.srcFragmentId + " /// " + iter.currentPar.element.id);
+                                consoleError("DIFFERENT ELEMENTS??! " + iter.currentPar.text.srcFragmentId + " /// " + iter.currentPar.element.id);
                             }
 
                             var name = $element[0].nodeName ? $element[0].nodeName.toLowerCase() : undefined;
@@ -407,10 +407,10 @@ console.debug("MO readaloud attr: " + readaloud);
 
                             var modata = $element.data("mediaOverlayData");
                             if (modata) {
-                                console.error("[WARN] MO DATA already exists.");
+                                consoleError("[WARN] MO DATA already exists.");
 
                                 if (modata.par && modata.par !== iter.currentPar) {
-                                    console.error("DIFFERENT PARS??!");
+                                    consoleError("DIFFERENT PARS??!");
                                 }
                             }
 
@@ -419,7 +419,7 @@ console.debug("MO readaloud attr: " + readaloud);
                             /*
                              $element.click(function() {
                              var elem = $(this)[0];
-                             console.debug("MO CLICK (ELEM): " + elem.id);
+                             consoleLog("MO CLICK (ELEM): " + elem.id);
 
                              var par = $(this).data("mediaOverlayData").par;
                              mediaOverlayPlayer.playUserPar(par);
@@ -428,11 +428,11 @@ console.debug("MO readaloud attr: " + readaloud);
                         }
                     }
                     else {
-                        console.error("!! CANNOT FIND ELEMENT: " + iter.currentPar.text.srcFragmentId + " == " + iter.currentPar.text.srcFile + " /// " + spineItem.href);
+                        consoleError("!! CANNOT FIND ELEMENT: " + iter.currentPar.text.srcFragmentId + " == " + iter.currentPar.text.srcFile + " /// " + spineItem.href);
                     }
                 }
                 else {
-//console.debug("[INFO] " + spineItem.href + " != " + textRelativeRef + " # " + iter.currentPar.text.srcFragmentId);
+//consoleLog("[INFO] " + spineItem.href + " != " + textRelativeRef + " # " + iter.currentPar.text.srcFragmentId);
                 }
             }
 

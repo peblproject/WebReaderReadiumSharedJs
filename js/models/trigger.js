@@ -25,7 +25,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["jquery", "../helpers"], function($, Helpers) {
+define(["../helpers"], function(Helpers) {
 /**
  * Trigger in an epub publication.
  *
@@ -140,7 +140,7 @@ Trigger.prototype.execute = function(dom) {
             $target[0].muted = false;
             break;
         default:
-            console.log("do not no how to handle trigger " + this.action);
+            consoleLog("do not no how to handle trigger " + this.action);
             return null;
     }
     return false;   // do not propagate click event; it was already handled

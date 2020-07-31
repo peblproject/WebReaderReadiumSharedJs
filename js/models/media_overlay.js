@@ -289,7 +289,7 @@ var MediaOverlay = function(packageModel) {
             if(smil.spineItemId === spineItem.idref) {
                 if (spineItem.media_overlay_id !== smil.id)
                 {
-                    console.error("SMIL INCORRECT ID?? " + spineItem.media_overlay_id + " /// " + smil.id);
+                    consoleError("SMIL INCORRECT ID?? " + spineItem.media_overlay_id + " /// " + smil.id);
                 }
                 return smil;
             }
@@ -370,39 +370,39 @@ MediaOverlay.fromDTO = function(moDTO, packageModel) {
     mo.duration = moDTO.duration;
     if (mo.duration && mo.duration.length && mo.duration.length > 0)
     {
-        console.error("SMIL total duration is string, parsing float... (" + mo.duration + ")");
+        consoleError("SMIL total duration is string, parsing float... (" + mo.duration + ")");
         mo.duration = parseFloat(mo.duration);
     }
     if (mo.DEBUG)
-        console.debug("Media Overlay Duration (TOTAL): " + mo.duration);
+        consoleLog("Media Overlay Duration (TOTAL): " + mo.duration);
 
     mo.narrator = moDTO.narrator;
     if (mo.DEBUG)
-        console.debug("Media Overlay Narrator: " + mo.narrator);
+        consoleLog("Media Overlay Narrator: " + mo.narrator);
 
     mo.activeClass = moDTO.activeClass;
     if (mo.DEBUG)
-        console.debug("Media Overlay Active-Class: " + mo.activeClass);
+        consoleLog("Media Overlay Active-Class: " + mo.activeClass);
 
     mo.playbackActiveClass = moDTO.playbackActiveClass;
     if (mo.DEBUG)
-        console.debug("Media Overlay Playback-Active-Class: " + mo.playbackActiveClass);
+        consoleLog("Media Overlay Playback-Active-Class: " + mo.playbackActiveClass);
 
     var count = moDTO.smil_models.length;
     if (mo.DEBUG)
-        console.debug("Media Overlay SMIL count: " + count);
+        consoleLog("Media Overlay SMIL count: " + count);
 
     for(var i = 0; i < count; i++) {
         var smilModel = SmilModel.fromSmilDTO(moDTO.smil_models[i], mo);
         mo.smil_models.push(smilModel);
 
         if (mo.DEBUG)
-            console.debug("Media Overlay Duration (SPINE ITEM): " + smilModel.duration);
+            consoleLog("Media Overlay Duration (SPINE ITEM): " + smilModel.duration);
     }
 
     count = moDTO.skippables.length;
     if (mo.DEBUG)
-        console.debug("Media Overlay SKIPPABLES count: " + count);
+        consoleLog("Media Overlay SKIPPABLES count: " + count);
 
     for(var i = 0; i < count; i++) {
         mo.skippables.push(moDTO.skippables[i]);
@@ -410,7 +410,7 @@ MediaOverlay.fromDTO = function(moDTO, packageModel) {
 
     count = moDTO.escapables.length;
     if (mo.DEBUG)
-        console.debug("Media Overlay ESCAPABLES count: " + count);
+        consoleLog("Media Overlay ESCAPABLES count: " + count);
 
     for(var i = 0; i < count; i++) {
         mo.escapables.push(moDTO.escapables[i]);

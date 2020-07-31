@@ -24,7 +24,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(['jquery', 'underscore', 'eventEmitter', './controller', './helpers', 'readium_shared_js/models/bookmark_data'], function($, _, EventEmitter, HighlightsController, HighlightHelpers, BookmarkData) {
+define(['underscore', 'eventEmitter', './controller', './helpers', 'readium_shared_js/models/bookmark_data'], function(_, EventEmitter, HighlightsController, HighlightHelpers, BookmarkData) {
 
 var defaultContext = {};
 

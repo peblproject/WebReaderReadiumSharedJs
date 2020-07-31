@@ -27,7 +27,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
+define(["underscore", "eventEmitter"], function (_, EventEmitter) {
 
     var _registeredPlugins = {};
     var _readyCallback = null;
@@ -197,11 +197,11 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
         },
 
         warn: function (msg) {
-            console.warn("Plugin " + this.name + ": " + msg);
+            consoleError("Plugin " + this.name + ": " + msg);
         },
 
         deprecationNotice: function (deprecated, replacement) {
-            console.warn("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use "
+            consoleError("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use "
 			 + replacement + " instead");
         },
 

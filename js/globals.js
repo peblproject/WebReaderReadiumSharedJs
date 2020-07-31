@@ -25,7 +25,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(['jquery','eventEmitter'], function($, EventEmitter) {
+define(['eventEmitter'], function(EventEmitter) {
     
     var DEBUG = false;
     
@@ -129,7 +129,7 @@ var Globals = {
     
     logEvent: function(eventName, eventType, eventSource) {
         if (DEBUG) {
-            console.debug("#### ReadiumSDK.Events." + eventName + " - "+eventType+" - " + eventSource);
+            consoleError("#### ReadiumSDK.Events." + eventName + " - "+eventType+" - " + eventSource);
         }
     }
 };

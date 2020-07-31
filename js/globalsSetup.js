@@ -12,10 +12,10 @@
 //  prior written permission.
 
 //'text!empty:'
-define(['./globals', 'jquery', 'console_shim', 'es6-shim', 'eventEmitter', 'URIjs', 'readium_cfi_js', 'readium_js_plugins'],
-function (Globals, $, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, PluginsController) {
+define(['./globals', 'console_shim', 'es6-shim', 'eventEmitter', 'URIjs', 'readium_cfi_js', 'readium_js_plugins'],
+function (Globals, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, PluginsController) {
 
-    console.log("Globals...");
+    consoleLog("Globals...");
 
     // https://tc39.github.io/ecma262/#sec-array.prototype.includes
     if (!Array.prototype.includes) {
@@ -70,10 +70,10 @@ function (Globals, $, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, Plugins
     }
 
     if (window["ReadiumSDK"]) {
-        console.log("ReadiumSDK extend.");
+        consoleLog("ReadiumSDK extend.");
         $.extend(Globals, window.ReadiumSDK);
     } else {
-        console.log("ReadiumSDK set.");
+        consoleLog("ReadiumSDK set.");
     }
 
     window.ReadiumSDK = Globals;
@@ -110,7 +110,7 @@ function (Globals, $, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, Plugins
 	    if (window._RJS_isBrowser) {
 		// If under a browser env and using RequireJS, dynamically require all plugins
 		var pluginsList = window._RJS_pluginsList;
-		console.log("Plugins included: ", pluginsList.map(function(v) {
+		consoleLog("Plugins included: ", pluginsList.map(function(v) {
 		    // To stay consistent with bundled output
 		    return v.replace('readium_plugin_', '');
 		}));
@@ -121,7 +121,7 @@ function (Globals, $, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, Plugins
 		setTimeout(function() {
 		    // Assume that in the next callback all the plugins have been registered
 		    var pluginsList = Object.keys(PluginsController.getLoadedPlugins());
-		    console.log("Plugins included: ", pluginsList);
+		    consoleLog("Plugins included: ", pluginsList);
 		}, 0);
 	    }	    
 	}
@@ -129,7 +129,7 @@ function (Globals, $, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, Plugins
         try {
             PluginsController.initialize(reader, pluginsLoaded);
         } catch (ex) {
-            console.error("Plugins failed to initialize:", ex);
+            consoleError("Plugins failed to initialize:", ex);
         }
 
     });
