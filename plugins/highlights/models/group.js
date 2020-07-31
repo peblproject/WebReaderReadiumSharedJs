@@ -99,9 +99,7 @@ function($, _, Class, TextLineInferrer, HighlightView, HighlightBorderView, High
         // remove them by specifying <eventname>.<namespace> only, rather than classic callback function
         getBoundHighlightContainerEvents: function() {
             // these are the event names that we handle in "onHighlightEvent"
-            var boundHighlightContainerEvents = ["click", "touchstart", "touchend", "touchmove", "contextmenu",
-                "mouseenter", "mouseleave", "mousemove", "mousedown"
-            ];
+            var boundHighlightContainerEvents = ["click", "touchstart", "touchend", "touchmove", "contextmenu", "mousedown"];
             var namespace = ".rdjsam-" + this.id;
             return boundHighlightContainerEvents.map(function(e) {
                 return e + namespace;
@@ -399,33 +397,34 @@ function($, _, Class, TextLineInferrer, HighlightView, HighlightBorderView, High
                             }
                         }
 
-                        var isTouchEvent = e.type.indexOf('touch') !== -1;
+                        // var isTouchEvent = e.type.indexOf('touch') !== -1;
 
-                        if (isTouchEvent) {
-                            // call "normal" event handler for HL group to touch capable devices
-                            that.onHighlightEvent(e, e.type);
-                        }
+                        // if (isTouchEvent) {
+                        //     // call "normal" event handler for HL group to touch capable devices
+                        //     that.onHighlightEvent(e, e.type);
+                        // }
 
-                        // if this is the first time we are mouse entering in the area
-                        if (!mouseEntered) {
-                            // regardless of the actual event type we want highlightGroupCallback process "mouseenter"
-                            that.onHighlightEvent(e, "mouseenter");
+                        // // if this is the first time we are mouse entering in the area
+                        // if (!mouseEntered) {
+                        //     // regardless of the actual event type we want highlightGroupCallback process "mouseenter"
+                        //     that.onHighlightEvent(e, "mouseenter");
 
-                            // set flag indicating that we are in HL group confines
-                            mouseEntered = true;
-                            return;
-                        } else if (!isTouchEvent) {
-                            // call "normal" event handler for HL group to desktop devices
-                            that.onHighlightEvent(e, e.type);
-                        }
+                        //     // set flag indicating that we are in HL group confines
+                        //     mouseEntered = true;
+                        //     return;
+                        // } else if (!isTouchEvent) {
+                        //     // call "normal" event handler for HL group to desktop devices
+                        //     that.onHighlightEvent(e, e.type);
+                        // }
+                        that.onHighlightEvent(e, e.type);
                     }
                 });
 
-                if (!mouseIsInside && mouseEntered) {
-                    // set flag indicating that we left HL group confines
-                    mouseEntered = false;
-                    that.onHighlightEvent(e, "mouseleave");
-                }
+                // if (!mouseIsInside && mouseEntered) {
+                //     // set flag indicating that we left HL group confines
+                //     mouseEntered = false;
+                //     that.onHighlightEvent(e, "mouseleave");
+                // }
             };
             that.boundHighlightElement = $html;
             $html.on(this.getBoundHighlightContainerEvents(), that.boundHighlightCallback);

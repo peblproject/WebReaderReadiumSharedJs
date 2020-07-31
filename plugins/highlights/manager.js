@@ -93,8 +93,8 @@ var HighlightsManager = function (proxyObj, options) {
         mangleEvent('annotationClicked');
         mangleEvent('annotationTouched');
         mangleEvent('annotationRightClicked');
-        mangleEvent('annotationHoverIn');
-        mangleEvent('annotationHoverOut');
+        // mangleEvent('annotationHoverIn');
+        // mangleEvent('annotationHoverOut');
 
         originalEmit.apply(self, args);
         originalEmit.apply(proxy, args);
