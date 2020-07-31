@@ -859,7 +859,6 @@ var ReflowableView = function(options, reader){
         var userAgent = window.navigator.userAgent.toLowerCase();
         if (userAgent.indexOf("edge") > -1) {
             //Old edge (not chromium)
-            var calculatedColumnWidth = 
             columnCount = Math.round(_$htmlBody[0].offsetWidth / (_paginationInfo.columnWidth + _paginationInfo.columnGap));
         } else {
             if (_$htmlBody[0].scrollHeight === _$epubHtml[0].offsetHeight) {
