@@ -67,10 +67,10 @@ define(["underscore", "./lib/class", "./helpers", "./models/group", "rangy", "re
                     visibleCfiRange.lastVisibleCfi &&
                     visibleCfiRange.lastVisibleCfi.contentCFI) {
 
-                    visible = that._cfiIsBetweenTwoCfis(
-                        highlightGroup.CFI,
-                        visibleCfiRange.firstVisibleCfi.contentCFI,
-                        visibleCfiRange.lastVisibleCfi.contentCFI);
+                    // visible = that._cfiIsBetweenTwoCfis(
+                    //     highlightGroup.CFI,
+                    //     visibleCfiRange.firstVisibleCfi.contentCFI,
+                    //     visibleCfiRange.lastVisibleCfi.contentCFI);
                 }
                 highlightGroup.visible = visible;
                 highlightGroup.resetHighlights(that.readerBoundElement, paginationOffsets.top, paginationOffsets.left);
