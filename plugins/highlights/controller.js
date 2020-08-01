@@ -351,18 +351,18 @@ define(["underscore", "./lib/class", "./helpers", "./models/group", "rangy", "re
                 offsetLeft = this.offsetLeftAddition;
             }
 
-            var visible;
+            var visible = true;
             // check if the options specify lastVisibleCfi/firstVisibleCfi. If they don't fall back to displaying the highlights anyway.
-            var visibleCfiRange = this.getVisibleCfiRange();
-            if (visibleCfiRange &&
-                visibleCfiRange.firstVisibleCfi &&
-                visibleCfiRange.firstVisibleCfi.contentCFI &&
-                visibleCfiRange.lastVisibleCfi &&
-                visibleCfiRange.lastVisibleCfi.contentCFI) {
-                visible = this._cfiIsBetweenTwoCfis(CFI, visibleCfiRange.firstVisibleCfi.contentCFI, visibleCfiRange.lastVisibleCfi.contentCFI);
-            } else {
-                visible = true;
-            }
+            // var visibleCfiRange = this.getVisibleCfiRange();
+            // if (visibleCfiRange &&
+            //     visibleCfiRange.firstVisibleCfi &&
+            //     visibleCfiRange.firstVisibleCfi.contentCFI &&
+            //     visibleCfiRange.lastVisibleCfi &&
+            //     visibleCfiRange.lastVisibleCfi.contentCFI) {
+            //     visible = this._cfiIsBetweenTwoCfis(CFI, visibleCfiRange.firstVisibleCfi.contentCFI, visibleCfiRange.lastVisibleCfi.contentCFI);
+            // } else {
+            //     visible = true;
+            // }
 	  
             if (this.annotationHash[annotationId])
 		this.removeHighlight(annotationId);
