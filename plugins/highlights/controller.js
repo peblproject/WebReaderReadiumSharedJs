@@ -352,6 +352,7 @@ define(["underscore", "./lib/class", "./helpers", "./models/group", "rangy", "re
             }
 
             var visible = true;
+            
             // check if the options specify lastVisibleCfi/firstVisibleCfi. If they don't fall back to displaying the highlights anyway.
             // var visibleCfiRange = this.getVisibleCfiRange();
             // if (visibleCfiRange &&
