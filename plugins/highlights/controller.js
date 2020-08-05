@@ -364,6 +364,7 @@ define(["underscore", "./lib/class", "./helpers", "./models/group", "rangy", "re
             // } else {
             //     visible = true;
             // }
+            
 	  
             if (this.annotationHash[annotationId])
 		this.removeHighlight(annotationId);
