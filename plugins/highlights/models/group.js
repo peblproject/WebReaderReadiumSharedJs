@@ -369,6 +369,9 @@ function(_, Class, TextLineInferrer, HighlightView, HighlightBorderView, Highlig
                 var scale = calculateScale();
                 var mouseIsInside = false;
 
+                if (!e.target.classList.contains('rd-highlight'))
+                    return;
+
                 var x = e.pageX;
                 var y = e.pageY;
 
