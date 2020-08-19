@@ -409,6 +409,17 @@ var ReaderView = function (options) {
         _spine = _package.spine;
         _spine.handleLinear(true);
 
+        // Init PeBL book
+
+        var urlParams = new URLSearchParams(window.location.search);
+        var epub = urlParams.get('epub');
+
+        PeBL.emitEvent(PeBL.events.newBook, {
+           book: window.location.origin + '/?epub=' + encodeURIComponent(epub),
+           bookTitle: packageData.metadata.title,
+           bookId: packageData.metadata.id
+        });
+
         // Set up documents for search
 
         var fetcher = window.READIUM.getCurrentPublicationFetcher();
