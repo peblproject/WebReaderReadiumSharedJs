@@ -183,6 +183,27 @@ var Spine = function(epubPackage, spineDTO) {
     };
 
     /**
+     * Deletes a spine item 
+     *
+     * @method     removeItem
+     * @param      {Models.SpineItem} item  a spine item
+     * @return     {Models.SpineItem} the next or previous valid item
+    */
+    this.removeItem = function(idref) {
+        var length = self.items.length;
+
+        for(var i = 0; i < length; i++) {
+            if(self.items[i].idref == idref) {
+                self.items.splice(i, 1);
+                if (i === length - 1)
+                    return self.items[i - 1];
+                else
+                    return self.items[i];
+            }
+        }
+    }
+
+    /**
      * Gets the relative URL of a spine item. 
      *
      * @method     getItemUrl
