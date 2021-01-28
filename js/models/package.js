@@ -127,8 +127,8 @@ var Package = function(packageData){
         try {
             relativeUrlUri = new URI(relativeUrl);
         } catch(err) {
-            consoleError(err);
-            consoleLog(relativeUrl);
+            console.error(err);
+            console.log(relativeUrl);
         }
         if (relativeUrlUri && relativeUrlUri.is("absolute")) return relativeUrl; //relativeUrlUri.scheme() == "http://", "https://", "data:", etc.
 
@@ -141,8 +141,8 @@ var Package = function(packageData){
                 //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
                 url = new URI(url).search('').hash('').toString();
             } catch(err) {
-                consoleError(err);
-                consoleLog(url);
+                console.error(err);
+                console.log(url);
             }
             
             if(Helpers.EndsWith(url, "/")){
@@ -169,8 +169,8 @@ var Package = function(packageData){
         try {
             relativeUrlUri = new URI(relativeUrl);
         } catch(err) {
-            consoleError(err);
-            consoleLog(relativeUrl);
+            console.error(err);
+            console.log(relativeUrl);
         }
         if (relativeUrlUri && relativeUrlUri.is("absolute")) return relativeUrl; //relativeUrlUri.scheme() == "http://", "https://", "data:", etc.
 
@@ -183,8 +183,8 @@ var Package = function(packageData){
                 //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
                 url = new URI(url).search('').hash('').toString();
             } catch(err) {
-                consoleError(err);
-                consoleLog(url);
+                console.error(err);
+                console.log(url);
             }
             
             if(Helpers.EndsWith(url, "/")){

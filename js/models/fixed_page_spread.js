@@ -159,7 +159,7 @@ var Spread = function(spine, isSyntheticSpread) {
         else {
 
             if(position != Spread.POSITION_CENTER) {
-                consoleError("Unrecognized position value");
+                console.error("Unrecognized position value");
             }
 
             self.centerItem = item;

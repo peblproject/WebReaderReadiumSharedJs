@@ -201,7 +201,7 @@ var SpineItem = function(itemData, index, spine){
             self.page_spread != SpineItem.SPREAD_RIGHT &&
             self.page_spread != SpineItem.SPREAD_CENTER ) {
 
-            consoleError(self.page_spread + " is not a recognized spread type");
+            console.error(self.page_spread + " is not a recognized spread type");
         }
     };
 

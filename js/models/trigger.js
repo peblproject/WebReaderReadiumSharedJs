@@ -140,7 +140,7 @@ Trigger.prototype.execute = function(dom) {
             $target[0].muted = false;
             break;
         default:
-            consoleLog("do not no how to handle trigger " + this.action);
+            console.log("do not no how to handle trigger " + this.action);
             return null;
     }
     return false;   // do not propagate click event; it was already handled

@@ -662,28 +662,28 @@ Smil.TextNode = function(parent) {
 //         item.srcFragmentId = (srcParts.length === 2) ? srcParts[1] : "";
         
         var src = this.srcFile ? this.srcFile : this.src;
-// consoleLog("src: " + src);
-// consoleLog("smilData.href: " + smilData.href);
+// console.log("src: " + src);
+// console.log("smilData.href: " + smilData.href);
         var ref = Helpers.ResolveContentRef(src, smilData.href);
-//consoleLog("ref: " + ref);
+//console.log("ref: " + ref);
         var full = smilData.mo.package.resolveRelativeUrlMO(ref);
-// consoleLog("full: " + full);
-// consoleLog("---");
+// console.log("full: " + full);
+// console.log("---");
         for (var j = 0; j < smilData.mo.package.spine.items.length; j++)
         {
             var item = smilData.mo.package.spine.items[j];
-//consoleLog("item.href: " + item.href);
+//console.log("item.href: " + item.href);
             var url = smilData.mo.package.resolveRelativeUrl(item.href);
-//consoleLog("url: " + url);
+//console.log("url: " + url);
             if (url === full)
             {
-//consoleError("FOUND: " + item.idref);
+//console.error("FOUND: " + item.idref);
                 this.manifestItemId = item.idref;
                 return;
             }
         }
         
-        consoleError("Cannot set the Media ManifestItemId? " + this.src + " && " + smilData.href);
+        console.error("Cannot set the Media ManifestItemId? " + this.src + " && " + smilData.href);
         
 //        throw "BREAK";
     };
@@ -960,7 +960,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
 
     if (mo.DEBUG)
     {
-        consoleLog("Media Overlay DTO import...");
+        console.log("Media Overlay DTO import...");
     }
 
     // Debug level indenting function
@@ -985,7 +985,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
     smilModel.duration = smilDTO.duration;
     if (smilModel.duration && smilModel.duration.length && smilModel.duration.length > 0)
     {
-        consoleError("SMIL duration is string, parsing float... (" + smilModel.duration + ")");
+        console.error("SMIL duration is string, parsing float... (" + smilModel.duration + ")");
         smilModel.duration = parseFloat(smilModel.duration);
     }
     
@@ -993,11 +993,11 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
 
     if (smilModel.mo.DEBUG)
     {
-        consoleLog("JS MO smilVersion=" + smilModel.smilVersion);
-        consoleLog("JS MO id=" + smilModel.id);
-        consoleLog("JS MO spineItemId=" + smilModel.spineItemId);
-        consoleLog("JS MO href=" + smilModel.href);
-        consoleLog("JS MO duration=" + smilModel.duration);
+        console.log("JS MO smilVersion=" + smilModel.smilVersion);
+        console.log("JS MO id=" + smilModel.id);
+        console.log("JS MO spineItemId=" + smilModel.spineItemId);
+        console.log("JS MO href=" + smilModel.href);
+        console.log("JS MO duration=" + smilModel.duration);
     }
 
     // Safe copy, helper function
@@ -1007,18 +1007,18 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
         { // && from[property] !== ""
 
             if( !(property in to) ) {
-                consoleLog("property " + property + " not declared in smil node " + to.nodeType);
+                console.log("property " + property + " not declared in smil node " + to.nodeType);
             }
 
             to[property] = from[property];
 
             if (smilModel.mo.DEBUG)
             {
-            consoleLog(getIndent() + "JS MO: [" + property + "=" + to[property] + "]");
+            console.log(getIndent() + "JS MO: [" + property + "=" + to[property] + "]");
             }
         }
         else if(isRequired) {
-            consoleLog("Required property " + property + " not found in smil node " + from.nodeType);
+            console.log("Required property " + property + " not found in smil node " + from.nodeType);
         }
     };
 
@@ -1031,7 +1031,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
 
             if (smilModel.mo.DEBUG)
             {
-            consoleLog(getIndent() + "JS MO seq");
+            console.log(getIndent() + "JS MO seq");
             }
 
             node = new Smil.SeqNode(parent);
@@ -1053,7 +1053,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
 
             if (smilModel.mo.DEBUG)
             {
-            consoleLog(getIndent() + "JS MO par");
+            console.log(getIndent() + "JS MO par");
             }
 
             node = new Smil.ParNode(parent);
@@ -1080,7 +1080,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
                     node.audio = child;
                 }
                 else {
-                    consoleError("Unexpected smil node type: " + child.nodeType);
+                    console.error("Unexpected smil node type: " + child.nodeType);
                 }
             }
 
@@ -1104,7 +1104,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
 
             if (smilModel.mo.DEBUG)
             {
-            consoleLog(getIndent() + "JS MO text");
+            console.log(getIndent() + "JS MO text");
             }
 
             node = new Smil.TextNode(parent);
@@ -1120,7 +1120,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
 
             if (smilModel.mo.DEBUG)
             {
-            consoleLog(getIndent() + "JS MO audio");
+            console.log(getIndent() + "JS MO audio");
             }
 
             node = new Smil.AudioNode(parent);
@@ -1131,14 +1131,14 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
             safeCopyProperty("clipBegin", nodeDTO, node);
             if (node.clipBegin && node.clipBegin.length && node.clipBegin.length > 0)
             {
-                consoleError("SMIL clipBegin is string, parsing float... (" + node.clipBegin + ")");
+                console.error("SMIL clipBegin is string, parsing float... (" + node.clipBegin + ")");
                 node.clipBegin = parseFloat(node.clipBegin);
             }
             if (node.clipBegin < 0)
             {
                 if (smilModel.mo.DEBUG)
                 {
-                    consoleLog(getIndent() + "JS MO clipBegin adjusted to ZERO");
+                    console.log(getIndent() + "JS MO clipBegin adjusted to ZERO");
                 }
                 node.clipBegin = 0;
             }
@@ -1146,14 +1146,14 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
             safeCopyProperty("clipEnd", nodeDTO, node);
             if (node.clipEnd && node.clipEnd.length && node.clipEnd.length > 0)
             {
-                consoleError("SMIL clipEnd is string, parsing float... (" + node.clipEnd + ")");
+                console.error("SMIL clipEnd is string, parsing float... (" + node.clipEnd + ")");
                 node.clipEnd = parseFloat(node.clipEnd);
             }
             if (node.clipEnd <= node.clipBegin)
             {
                 if (smilModel.mo.DEBUG)
                 {
-                    consoleLog(getIndent() + "JS MO clipEnd adjusted to MAX");
+                    console.log(getIndent() + "JS MO clipEnd adjusted to MAX");
                 }
                 node.clipEnd = node.MAX;
             }
@@ -1161,7 +1161,7 @@ SmilModel.fromSmilDTO = function(smilDTO, mo) {
             //node.updateMediaManifestItemId(); ONLY XHTML SPINE ITEMS 
         }
         else {
-            consoleError("Unexpected smil node type: " + nodeDTO.nodeType);
+            console.error("Unexpected smil node type: " + nodeDTO.nodeType);
             return undefined;
         }
 

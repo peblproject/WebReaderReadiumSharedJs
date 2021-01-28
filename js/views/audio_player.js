@@ -54,85 +54,85 @@ define([],function() {
         {
             _audioElement.addEventListener("load", function()
                 {
-                    consoleLog("0) load");
+                    console.log("0) load");
                 }
             );
 
             _audioElement.addEventListener("loadstart", function()
                 {
-                    consoleLog("1) loadstart");
+                    console.log("1) loadstart");
                 }
             );
 
             _audioElement.addEventListener("durationchange", function()
                 {
-                    consoleLog("2) durationchange");
+                    console.log("2) durationchange");
                 }
             );
 
             _audioElement.addEventListener("loadedmetadata", function()
                 {
-                    consoleLog("3) loadedmetadata");
+                    console.log("3) loadedmetadata");
                 }
             );
 
             _audioElement.addEventListener("loadeddata", function()
                 {
-                    consoleLog("4) loadeddata");
+                    console.log("4) loadeddata");
                 }
             );
 
             _audioElement.addEventListener("progress", function()
                 {
-                    consoleLog("5) progress");
+                    console.log("5) progress");
                 }
             );
 
             _audioElement.addEventListener("canplay", function()
                 {
-                    consoleLog("6) canplay");
+                    console.log("6) canplay");
                 }
             );
 
             _audioElement.addEventListener("canplaythrough", function()
                 {
-                    consoleLog("7) canplaythrough");
+                    console.log("7) canplaythrough");
                 }
             );
 
             _audioElement.addEventListener("play", function()
                 {
-                    consoleLog("8) play");
+                    console.log("8) play");
                 }
             );
 
             _audioElement.addEventListener("pause", function()
                 {
-                    consoleLog("9) pause");
+                    console.log("9) pause");
                 }
             );
 
             _audioElement.addEventListener("ended", function()
                 {
-                    consoleLog("10) ended");
+                    console.log("10) ended");
                 }
             );
 
             _audioElement.addEventListener("seeked", function()
                 {
-                    consoleLog("X) seeked");
+                    console.log("X) seeked");
                 }
             );
 
             _audioElement.addEventListener("timeupdate", function()
                 {
-                    consoleLog("Y) timeupdate");
+                    console.log("Y) timeupdate");
                 }
             );
 
             _audioElement.addEventListener("seeking", function()
                 {
-                    consoleLog("Z) seeking");
+                    console.log("Z) seeking");
                 }
             );
         }
@@ -194,7 +194,7 @@ define([],function() {
         {
             if (DEBUG)
             {
-                consoleError("this.play()");
+                console.error("this.play()");
             }
     
             if(!_currentEpubSrc)
@@ -216,7 +216,7 @@ define([],function() {
         {
             if (DEBUG)
             {
-                consoleError("this.pause()");
+                console.error("this.pause()");
             }
     
             stopTimer();
@@ -246,7 +246,7 @@ define([],function() {
             {
                 if (DEBUG)
                 {
-                    consoleLog("onEnded() skipped (still seeking...)");
+                    console.log("onEnded() skipped (still seeking...)");
                 }
     
                 return;
@@ -275,7 +275,7 @@ define([],function() {
                     {
                         if (DEBUG)
                         {
-//consoleLog("interval timer skipped (still seeking...)");
+//console.log("interval timer skipped (still seeking...)");
                         }
                                          
                         _intervalTimerSkips++;
@@ -294,12 +294,12 @@ define([],function() {
                     }
                     catch (ex)
                     {
-                        consoleError(ex.message);
+                        console.error(ex.message);
                     }
     
     //                if (DEBUG)
     //                {
-    //                    consoleLog("currentTime: " + currentTime);
+    //                    console.log("currentTime: " + currentTime);
     //                }
     
                     if (currentTime)
@@ -327,7 +327,7 @@ define([],function() {
         {
             if (DEBUG)
             {
-                consoleError("this.reset()");
+                console.error("this.reset()");
             }
     
             this.pause();
@@ -395,7 +395,7 @@ define([],function() {
                 
                 if (DEBUG)
                 {
-                    consoleLog("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " (POSTPONE, SEEKING...)");
+                    console.log("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " (POSTPONE, SEEKING...)");
                 }
     
                 setTimeout(function()
@@ -410,7 +410,7 @@ define([],function() {
     
             if (DEBUG)
             {
-                consoleLog("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " #" + playId);
+                console.log("this.playFile(" + epubSrc + ")" + " @" + seekBegin + " #" + playId);
             }
     
             var audioNeedsNewSrc = !_currentEpubSrc || _currentEpubSrc !== epubSrc;
@@ -419,7 +419,7 @@ define([],function() {
             {
                 if (DEBUG)
                 {
-                    consoleLog("this.playFile() SAME SRC");
+                    console.log("this.playFile() SAME SRC");
                 }
     
                 this.pause();
@@ -434,9 +434,9 @@ define([],function() {
     
             if (DEBUG)
             {
-                consoleLog("this.playFile() NEW SRC");
-                consoleLog("_currentEpubSrc: " + _currentEpubSrc);
-                consoleLog("epubSrc: " + epubSrc);
+                console.log("this.playFile() NEW SRC");
+                console.log("_currentEpubSrc: " + _currentEpubSrc);
+                console.log("epubSrc: " + epubSrc);
             }
     
             this.reset();
@@ -480,7 +480,7 @@ define([],function() {
         //     
         //     if (DEBUG)
         //     {
-        //         consoleLog("onReadyToPlayToForcePreload");
+        //         console.log("onReadyToPlayToForcePreload");
         //     }
         //     
         //     playToForcePreload();
@@ -490,7 +490,7 @@ define([],function() {
         {
             if (DEBUG)
             {
-                consoleLog("playToForcePreload");
+                console.log("playToForcePreload");
             }
             
             //_audioElement.volume = 0;
@@ -507,7 +507,7 @@ define([],function() {
             
             if (DEBUG)
             {
-                consoleLog("onPlayToForcePreload");
+                console.log("onPlayToForcePreload");
             }
             _audioElement.pause(); // note: interval timer continues (immediately follows self.play())
         };
@@ -517,7 +517,7 @@ define([],function() {
         {
             if (DEBUG)
             {
-                consoleLog("onReadyToSeek #" + event.data.playId);
+                console.log("onReadyToSeek #" + event.data.playId);
             }
             playSeekCurrentTime(event.data.seekBegin, event.data.playId, true);
         }
@@ -533,7 +533,7 @@ define([],function() {
             {
                 if (DEBUG)
                 {
-                    consoleLog("onReadyToSeek ANDROID ... waiting a bit ... #" + event.data.playId);
+                    console.log("onReadyToSeek ANDROID ... waiting a bit ... #" + event.data.playId);
                 }
                 
                 //self.play();
@@ -549,7 +549,7 @@ define([],function() {
         {
             if (DEBUG)
             {
-                consoleLog("playSeekCurrentTime() #" + playId);
+                console.log("playSeekCurrentTime() #" + playId);
             }
     
             if (newCurrentTime == 0)
@@ -561,7 +561,7 @@ define([],function() {
             {
                 if (DEBUG)
                 {
-                    consoleLog("playSeekCurrentTime() CONTINUE");
+                    console.log("playSeekCurrentTime() CONTINUE");
                 }
     
                 _audioElement.moSeeking = undefined;
@@ -573,7 +573,7 @@ define([],function() {
     
             if (DEBUG)
             {
-                consoleLog("playSeekCurrentTime() NEED SEEK, EV: " + ev);
+                console.log("playSeekCurrentTime() NEED SEEK, EV: " + ev);
             }
     
             self.pause();
@@ -586,7 +586,7 @@ define([],function() {
             }
             catch (ex)
             {
-                consoleError(ex.message);
+                console.error(ex.message);
     
                 setTimeout(function()
                 {
@@ -596,7 +596,7 @@ define([],function() {
                     }
                     catch (ex)
                     {
-                        consoleError(ex.message);
+                        console.error(ex.message);
                     }
                 }, 5);
             }
@@ -618,7 +618,7 @@ define([],function() {
     
             if (DEBUG)
             {
-                consoleLog("onSeeked() #" + event.data.playId + " FIRST? " + notRetry + " EV: " + ev);
+                console.log("onSeeked() #" + event.data.playId + " FIRST? " + notRetry + " EV: " + ev);
             }
     
             var curTime = _audioElement.currentTime;
@@ -629,7 +629,7 @@ define([],function() {
             {
                 if (DEBUG)
                 {
-                    consoleLog("onSeeked() time diff: " + event.data.newCurrentTime + " vs. " + curTime + " ("+diff+")");
+                    console.log("onSeeked() time diff: " + event.data.newCurrentTime + " vs. " + curTime + " ("+diff+")");
                 }
                 
                 if (notRetry)
@@ -638,7 +638,7 @@ define([],function() {
     
                     // if (DEBUG)
                     // {
-                    //     consoleLog("onSeeked() fail => first retry, EV: " + _seekedEvent2);
+                    //     console.log("onSeeked() fail => first retry, EV: " + _seekedEvent2);
                     // }
     
                     event.data.isNewSrc = false;
@@ -651,7 +651,7 @@ define([],function() {
     
                     if (DEBUG)
                     {
-                        consoleLog("onSeeked() FAIL => retry again (timeout)");
+                        console.log("onSeeked() FAIL => retry again (timeout)");
                     }
     
                     setTimeout(function()
@@ -669,7 +669,7 @@ define([],function() {
                     }
                     catch (ex)
                     {
-                        consoleError(ex.message);
+                        console.error(ex.message);
     
                         setTimeout(function()
                         {
@@ -679,7 +679,7 @@ define([],function() {
                             }
                             catch (ex)
                             {
-                                consoleError(ex.message);
+                                console.error(ex.message);
                             }
                         }, 4);
                     }
@@ -689,17 +689,17 @@ define([],function() {
             {
                 if (DEBUG)
                 {
-                    consoleLog("onSeeked() STATE:");
-                    consoleLog(notRetry);
-                    consoleLog(event.data.seekRetries);
-                    consoleLog(diff);
+                    console.log("onSeeked() STATE:");
+                    console.log(notRetry);
+                    console.log(event.data.seekRetries);
+                    console.log(diff);
                 }
     
                 if (diff >= 1)
                 {
                     if (DEBUG)
                     {
-                        consoleLog("onSeeked() ABORT, TRY AGAIN FROM SCRATCH!");
+                        console.log("onSeeked() ABORT, TRY AGAIN FROM SCRATCH!");
                     }
                     
                     var smilSrc = _currentSmilSrc;
@@ -718,7 +718,7 @@ define([],function() {
 
                 if (DEBUG)
                 {
-                    consoleLog("onSeeked() OKAY => play!");
+                    console.log("onSeeked() OKAY => play!");
                 }
                 
                 event.data.seekRetries = undefined;

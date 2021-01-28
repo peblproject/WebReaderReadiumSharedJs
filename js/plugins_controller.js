@@ -197,11 +197,11 @@ define(["underscore", "eventEmitter"], function (_, EventEmitter) {
         },
 
         warn: function (msg) {
-            consoleError("Plugin " + this.name + ": " + msg);
+            console.error("Plugin " + this.name + ": " + msg);
         },
 
         deprecationNotice: function (deprecated, replacement) {
-            consoleError("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use "
+            console.error("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use "
 			 + replacement + " instead");
         },
 

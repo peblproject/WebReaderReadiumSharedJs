@@ -558,7 +558,7 @@ var FixedView = function(options, reader){
 
                     //if we a re loading fixed view meta size should be defined
                     if(!pageView.meta_height() || !pageView.meta_width()) {
-                        consoleError("Invalid document " + spineItem.href + ": viewport is not specified!");
+                        console.error("Invalid document " + spineItem.href + ": viewport is not specified!");
                     }
 
                     Globals.logEvent("CONTENT_DOCUMENT_LOADED", "EMIT", "fixed_view.js [ " + spineItem.href + " ]");
@@ -643,7 +643,7 @@ var FixedView = function(options, reader){
             }
         }
 
-        consoleError("spine item is not loaded");
+        console.error("spine item is not loaded");
         return undefined;
     }
 
@@ -793,7 +793,7 @@ var FixedView = function(options, reader){
     this.getDomRangeFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
         var views = getDisplayingViews();
         if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
-            consoleError("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
+            console.error("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
             return undefined;
         }
         for (var i = 0, count = views.length; i < count; i++) {

@@ -62,13 +62,13 @@ var IFrameLoader = function() {
             if (typeof location !== 'undefined') {
                 iframe.baseURI = location.href + "";
             }
-            consoleError("!iframe.baseURI => " + iframe.baseURI);
+            console.error("!iframe.baseURI => " + iframe.baseURI);
         }
     
-        consoleLog("EPUB doc iframe src:");
-        consoleLog(src);
-        consoleLog("EPUB doc iframe base URI:");
-        consoleLog(iframe.baseURI);
+        console.log("EPUB doc iframe src:");
+        console.log(src);
+        console.log("EPUB doc iframe base URI:");
+        console.log(iframe.baseURI);
         
         iframe.setAttribute("data-baseUri", iframe.baseURI);
         iframe.setAttribute("data-src", src);
@@ -87,7 +87,7 @@ var IFrameLoader = function() {
 
             var doc = iframe.contentDocument || iframe.contentWindow.document;
             $('svg', doc).on("load", function(){
-                consoleLog('SVG loaded');
+                console.log('SVG loaded');
             });
             
             self.updateIframeEvents(iframe);
@@ -95,7 +95,7 @@ var IFrameLoader = function() {
             var mathJax = iframe.contentWindow.MathJax;
             if (mathJax) {
                 
-                consoleLog("MathJax VERSION: " + mathJax.cdnVersion + " // " + mathJax.fileversion + " // " + mathJax.version);
+                console.log("MathJax VERSION: " + mathJax.cdnVersion + " // " + mathJax.fileversion + " // " + mathJax.version);
     
                 var useFontCache = true; // default in MathJax
                 
@@ -123,7 +123,7 @@ var IFrameLoader = function() {
                 try {
                     mathJax.Hub.Queue(mathJaxCallback);
                 } catch (err) {
-                    consoleError("MathJax fail!");
+                    console.error("MathJax fail!");
                     callback();
                 }
                 // Or at an 8 second timeout, which ever comes first

@@ -135,7 +135,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
                 overrideEntry = encodeURIComponent(overrideEntry);
             }
 
-            consoleLog("URL QUERY PARAM OVERRIDE: " + overrideKey + " = " + overrideEntry);
+            console.log("URL QUERY PARAM OVERRIDE: " + overrideKey + " = " + overrideEntry);
 
             newQueryString += (overrideKey + "=" + overrideEntry);
             newQueryString += "&";
@@ -153,7 +153,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             var parsedValue = parsedQueryString[parsedKey].trim();
             if (!parsedValue) continue;
 
-            consoleLog("URL QUERY PARAM PRESERVED: " + parsedKey + " = " + parsedValue);
+            console.log("URL QUERY PARAM PRESERVED: " + parsedKey + " = " + parsedValue);
 
             newQueryString += (parsedKey + "=" + encodeURIComponent(parsedValue));
             newQueryString += "&";
@@ -303,7 +303,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             var factor = fontSize / 100;
             var win = $epubHtml[0].ownerDocument.defaultView;
             if (!win) {
-                consoleLog("NIL $epubHtml[0].ownerDocument.defaultView");
+                console.log("NIL $epubHtml[0].ownerDocument.defaultView");
                 return;
             }
 
@@ -389,7 +389,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
                 // https://readium.firebase.com/?epub=..%2Fepub_content%2Faccessible_epub_3&goto=%7B%22idref%22%3A%22id-id2635343%22%2C%22elementCfi%22%3A%22%2F4%2F2%5Bbuilding_a_better_epub%5D%2F10%2F44%2F6%2C%2F1%3A334%2C%2F1%3A335%22%7D
 
                 var diff = time2 - time1;
-                consoleLog(diff);
+                console.log(diff);
 
                 // setTimeout(function(){
                 //     alert(diff);
@@ -579,7 +579,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             }
         }
         catch (ex) {
-            consoleError(ex);
+            console.error(ex);
         }
 
         try {
@@ -597,7 +597,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             }
         }
         catch (ex) {
-            consoleError(ex);
+            console.error(ex);
         }
 
         if (doc.body) {
@@ -672,7 +672,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             //"Reading Systems may use synthetic spreads in specific or all device orientations as part of a display area utilization optimization process."
         }
 
-        consoleError("Helpers.deduceSyntheticSpread: spread properties?!");
+        console.error("Helpers.deduceSyntheticSpread: spread properties?!");
         return 0; // non-forced
     };
 
@@ -836,7 +836,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             d = iframe.contentDocument;
         }
         catch (ex) {
-            consoleError(ex);
+            console.error(ex);
             return false;
         }
 
@@ -980,13 +980,13 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
 
         // if (selector !== sel)
         // {
-        //     consoleLog("---- SELECTOR ESCAPED");
-        //     consoleLog("1: " + sel);
-        //     consoleLog("2: " + selector);
+        //     console.log("---- SELECTOR ESCAPED");
+        //     console.log("1: " + sel);
+        //     console.log("2: " + selector);
         // }
         // else
         // {
-        //     consoleLog("---- SELECTOR OKAY: " + sel);
+        //     console.log("---- SELECTOR OKAY: " + sel);
         // }
 
         return selector;

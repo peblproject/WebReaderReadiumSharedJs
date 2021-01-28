@@ -129,7 +129,7 @@ var Globals = {
     
     logEvent: function(eventName, eventType, eventSource) {
         if (DEBUG) {
-            consoleError("#### ReadiumSDK.Events." + eventName + " - "+eventType+" - " + eventSource);
+            console.error("#### ReadiumSDK.Events." + eventName + " - "+eventType+" - " + eventSource);
         }
     }
 };

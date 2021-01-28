@@ -190,17 +190,22 @@ var Spine = function(epubPackage, spineDTO) {
      * @return     {Models.SpineItem} the next or previous valid item
     */
     this.removeItem = function(idref) {
-        var length = self.items.length;
-
-        for(var i = 0; i < length; i++) {
+        var nextValidIndex = 0;
+        var removedItem = false;
+        for(var i = 0; i < self.items.length; i++) {
             if(self.items[i].idref == idref) {
                 self.items.splice(i, 1);
-                if (i === length - 1)
-                    return self.items[i - 1];
+                removedItem = true;
+                if (i === self.items.length - 1)
+                    nextValidIndex = i - 1;
                 else
-                    return self.items[i];
+                    nextValidIndex = i;
             }
+            if (removedItem)
+                self.items[i].index--;
         }
+
+        return self.items[nextValidIndex];
     }
 
     /**

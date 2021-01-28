@@ -41,19 +41,19 @@ var MediaOverlayDataInjector = function (mediaOverlay, mediaOverlayPlayer) {
 
         var $body = $("body", contentDocElement);
         if ($body.length == 0) {
-            consoleError("! BODY ???");
+            console.error("! BODY ???");
         }
         else {
             var click = $body.data("mediaOverlayClick");
             if (click) {
-                consoleError("[WARN] already mediaOverlayClick");
+                console.error("[WARN] already mediaOverlayClick");
             }
             else {
                 $body.data("mediaOverlayClick", {ping: "pong"});
 
                 var touchClickMOEventHandler = function (event)
                 {
-                    //consoleLog("MO TOUCH-DOWN: "+event.type);
+                    //console.log("MO TOUCH-DOWN: "+event.type);
                     
                     var elem = $(this)[0]; // body
                     elem = event.target; // body descendant
@@ -64,7 +64,7 @@ var MediaOverlayDataInjector = function (mediaOverlay, mediaOverlayPlayer) {
                         return true;
                     }
 
-//consoleLog("MO CLICK: " + elem.id);
+//console.log("MO CLICK: " + elem.id);
 
                     var data = undefined;
                     var el = elem;
@@ -92,19 +92,19 @@ var MediaOverlayDataInjector = function (mediaOverlay, mediaOverlayPlayer) {
                     {
                         if (el !== elem)
                         {
-//consoleLog("MO CLICK REDIRECT: " + el.id);
+//console.log("MO CLICK REDIRECT: " + el.id);
                         }
 
                         if (!mediaOverlaySettings.mediaOverlaysEnableClick)
                         {
-consoleLog("MO CLICK DISABLED");
+console.log("MO CLICK DISABLED");
                             mediaOverlayPlayer.touchInit();
                             return true;
                         }
 
                         if (inLink)
                         {
-consoleLog("MO CLICKED LINK");
+console.log("MO CLICKED LINK");
                             mediaOverlayPlayer.touchInit();
                             return true;
                         }
@@ -113,7 +113,7 @@ consoleLog("MO CLICKED LINK");
 
                         if (el && el != elem && el.nodeName.toLowerCase() === "body" && par && !par.getSmil().id)
                         {
-//consoleLog("MO CLICKED BLANK BODY");
+//console.log("MO CLICKED BLANK BODY");
                             mediaOverlayPlayer.touchInit();
                             return true;
                         }
@@ -130,7 +130,7 @@ consoleLog("MO CLICKED LINK");
                         }
                         if (readaloud)
                         {
-consoleLog("MO readaloud attr: " + readaloud);
+console.log("MO readaloud attr: " + readaloud);
 
                             var isPlaying = mediaOverlayPlayer.isPlaying();
                             if (readaloud === "start" && !isPlaying ||
@@ -163,7 +163,7 @@ consoleLog("MO readaloud attr: " + readaloud);
         var smil = mediaOverlay.getSmilBySpineItem(spineItem);
         if (!smil)
         {
-            consoleError("NO SMIL?? " + spineItem.idref + " /// " + spineItem.media_overlay_id);
+            console.error("NO SMIL?? " + spineItem.idref + " /// " + spineItem.media_overlay_id);
             return;
         }
 
@@ -175,7 +175,7 @@ consoleLog("MO readaloud attr: " + readaloud);
             {
                // if (root.element)
                // {
-               //     consoleError("WARN: seq.element already set: " + root.textref);
+               //     console.error("WARN: seq.element already set: " + root.textref);
                // }
                    
                if (root.textref)
@@ -184,21 +184,21 @@ consoleLog("MO readaloud attr: " + readaloud);
                    var file = parts[0];
                    var fragmentId = (parts.length === 2) ? parts[1] : "";
                    // 
-                   // consoleLog(root.textref);
-                   // consoleLog(fragmentId);
-                   // consoleLog("---- SHOULD BE EQUAL:");
-                   // consoleLog(file);
-                   // consoleLog(par.text.srcFile);
+                   // console.log(root.textref);
+                   // console.log(fragmentId);
+                   // console.log("---- SHOULD BE EQUAL:");
+                   // console.log(file);
+                   // console.log(par.text.srcFile);
                    // 
                    // if (file !== par.text.srcFile)
                    // {
-                   //     consoleError("adjustParToSeqSyncGranularity textref.file !== par.text.srcFile ???");
+                   //     console.error("adjustParToSeqSyncGranularity textref.file !== par.text.srcFile ???");
                    //     return par;
                    // }
                    // 
                    // if (!fragmentId)
                    // {
-                   //     consoleError("adjustParToSeqSyncGranularity !fragmentId ???");
+                   //     console.error("adjustParToSeqSyncGranularity !fragmentId ???");
                    //     return par;
                    // }
 
@@ -212,7 +212,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                    
                            if (!root.element)
                            {
-                               consoleError("seq.textref !element? " + root.textref);
+                               console.error("seq.textref !element? " + root.textref);
                            }
 
                            // var selector = "#" + Helpers.escapeJQuerySelector(fragmentId);
@@ -237,7 +237,7 @@ consoleLog("MO readaloud attr: " + readaloud);
         };
         traverseSmilSeqs(smil);
 
-//consoleLog("[[MO ATTACH]] " + spineItem.idref + " /// " + spineItem.media_overlay_id + " === " + smil.id);
+//console.log("[[MO ATTACH]] " + spineItem.idref + " /// " + spineItem.media_overlay_id + " === " + smil.id);
 
         var iter = new SmilIterator(smil);
         
@@ -269,7 +269,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                             {
                                 partial = partial.substr(fakeOpfRoot.length, partial.length - fakeOpfRoot.length);
                             }
-//consoleLog(partial);
+//console.log(partial);
                             var parts = partial.split(",");
                             if (parts && parts.length === 3)
                             {
@@ -281,7 +281,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                 ["cfi-marker", "mo-cfi-highlight"],
                 [],
                 ["MathJax_Message"]);
-//consoleLog(infoStart);
+//console.log(infoStart);
 
                                     var partialEndCfi = parts[0] + parts[2];
                                     var endCFI = "epubcfi(" + partialEndCfi + ")";
@@ -289,7 +289,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                 ["cfi-marker", "mo-cfi-highlight"],
                 [],
                 ["MathJax_Message"]);
-//consoleLog(infoEnd);
+//console.log(infoEnd);
 
                                     var cfiTextParent = infoStart.textNode.parentNode;
 
@@ -321,7 +321,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                                     {
                                         if (modata.par)
                                         {
-                                            consoleError("[WARN] non-CFI MO DATA already exists!");
+                                            console.error("[WARN] non-CFI MO DATA already exists!");
                                             modata.par = undefined;
                                         }
 
@@ -335,7 +335,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                                                 if (par === iter.currentPar)
                                                 {
                                                     found = true;
-                                                    consoleError("[WARN] mediaOverlayData CFI PAR already registered!");
+                                                    console.error("[WARN] mediaOverlayData CFI PAR already registered!");
                                                 }
                                             }
                                         }
@@ -353,7 +353,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                                 }
                                 catch (error)
                                 {
-                                    consoleError(error);
+                                    console.error(error);
                                 }
                             }
                             else
@@ -368,13 +368,13 @@ consoleLog("MO readaloud attr: " + readaloud);
                                 }
                                 catch (error)
                                 {
-                                    consoleError(error);
+                                    console.error(error);
                                 }
                             }
                         }
                         else 
                         {
-                            consoleError("SMIL text@src CFI fragment identifier scheme not supported: " + iter.currentPar.text.srcFragmentId);
+                            console.error("SMIL text@src CFI fragment identifier scheme not supported: " + iter.currentPar.text.srcFragmentId);
                         }
                     }
                     else
@@ -395,7 +395,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                         if (!isCfiTextRange)
                         {
                             if (iter.currentPar.element && iter.currentPar.element !== $element[0]) {
-                                consoleError("DIFFERENT ELEMENTS??! " + iter.currentPar.text.srcFragmentId + " /// " + iter.currentPar.element.id);
+                                console.error("DIFFERENT ELEMENTS??! " + iter.currentPar.text.srcFragmentId + " /// " + iter.currentPar.element.id);
                             }
 
                             var name = $element[0].nodeName ? $element[0].nodeName.toLowerCase() : undefined;
@@ -407,10 +407,10 @@ consoleLog("MO readaloud attr: " + readaloud);
 
                             var modata = $element.data("mediaOverlayData");
                             if (modata) {
-                                consoleError("[WARN] MO DATA already exists.");
+                                console.error("[WARN] MO DATA already exists.");
 
                                 if (modata.par && modata.par !== iter.currentPar) {
-                                    consoleError("DIFFERENT PARS??!");
+                                    console.error("DIFFERENT PARS??!");
                                 }
                             }
 
@@ -419,7 +419,7 @@ consoleLog("MO readaloud attr: " + readaloud);
                             /*
                              $element.click(function() {
                              var elem = $(this)[0];
-                             consoleLog("MO CLICK (ELEM): " + elem.id);
+                             console.log("MO CLICK (ELEM): " + elem.id);
 
                              var par = $(this).data("mediaOverlayData").par;
                              mediaOverlayPlayer.playUserPar(par);
@@ -428,11 +428,11 @@ consoleLog("MO readaloud attr: " + readaloud);
                         }
                     }
                     else {
-                        consoleError("!! CANNOT FIND ELEMENT: " + iter.currentPar.text.srcFragmentId + " == " + iter.currentPar.text.srcFile + " /// " + spineItem.href);
+                        console.error("!! CANNOT FIND ELEMENT: " + iter.currentPar.text.srcFragmentId + " == " + iter.currentPar.text.srcFile + " /// " + spineItem.href);
                     }
                 }
                 else {
-//consoleLog("[INFO] " + spineItem.href + " != " + textRelativeRef + " # " + iter.currentPar.text.srcFragmentId);
+//console.log("[INFO] " + spineItem.href + " != " + textRelativeRef + " # " + iter.currentPar.text.srcFragmentId);
                 }
             }
 

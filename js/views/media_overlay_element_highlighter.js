@@ -153,7 +153,7 @@ var MediaOverlayElementHighlighter = function(reader) {
         
         $userStyle.appendTo($head);
 
-//consoleLog($userStyle[0].textContent);
+//console.log($userStyle[0].textContent);
     };
     
     this.highlightElement = function(par, activeClass, playbackActiveClass) {
@@ -175,9 +175,9 @@ var MediaOverlayElementHighlighter = function(reader) {
         
         if (_playbackActiveClass && _playbackActiveClass !== "")
         {
-            //consoleLog("MO playbackActiveClass: " + _playbackActiveClass);
+            //console.log("MO playbackActiveClass: " + _playbackActiveClass);
             $(element.ownerDocument.documentElement).addClass(_playbackActiveClass);
-            //consoleLog("MO playbackActiveClass 2: " + element.ownerDocument.documentElement.classList);
+            //console.log("MO playbackActiveClass 2: " + element.ownerDocument.documentElement.classList);
         }
 
         var $hel = $(element);
@@ -189,7 +189,7 @@ var MediaOverlayElementHighlighter = function(reader) {
                 
         if (overrideWithUserStyle || !hasAuthorStyle)
         {
-            //consoleLog("MO active NO CLASS: " + _activeClass);
+            //console.log("MO active NO CLASS: " + _activeClass);
 
             if (hasAuthorStyle)
             {
@@ -202,7 +202,7 @@ var MediaOverlayElementHighlighter = function(reader) {
         }
         else
         {
-            //consoleLog("MO activeClass: " + _activeClass);
+            //console.log("MO activeClass: " + _activeClass);
             $hel.addClass(_activeClass);
         }
         
@@ -220,15 +220,15 @@ var MediaOverlayElementHighlighter = function(reader) {
 //             //     cfi = cfi.substring(1);
 //             // }
 // 
-// //consoleLog(element);
+// //console.log(element);
 //         
 //             var firstTextNode = getFirstTextNode(element);
 //             var txtFirst = firstTextNode.textContent;
-// //consoleLog(txtFirst);
+// //console.log(txtFirst);
 // 
 //             var lastTextNode = getLastTextNode(element);
 //             var txtLast = lastTextNode.textContent;
-// //consoleLog(txtLast);
+// //console.log(txtLast);
 //         
 //             var cfi = EPUBcfi.Generator.generateCharOffsetRangeComponent(
 //                     firstTextNode, 
@@ -248,7 +248,7 @@ var MediaOverlayElementHighlighter = function(reader) {
 //         }
 //         catch(error)
 //         {
-//             consoleError(error);
+//             console.error(error);
 //         
 //             removeHighlight();
 //         }
@@ -290,7 +290,7 @@ var MediaOverlayElementHighlighter = function(reader) {
             }
             catch(error)
             {
-                consoleError(error);
+                console.error(error);
             }
         }
         else if (_reader.plugins.annotations) // legacy
@@ -306,7 +306,7 @@ var MediaOverlayElementHighlighter = function(reader) {
             }
             catch(error)
             {
-                consoleError(error);
+                console.error(error);
             }
         }
     };
@@ -371,20 +371,20 @@ var MediaOverlayElementHighlighter = function(reader) {
                     var toRemove = undefined;
                     while ((toRemove = doc.getElementById("start-" + HIGHLIGHT_ID)) !== null)
                     {
-            consoleLog("toRemove START");
-            consoleLog(toRemove);
+            console.log("toRemove START");
+            console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
                     while ((toRemove = doc.getElementById("end-" + HIGHLIGHT_ID)) !== null)
                     {
-            consoleLog("toRemove END");
-            consoleLog(toRemove);
+            console.log("toRemove END");
+            console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
                 }
                 catch(error)
                 {
-                    consoleError(error);
+                    console.error(error);
                 }
             }
             else if (_reader.plugins.annotations) // legacy
@@ -396,20 +396,20 @@ var MediaOverlayElementHighlighter = function(reader) {
                     var toRemove = undefined;
                     while ((toRemove = doc.getElementById("start-" + HIGHLIGHT_ID)) !== null)
                     {
-            consoleLog("toRemove START");
-            consoleLog(toRemove);
+            console.log("toRemove START");
+            console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
                     while ((toRemove = doc.getElementById("end-" + HIGHLIGHT_ID)) !== null)
                     {
-            consoleLog("toRemove END");
-            consoleLog(toRemove);
+            console.log("toRemove END");
+            console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
                 }
                 catch(error)
                 {
-                    consoleError(error);
+                    console.error(error);
                 }
             }
             
@@ -430,18 +430,18 @@ var MediaOverlayElementHighlighter = function(reader) {
             
             if (_playbackActiveClass && _playbackActiveClass !== "")
             {
-                //consoleLog("MO RESET playbackActiveClass: " + _playbackActiveClass);
+                //console.log("MO RESET playbackActiveClass: " + _playbackActiveClass);
                 $(element.ownerDocument.documentElement).removeClass(_playbackActiveClass);
             }
 
             if (_activeClass && _activeClass !== "")
             {
-                //consoleLog("MO RESET activeClass: " + _activeClass);
+                //console.log("MO RESET activeClass: " + _activeClass);
                 $(element).removeClass(_activeClass);
             }
             //else
             //{
-                //consoleLog("MO RESET active NO CLASS: " + _activeClass);
+                //console.log("MO RESET active NO CLASS: " + _activeClass);
                 $(element).removeClass(DEFAULT_MO_ACTIVE_CLASS);
                 //$(element).css("background", '');
             //}
@@ -463,7 +463,7 @@ var MediaOverlayElementHighlighter = function(reader) {
             var element = par.element || (par.cfi ? par.cfi.cfiTextParent : undefined);
             if (!element)
             {
-                consoleError("adjustParToSeqSyncGranularity !element ???");
+                console.error("adjustParToSeqSyncGranularity !element ???");
                 return par; // should never happen!
             }
 
