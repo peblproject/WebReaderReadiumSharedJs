@@ -249,6 +249,7 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
         var FONT_FAMILY_ID = "readium_font_family_link";
 
         var docHead = $("head", $epubHtml);
+        
         var link = $("#" + FONT_FAMILY_ID, docHead);
 
         const NOTHING = 0, ADD = 1, REMOVE = 2; //Types for css font family.
@@ -310,70 +311,88 @@ define(["./globals", 'underscore', "./models/spine_item", 'URIjs'], function(Glo
             // TODO: is this a complete list? Is there a better way to do this?
             //https://github.com/readium/readium-shared-js/issues/336
             // Note that font-family is handled differently, using an injected stylesheet with a catch-all selector that pushes an "!important" CSS value in the document's cascade.
-            var $textblocks = $('p, div, span, h1, h2, h3, h4, h5, h6, li, blockquote, td, pre, dt, dd, code, a', $epubHtml); // excludes section, body etc.
+            if (docHead[0].querySelector('[name="pebl:projectId"]')) { // Set only the body font-size for peblAuthoring books
+                var docBody = $("body", $epubHtml)[0];
 
-            // need to do two passes because it is possible to have nested text blocks.
-            // If you change the font size of the parent this will then create an inaccurate
-            // font size for any children.
-            for (var i = 0; i < $textblocks.length; i++) {
-
-                var ele = $textblocks[i];
-
-                var fontSizeAttr = ele.getAttribute('data-original-font-size');
-                if (fontSizeAttr) {
-                    // early exit, original values already set.
-                    break;
+                var fontSizeAttr = docBody.getAttribute('data-original-font-size');
+                if (!fontSizeAttr) {
+                    var style = win.getComputedStyle(docBody);
+                    var originalFontSize = parseInt(style.fontSize);
+                    docBody.setAttribute('data-original-font-size', originalFontSize);
                 }
 
-                var style = win.getComputedStyle(ele);
-
-                var originalFontSize = parseInt(style.fontSize);
-                ele.setAttribute('data-original-font-size', originalFontSize);
-
-                var originalLineHeight = parseInt(style.lineHeight);
-                // getComputedStyle will not calculate the line-height if the value is 'normal'. In this case parseInt will return NaN
-                if (originalLineHeight) {
-                    ele.setAttribute('data-original-line-height', originalLineHeight);
-                }
-
-                // var fontFamilyAttr = ele.getAttribute('data-original-font-family');
-                // if (!fontFamilyAttr) {
-                //     var originalFontFamily = style.fontFamily;
-                //     if (originalFontFamily) {
-                //         ele.setAttribute('data-original-font-family', originalFontFamily);
-                //     }
-                // }
-            }
-
-            for (var i = 0; i < $textblocks.length; i++) {
-                var ele = $textblocks[i];
-
-                // TODO: group the 3x potential $(ele).css() calls below to avoid multiple jQuery style mutations 
-
-                var fontSizeAttr = ele.getAttribute('data-original-font-size');
+                var fontSizeAttr = docBody.getAttribute('data-original-font-size');
                 var originalFontSize = fontSizeAttr ? Number(fontSizeAttr) : 0;
                 if (originalFontSize) {
-                    $(ele).css("font-size", (originalFontSize * factor) + 'px');
+                    $(docBody).css("font-size", (originalFontSize * factor) + 'px');
+                }
+            } else {
+                var $textblocks = $('p, div, span, h1, h2, h3, h4, h5, h6, li, blockquote, td, pre, dt, dd, code, a', $epubHtml); // excludes section, body etc.
+
+                // need to do two passes because it is possible to have nested text blocks.
+                // If you change the font size of the parent this will then create an inaccurate
+                // font size for any children.
+                for (var i = 0; i < $textblocks.length; i++) {
+
+                    var ele = $textblocks[i];
+
+                    var fontSizeAttr = ele.getAttribute('data-original-font-size');
+                    if (fontSizeAttr) {
+                        // early exit, original values already set.
+                        break;
+                    }
+
+                    var style = win.getComputedStyle(ele);
+
+                    var originalFontSize = parseInt(style.fontSize);
+                    ele.setAttribute('data-original-font-size', originalFontSize);
+
+                    var originalLineHeight = parseInt(style.lineHeight);
+                    // getComputedStyle will not calculate the line-height if the value is 'normal'. In this case parseInt will return NaN
+                    if (originalLineHeight) {
+                        ele.setAttribute('data-original-line-height', originalLineHeight);
+                    }
+
+                    // var fontFamilyAttr = ele.getAttribute('data-original-font-family');
+                    // if (!fontFamilyAttr) {
+                    //     var originalFontFamily = style.fontFamily;
+                    //     if (originalFontFamily) {
+                    //         ele.setAttribute('data-original-font-family', originalFontFamily);
+                    //     }
+                    // }
                 }
 
-                var lineHeightAttr = ele.getAttribute('data-original-line-height');
-                var originalLineHeight = lineHeightAttr ? Number(lineHeightAttr) : 0;
-                if (originalLineHeight) {
-                    $(ele).css("line-height", (originalLineHeight * factor) + 'px');
-                }
+                for (var i = 0; i < $textblocks.length; i++) {
+                    var ele = $textblocks[i];
 
-                // var fontFamilyAttr = ele.getAttribute('data-original-font-family');
-                // switch(changeFontFamily){
-                //     case NOTHING:
-                //         break;
-                //     case ADD:
-                //         $(ele).css("font-family", fontObj.fontFamily);
-                //         break;
-                //     case REMOVE:
-                //         $(ele).css("font-family", fontFamilyAttr);
-                //         break;
-                // }
+                    // TODO: group the 3x potential $(ele).css() calls below to avoid multiple jQuery style mutations 
+
+                    var fontSizeAttr = ele.getAttribute('data-original-font-size');
+                    var originalFontSize = fontSizeAttr ? Number(fontSizeAttr) : 0;
+                    if (originalFontSize) {
+                        $(ele).css("font-size", (originalFontSize * factor) + 'px');
+                    }
+
+                    var lineHeightAttr = ele.getAttribute('data-original-line-height');
+                    var originalLineHeight = lineHeightAttr ? Number(lineHeightAttr) : 0;
+                    if (originalLineHeight) {
+                        $(ele).css("line-height", (originalLineHeight * factor) + 'px');
+                    }
+
+                    // var fontFamilyAttr = ele.getAttribute('data-original-font-family');
+                    // switch(changeFontFamily){
+                    //     case NOTHING:
+                    //         break;
+                    //     case ADD:
+                    //         $(ele).css("font-family", fontObj.fontFamily);
+                    //         break;
+                    //     case REMOVE:
+                    //         $(ele).css("font-family", fontFamilyAttr);
+                    //         break;
+                    // }
+                }
             }
+            
 
             $epubHtml.css("font-size", fontSize + "%");
 
