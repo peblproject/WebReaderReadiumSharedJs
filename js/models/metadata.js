@@ -39,6 +39,7 @@ define([], function () {
         this.rights = undefined;
         this.modifiedDate = undefined;
         this.publishedDate = undefined;
+        this.duration = undefined;
         this.epubVersion = undefined;
 
         if (packageMetadata) {
@@ -51,6 +52,7 @@ define([], function () {
             this.rights = packageMetadata.rights;
             this.modifiedDate = packageMetadata.modified_date;
             this.publishedDate = packageMetadata.pubdate;
+            this.duration = packageMetadata.duration;
             this.epubVersion = packageMetadata.epub_version;
         }
     };
