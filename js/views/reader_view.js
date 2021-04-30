@@ -808,6 +808,10 @@ var ReaderView = function (options) {
         }
     }
 
+    this.moveSpineItem = function (idref, newIndex) {
+        _spine.moveItem(idref, newIndex);
+    }
+
     /**
      * Opens specified page index of the current spine item
      *

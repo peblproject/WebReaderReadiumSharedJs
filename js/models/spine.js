@@ -208,6 +208,27 @@ var Spine = function(epubPackage, spineDTO) {
         return self.items[nextValidIndex];
     }
 
+    this.moveItem = function(idref, newIndex) {
+        var item;
+        for(var i = 0; i < self.items.length; i++) {
+            if(self.items[i].idref == idref) {
+                item = self.items[i];
+                break;
+            }
+        }
+
+        if (!item)
+            return false;
+
+        self.items.splice(item.index, 1);
+        self.items.splice(newIndex, 0, item);
+        for (var i = 0; i < self.items.length; i++) {
+            self.items[i].index = i;
+        }
+
+        return self.items;
+    }
+
     /**
      * Gets the relative URL of a spine item. 
      *
