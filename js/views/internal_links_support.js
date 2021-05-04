@@ -195,6 +195,8 @@ var InternalLinksSupport = function(reader) {
 
         var epubContentDocument = $iframe[0].contentDocument;
 
+        $(epubContentDocument).off('click', 'a');
+
         $(epubContentDocument).on('click', 'a', function (clickEvent) {
             // Check for both href and xlink:href attribute and get value
             var href;
