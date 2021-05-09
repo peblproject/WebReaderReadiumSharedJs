@@ -692,7 +692,7 @@ var ReflowableView = function(options, reader){
     };
 
 
-    function updatePagination_() {
+    this.updatePagination_ = function() {
 
         // At 100% font-size = 16px (on HTML, not body or descendant markup!)
         var MAXW = _paginationInfo.columnMaxWidth;
@@ -792,6 +792,10 @@ var ReflowableView = function(options, reader){
                 filler = Math.floor((textWidth - MAXW) * 0.5);
             }
         }
+
+        let forceSingleColumn = _$epubHtml[0].getAttribute('data-force-single-column');
+        if (forceSingleColumn && forceSingleColumn === "true")
+            _paginationInfo.visibleColumnCount = 1;
         
         _$el.css({"left": (filler+adjustedGapLeft + "px"), "right": (filler+adjustedGapRight + "px")});
         
@@ -965,7 +969,7 @@ var ReflowableView = function(options, reader){
         // execution, provoking a flicker
         initResizeSensor();
     }
-    var updatePagination = _.debounce(updatePagination_, 100);
+    var updatePagination = _.debounce(this.updatePagination_, 100);
 
     function initResizeSensor() {
         var bodyElement = _$htmlBody[0];

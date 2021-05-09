@@ -1836,6 +1836,12 @@ var ReaderView = function (options) {
         }
         return undefined;
     };
+
+    this.updatePagination = function() {
+        if (_currentView && _currentView.updatePagination_) {
+            return _currentView.updatePagination_();
+        }
+    }
     
 };
 
