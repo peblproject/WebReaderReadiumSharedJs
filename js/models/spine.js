@@ -196,12 +196,12 @@ var Spine = function(epubPackage, spineDTO) {
             if(self.items[i].idref == idref) {
                 self.items.splice(i, 1);
                 removedItem = true;
-                if (i === self.items.length - 1)
+                if (i === self.items.length)
                     nextValidIndex = i - 1;
                 else
                     nextValidIndex = i;
             }
-            if (removedItem)
+            if (removedItem && self.items.length > i)
                 self.items[i].index--;
         }
 
