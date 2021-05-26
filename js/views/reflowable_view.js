@@ -343,7 +343,7 @@ var ReflowableView = function(options, reader){
         _htmlBodyIsLTRDirection = true;
         _htmlBodyIsLTRWritingMode = undefined;
 
-        var win = _$iframe[0].contentDocument.defaultView || _$iframe[0].contentWindow;
+        var win = (_$iframe[0].contentDocument && _$iframe[0].contentDocument.defaultView) || _$iframe[0].contentWindow;
 
         //Helpers.isIframeAlive
         var htmlBodyComputedStyle = win.getComputedStyle(_$htmlBody[0], null);
