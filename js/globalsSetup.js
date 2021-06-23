@@ -12,8 +12,8 @@
 //  prior written permission.
 
 //'text!empty:'
-define(['./globals', 'console_shim', 'es6-shim', 'eventEmitter', 'URIjs', 'readium_cfi_js', 'readium_js_plugins'],
-function (Globals, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, PluginsController) {
+define(['./globals', 'underscore', 'console_shim', 'es6-shim', 'eventEmitter', 'URIjs', 'readium_cfi_js', 'readium_js_plugins'],
+function (Globals, _, console_shim, es6Shim, EventEmitter, URI, EPUBcfi, PluginsController) {
 
     console.log("Globals...");
 
