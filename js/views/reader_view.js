@@ -417,7 +417,9 @@ var ReaderView = function (options) {
         PeBL.emitEvent(PeBL.events.newBook, {
            book: window.location.origin + '/?epub=' + encodeURIComponent(epub),
            bookTitle: packageData.metadata.title,
-           bookId: packageData.metadata.id
+           bookId: packageData.metadata.id,
+           activityType: 'book',
+           activityId: packageData.metadata.id
         });
 
         // Set up documents for search
