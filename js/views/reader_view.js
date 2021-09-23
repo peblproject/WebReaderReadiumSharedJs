@@ -415,6 +415,7 @@ var ReaderView = function (options) {
         var epub = urlParams.get('epub');
 
         PeBL.emitEvent(PeBL.events.newBook, {
+           name: packageData.metadata.title,
            book: window.location.origin + '/?epub=' + encodeURIComponent(epub),
            bookTitle: packageData.metadata.title,
            bookId: packageData.metadata.id,
